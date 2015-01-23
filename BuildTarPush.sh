@@ -18,7 +18,7 @@ echo -n "Enter the Internal Registry Ip "
 read internRegIp
 echo $internRegIp
 
-echo -n "Enter the commit ID:"
+echo -n "Enter the commit ID/Tag ID:"
 echo -n "(if left empty will pull the latest code.)"
 read commitID
 echo $commitID
@@ -49,13 +49,15 @@ then
         cd $dirToCheckOut
 	cd Gemini-poc-stack
 	git pull
-        if [ -z "$commitID" ]
+        if [ ! -z "$commitID" ]
         then
-                git checkout $commitID
+		echo "git checkout ...."
+                git checkout tags/$commitID
         fi
 else
         echo "clone..."
         git clone "git@github.com:Gemini-sys/Gemini-poc-stack.git"
+	git checkout tags/$commitID
 fi
 cd $dirToCheckOut
 if [ -d Gemini-poc-mgnt ]
@@ -64,13 +66,16 @@ then
         # pull instead of clone
         cd Gemini-poc-mgnt
         git pull
-        if [ -z "$commitID" ]
+        if [ ! -z "$commitID" ]
         then
-                git checkout $commitID
+		echo "git checkout ...."
+		git checkout tags/$commitID
         fi
 else
         echo "clone..."
         git clone "git@github.com:Gemini-sys/Gemini-poc-mgnt.git"
+	echo "git checkout ...."
+	git checkout tags/$commitID
 fi
 
 #STEP 3: NAVIGATE TO THE DIR WHERE Dockerfile EXIST
