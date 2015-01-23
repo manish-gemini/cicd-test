@@ -53,11 +53,15 @@ then
         then
 		echo "git checkout ...."
                 git checkout tags/$commitID
+		echo "git checkout completed ...."
         fi
 else
         echo "clone..."
         git clone "git@github.com:Gemini-sys/Gemini-poc-stack.git"
+	echo "clone completed..."
+	echo "checkout..."
 	git checkout tags/$commitID
+	echo "Checkout Completed...."
 fi
 cd $dirToCheckOut
 if [ -d Gemini-poc-mgnt ]
@@ -70,12 +74,14 @@ then
         then
 		echo "git checkout ...."
 		git checkout tags/$commitID
+		echo "git checkout completed..."
         fi
 else
         echo "clone..."
         git clone "git@github.com:Gemini-sys/Gemini-poc-mgnt.git"
 	echo "git checkout ...."
 	git checkout tags/$commitID
+	echo "git checkout completed..."
 fi
 
 #STEP 3: NAVIGATE TO THE DIR WHERE Dockerfile EXIST
@@ -94,23 +100,24 @@ then
 fi
 
 #STEP 5: BUILD THE STACK CODE.
-docker build -t gemini/gemini-stack .
+docker build -t gemini/gemini-stack:$commitID .
 
 #PLATFORM CODE :
 
 cd $dirToCheckOut/Gemini-poc-mgnt
-docker build -t gemini/gemini-platform .
+docker build -t gemini/gemini-platform:$commitID .
 
 if [ $buildType==1 ] || [ $buildType==3 ]
 then
-docker save gemini/gemini-platform > $dirToCheckOut/gemini-platform.tar
-docker save gemini/gemini-stack > $dirToCheckOut/gemini-stack.tar
+mkdir -p $dirToCheckOut/$commitID
+docker save gemini/gemini-platform:$commitID > $dirToCheckOut/$commitID/gemini-platform.tar
+docker save gemini/gemini-stack:$commitID > $dirToCheckOut/$commitID/gemini-stack.tar
 fi
 
 if [ $buildType==2 ] || [ $buildType==3 ]
 then
-docker tag gemini-platform:latest $internRegIp:5000/gemini/gemini-stack
-docker push $internRegIp:5000/gemini/gemini-stack
-docker tag gemini-mgnt:latest $internRegIp:5000/gemini/gemini-platform
-docker push $internRegIp:5000/gemini/gemini-platform
+docker tag gemini/gemini-stack:$commitID $internRegIp:5000/gemini/gemini-stack:$commitID
+docker push $internRegIp:5000/gemini/gemini-stack:$commitID
+docker tag gemini/gemini-platform:$commitID $internRegIp:5000/gemini/gemini-platform:$commitID
+docker push $internRegIp:5000/gemini/gemini-platform:$commitID
 fi
