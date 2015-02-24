@@ -100,11 +100,13 @@ then
 fi
 
 #STEP 5: BUILD THE STACK CODE.
+cp -f Dockerfile_BuildFromBase Dockerfile
 docker build -t gemini/gemini-stack:$commitID .
 
 #PLATFORM CODE :
 
 cd $dirToCheckOut/Gemini-poc-mgnt
+cp -f Dockerfile_BuildFromBase Dockerfile
 docker build -t gemini/gemini-platform:$commitID .
 
 if [ $buildType==1 ] || [ $buildType==3 ]
