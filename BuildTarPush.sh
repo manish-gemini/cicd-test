@@ -2,6 +2,9 @@
 #  Copyright 2015 Gemini Systems. All rights reserved
 
 #####AUOMATE tar and upload.,
+
+## DOCKER LOGIN:::
+docker login https://docker-internal.example.com
 echo -n "Enter the build type:"
 echo -n "Build a Tar file = 1"
 echo -n "Build and push to internal Reg = 2"
@@ -14,9 +17,9 @@ echo -n "Enter the Directory to checkout source and Save Tar Files"
 read dirToCheckOut
 echo $dirToCheckOut
 
-echo -n "Enter the Internal Registry Ip "
-read internRegIp
-echo $internRegIp
+#echo -n "Enter the Internal Registry Ip "
+#read internRegIp
+#echo $internRegIp
 
 echo -n "Enter the commit ID/Tag ID:"
 echo -n "(if left empty will pull the latest code.)"
@@ -118,8 +121,8 @@ fi
 
 if [ $buildType==2 ] || [ $buildType==3 ]
 then
-docker tag gemini/gemini-stack:$commitID $internRegIp:5000/gemini/gemini-stack:$commitID
-docker push $internRegIp:5000/gemini/gemini-stack:$commitID
-docker tag gemini/gemini-platform:$commitID $internRegIp:5000/gemini/gemini-platform:$commitID
-docker push $internRegIp:5000/gemini/gemini-platform:$commitID
+docker tag gemini/gemini-stack:$commitID docker-internal.example.com/gemini/gemini-stack:$commitID
+docker push docker-internal.example.com/gemini/gemini-stack:$commitID
+docker tag gemini/gemini-platform:$commitID docker-internal.example.com/gemini/gemini-platform:$commitID
+docker push docker-internal.example.com/gemini/gemini-platform:$commitID
 fi
