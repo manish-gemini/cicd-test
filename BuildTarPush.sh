@@ -3,16 +3,21 @@
 
 #####AUOMATE tar and upload.,
 
-## DOCKER LOGIN:::
-docker login https://docker-internal.example.com
-echo -n "Enter the build type:"
-echo -n "Build a Tar file = 1"
-echo -n "Build and push to internal Reg = 2"
-echo -n "Build both Tar and push to internal Reg = 3"
-echo -n "Build Test = 4"
+
+echo "Enter the build type:"
+echo "Build a Tar file = 1"
+echo "Build and push to internal Reg = 2"
+echo "Build both Tar and push to internal Reg = 3"
+echo "Build Test = 4"
 read buildType
 echo $buildType
 
+if [ $buildType -eq 2 ] || [ $buildType -eq 3 ]
+then
+	## DOCKER LOGIN:::
+	echo "Login to the Docker Registry...."
+	docker login https://docker-internal.example.com
+fi
 echo -n "Enter the Directory to checkout source and Save Tar Files"
 read dirToCheckOut
 echo $dirToCheckOut
@@ -51,6 +56,9 @@ then
         # pull instead of clone
         cd $dirToCheckOut
 	cd Gemini-poc-stack
+	git checkout master
+	git reset --hard
+	git fetch --all
 	git pull
         if [ ! -z "$commitID" ]
         then
@@ -72,6 +80,9 @@ then
         echo "pull..."
         # pull instead of clone
         cd Gemini-poc-mgnt
+	git checkout master
+	git reset --hard
+	git fetch --all
         git pull
         if [ ! -z "$commitID" ]
         then
@@ -103,26 +114,46 @@ then
 fi
 
 #STEP 5: BUILD THE STACK CODE.
-cp -f Dockerfile_BuildFromBase Dockerfile
-docker build -t gemini/gemini-stack:$commitID .
+#cp -f Dockerfile_BuildFromBase Dockerfile
+#docker build -t gemini/gemini-stack:$commitID .
+#BUILD THE BASE IMAGE
+echo "Build Base Image..."
+docker build -t gemini/gemini-base:$commitID -f Dockerfiles/GeminiBase .
+echo "Build Stack Base Image..."
+docker build -t gemini/gemini-stack-base:$commitID -f Dockerfiles/GeminiStackBase .
+echo "Build Stack Image..."
+docker build -t gemini/gemini-stack:$commitID -f Dockerfiles/GeminiStack .
 
 #PLATFORM CODE :
 
 cd $dirToCheckOut/Gemini-poc-mgnt
-cp -f Dockerfile_BuildFromBase Dockerfile
-docker build -t gemini/gemini-platform:$commitID .
+#cp -f Dockerfile_BuildFromBase Dockerfile
+#docker build -t gemini/gemini-platform:$commitID .
 
-if [ $buildType==1 ] || [ $buildType==3 ]
+echo "Gemini Base Image..."
+docker build -t gemini/gemini-base:$commitID -f Dockerfiles/GeminiBase .
+echo "Gemini Platform Base Image..."
+docker build -t gemini/gemini-platform-base:$commitID -f Dockerfiles/GeminiPlatformBase .
+echo "Gemini Platform Image..."
+docker build -t gemini/gemini-platform:$commitID -f Dockerfiles/GeminiPlatform .
+
+if [ $buildType -eq 1 ] || [ $buildType -eq 3 ]
 then
 mkdir -p $dirToCheckOut/$commitID
 docker save gemini/gemini-platform:$commitID > $dirToCheckOut/$commitID/gemini-platform.tar
 docker save gemini/gemini-stack:$commitID > $dirToCheckOut/$commitID/gemini-stack.tar
 fi
 
-if [ $buildType==2 ] || [ $buildType==3 ]
+if [ $buildType -eq 2 ] || [ $buildType -eq 3 ]
 then
+docker tag gemini/gemini-base:$commitID docker-internal.example.com/gemini/gemini-base:$commitID
+docker tag gemini/gemini-stack-base:$commitID docker-internal.example.com/gemini/gemini-stack-base:$commitID
 docker tag gemini/gemini-stack:$commitID docker-internal.example.com/gemini/gemini-stack:$commitID
+docker push docker-internal.example.com/gemini/gemini-base:$commitID
+docker push docker-internal.example.com/gemini/gemini-stack-base:$commitID
 docker push docker-internal.example.com/gemini/gemini-stack:$commitID
+docker tag gemini/gemini-platform-base:$commitID docker-internal.example.com/gemini/gemini-platform-base:$commitID
 docker tag gemini/gemini-platform:$commitID docker-internal.example.com/gemini/gemini-platform:$commitID
+docker push docker-internal.example.com/gemini/gemini-platform-base:$commitID
 docker push docker-internal.example.com/gemini/gemini-platform:$commitID
 fi
