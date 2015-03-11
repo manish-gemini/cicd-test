@@ -122,7 +122,7 @@ docker build -t gemini/gemini-base:$commitID -f Dockerfiles/GeminiBase .
 echo "Build Stack Base Image..."
 docker build -t gemini/gemini-stack-base:$commitID -f Dockerfiles/GeminiStackBase .
 echo "Build Stack Image..."
-docker build -t gemini/gemini-stack:$commitID -f Dockerfiles/GeminiStack .
+docker build -t gemini/gemini-stack:$commitID -f Dockerfiles/GeminiStackcpy .
 
 #PLATFORM CODE :
 
@@ -135,7 +135,7 @@ docker build -t gemini/gemini-base:$commitID -f Dockerfiles/GeminiBase .
 echo "Gemini Platform Base Image..."
 docker build -t gemini/gemini-platform-base:$commitID -f Dockerfiles/GeminiPlatformBase .
 echo "Gemini Platform Image..."
-docker build -t gemini/gemini-platform:$commitID -f Dockerfiles/GeminiPlatform .
+docker build -t gemini/gemini-platform:$commitID -f Dockerfiles/GeminiPlatformcpy .
 
 if [ $buildType -eq 1 ] || [ $buildType -eq 3 ]
 then
@@ -146,14 +146,14 @@ fi
 
 if [ $buildType -eq 2 ] || [ $buildType -eq 3 ]
 then
-docker tag gemini/gemini-base:$commitID docker-internal.example.com/gemini/gemini-base:$commitID
-docker tag gemini/gemini-stack-base:$commitID docker-internal.example.com/gemini/gemini-stack-base:$commitID
-docker tag gemini/gemini-stack:$commitID docker-internal.example.com/gemini/gemini-stack:$commitID
+docker tag -f gemini/gemini-base:$commitID docker-internal.example.com/gemini/gemini-base:$commitID
+docker tag -f gemini/gemini-stack-base:$commitID docker-internal.example.com/gemini/gemini-stack-base:$commitID
+docker tag -f gemini/gemini-stack:$commitID docker-internal.example.com/gemini/gemini-stack:$commitID
 docker push docker-internal.example.com/gemini/gemini-base:$commitID
 docker push docker-internal.example.com/gemini/gemini-stack-base:$commitID
 docker push docker-internal.example.com/gemini/gemini-stack:$commitID
-docker tag gemini/gemini-platform-base:$commitID docker-internal.example.com/gemini/gemini-platform-base:$commitID
-docker tag gemini/gemini-platform:$commitID docker-internal.example.com/gemini/gemini-platform:$commitID
-docker push docker-internal.example.com/gemini/gemini-platform-base:$commitID
+docker tag -f gemini/gemini-platform-base:$commitID docker-internal.example.com/gemini/gemini-platform-base:$commitID
+docker tag -f gemini/gemini-platform:$commitID docker-internal.example.com/gemini/gemini-platform:$commitID
+docker push  docker-internal.example.com/gemini/gemini-platform-base:$commitID
 docker push docker-internal.example.com/gemini/gemini-platform:$commitID
 fi

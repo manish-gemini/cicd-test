@@ -3,7 +3,7 @@ echo "...."
 echo "Enter the deploy type:"
 echo "Deploy from Local image = 1"
 echo "Deploy from internal registry = 2"
-read $deployType
+read deployType
 
 if [ $deployType -eq 2 ]
 then
