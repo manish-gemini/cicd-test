@@ -143,20 +143,20 @@ fi
 #cp -f Dockerfile_BuildFromBase Dockerfile
 #docker build -t gemini/gemini-stack:$commitID .
 #BUILD THE BASE IMAGE
-#echo "Build Base Image..."
-#docker build -t gemini/gemini-base:$commitID -f Dockerfiles/GeminiBase .
-#echo "Build Stack Base Image..."
-#docker build -t gemini/gemini-stack-base:$commitID -f Dockerfiles/GeminiStackBase .
+echo "Build Base Image..."
+docker build -t gemini/gemini-base:$commitID -f Dockerfiles/GeminiBase .
+echo "Build Stack Base Image..."
+docker build -t gemini/gemini-stack-base:$commitID -f Dockerfiles/GeminiStackBase .
 
 echo "pull gemini-base image from the internal repo"
-docker pull docker-internal.example.com/gemini/gemini-base
+#docker pull docker-internal.example.com/gemini/gemini-base
 echo "tag as gemini/gemini-base..."
-docker tag -f docker-internal.example.com/gemini/gemini-base gemini/gemini-base
+#docker tag -f docker-internal.example.com/gemini/gemini-base gemini/gemini-base
 
-echo "pull gemini-stack image from the internal repo"
-docker pull docker-internal.example.com/gemini/gemini-stack-base
-echo "tag as gemini/gemini-stack..."
-docker tag -f docker-internal.example.com/gemini/gemini-stack-base gemini/gemini-stack-base
+#echo "pull gemini-stack image from the internal repo"
+#docker pull docker-internal.example.com/gemini/gemini-stack-base
+#echo "tag as gemini/gemini-stack..."
+#docker tag -f docker-internal.example.com/gemini/gemini-stack-base gemini/gemini-stack-base
 
 echo "Build Stack Image..."
 docker build -t gemini/gemini-stack:$commitID -f Dockerfiles/GeminiStackcpy .
@@ -167,15 +167,15 @@ cd $dirToCheckOut/Gemini-poc-mgnt
 #cp -f Dockerfile_BuildFromBase Dockerfile
 #docker build -t gemini/gemini-platform:$commitID .
 
-#echo "Gemini Base Image..."
-#docker build -t gemini/gemini-base:$commitID -f Dockerfiles/GeminiBase .
-#echo "Gemini Platform Base Image..."
-#docker build -t gemini/gemini-platform-base:$commitID -f Dockerfiles/GeminiPlatformBase .
+echo "Gemini Base Image..."
+docker build -t gemini/gemini-base:$commitID -f Dockerfiles/GeminiBase .
+echo "Gemini Platform Base Image..."
+docker build -t gemini/gemini-platform-base:$commitID -f Dockerfiles/GeminiPlatformBase .
 
-echo "pull gemini-stack image from the internal repo"
-docker pull docker-internal.example.com/gemini/gemini-platform-base
-echo "tag as gemini/gemini-stack..."
-docker tag -f docker-internal.example.com/gemini/gemini-platform-base gemini/gemini-platform-base
+#echo "pull gemini-stack image from the internal repo"
+#docker pull docker-internal.example.com/gemini/gemini-platform-base
+#echo "tag as gemini/gemini-stack..."
+#docker tag -f docker-internal.example.com/gemini/gemini-platform-base gemini/gemini-platform-base
 
 
 echo "Gemini Platform Image..."
