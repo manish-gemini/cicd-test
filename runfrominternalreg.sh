@@ -20,15 +20,6 @@ echo "press 2 to retain the older entries.."
 read cleanSetup
 echo $cleanSetup
 
-if [ $cleanSetup -eq 1 ]
-then
-	rm -rf "/RabbitMq/data/log"
-	rm -rf "/RabbitMq/data/mnesia"
-	rm -rf "/var/dbstore"
-
-fi
-mkdir -p "/RabbitMq/data/log"
-mkdir -p "/RabbitMq/data/mnesia"
 #mkdir -p "/var/lib/gemini"
 mkdir -p "/var/dbstore"
 
@@ -75,9 +66,9 @@ then
 	echo "pull gemini platform..."
 	docker pull docker-internal.example.com/gemini/gemini-platform
 	echo "gemini stack run..."
-	docker run -t --name gemini-stack -p 8888:8888 --link rabbitmq:rmq -e GEMINI_PLATFORM_WS_HOST=$hostip -e GEMINI_PLATFORM_WS_PORT=9999 -d docker-internal.example.com/gemini/gemini-stack
+	docker run -t --name gemini-stack -p 8888:8888 -e GEMINI_PLATFORM_WS_HOST=$hostip -e GEMINI_PLATFORM_WS_PORT=9999 -d docker-internal.example.com/gemini/gemini-stack
 	echo "platform run ..."
-	docker run -t --name gemini-platform -p 9999:8888 -p 80:3000 -e GEMINI_STACK_WS_HOST=$hostip -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode --link db:db --link rabbitmq:rmq -d docker-internal.example.com/gemini/gemini-platform
+	docker run -t --name gemini-platform -p 9999:8888 -p 80:3000 -e GEMINI_STACK_WS_HOST=$hostip -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode --link db:db -d docker-internal.example.com/gemini/gemini-platform
 	echo "end ..."
 
 elif [ $deployType -eq 1 ]
