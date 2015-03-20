@@ -159,7 +159,7 @@ echo "tag as gemini/gemini-base..."
 #docker tag -f docker-internal.example.com/gemini/gemini-stack-base gemini/gemini-stack-base
 
 echo "Build Stack Image..."
-docker build -t gemini/gemini-stack:$commitID -f Dockerfiles/GeminiStackcpy .
+docker build -t gemini/gemini-stack:$commitID -f Dockerfiles/GeminiStack .
 
 #PLATFORM CODE :
 

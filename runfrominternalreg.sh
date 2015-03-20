@@ -20,6 +20,11 @@ echo "press 2 to retain the older entries.."
 read cleanSetup
 echo $cleanSetup
 
+if [ $cleanSetup -eq 1 ]
+then
+	rm -rf "/var/dbstore"
+fi
+
 #mkdir -p "/var/lib/gemini"
 mkdir -p "/var/dbstore"
 
@@ -28,9 +33,9 @@ read onPremMode
 echo $onPremMode
 if [ $onPremMode -eq 1 ]
 then
-onPremMode=true
+	onPremMode=true
 else
-onPremMode=false
+	onPremMode=false
 fi
 echo $onPremMode
 
@@ -39,7 +44,7 @@ read hostip
 echo $hostip
 if [ -z $hostip ]
 then
-printf "HostIp is Mandatory .. exiting....\n"
+	printf "HostIp is Mandatory .. exiting....\n"
 exit
 fi
 
@@ -74,7 +79,7 @@ then
 elif [ $deployType -eq 1 ]
 then
 	echo "gemini stack run..."
-	docker run -t --name gemini-stack -p 8888:8888 -e GEMINI_PLATFORM_WS_HOST=$hostip -e GEMINI_PLATFORM_WS_PORT=9999 -d gemini/gemini-stack
+	docker run -t --name gemini-stack -p 8888:8888 -e GEMINI_PLATFORM_WS_HOST=$hostip -e GEMINI_PLATFORM_WS_PORT=9999 -e GEMINI_STACK_IPANEMA=1 -d gemini/gemini-stack
 	echo "platform run ..."
 	docker run -t --name gemini-platform -p 9999:8888 -p 80:3000 -e GEMINI_STACK_WS_HOST=$hostip -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode --link db:db -d gemini/gemini-platform
 	echo "end ..."
