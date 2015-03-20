@@ -71,7 +71,7 @@ then
 	echo "pull gemini platform..."
 	docker pull docker-internal.example.com/gemini/gemini-platform
 	echo "gemini stack run..."
-	docker run -t --name gemini-stack -p 8888:8888 -e GEMINI_PLATFORM_WS_HOST=$hostip -e GEMINI_PLATFORM_WS_PORT=9999 -d docker-internal.example.com/gemini/gemini-stack
+	docker run -t --name gemini-stack -p 8888:8888 -e GEMINI_PLATFORM_WS_HOST=$hostip -e GEMINI_STACK_IPANEMA=1 -e GEMINI_PLATFORM_WS_PORT=9999 -d docker-internal.example.com/gemini/gemini-stack
 	echo "platform run ..."
 	docker run -t --name gemini-platform -p 9999:8888 -p 80:3000 -e GEMINI_STACK_WS_HOST=$hostip -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode --link db:db -d docker-internal.example.com/gemini/gemini-platform
 	echo "end ..."
@@ -89,7 +89,7 @@ else
 	echo "Enter platform dir : example : /opt/mydevDir/ :"
 	read platformDir
 	echo "gemini stack DEV MODE run..."
-	docker run -t --name gemini-stack -p 8888:8888 -e GEMINI_PLATFORM_WS_HOST=$hostip -e GEMINI_PLATFORM_WS_PORT=9999 -v $stackDir/Gemini-poc-stack:/home/gemini/gemini-stack -d gemini/gemini-stack
+	docker run -t --name gemini-stack -p 8888:8888 -e GEMINI_PLATFORM_WS_HOST=$hostip -e GEMINI_STACK_IPANEMA=1 -e GEMINI_PLATFORM_WS_PORT=9999 -v $stackDir/Gemini-poc-stack:/home/gemini/gemini-stack -d gemini/gemini-stack
 	echo "platform run ..."
 	docker run -t --name gemini-platform -p 9999:8888 -p 80:3000 -e GEMINI_STACK_WS_HOST=$hostip -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode -v $platformDir/Gemini-poc-mgnt:/home/gemini/gemini-platform --link db:db -d gemini/gemini-platform
 	echo "end ..."
