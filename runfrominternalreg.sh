@@ -1,4 +1,4 @@
-#!bin/bash
+#!/bin/bash
 echo "...."
 echo "Enter the deploy type:"
 echo "Deploy from Local image = 1"
