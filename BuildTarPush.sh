@@ -1,4 +1,4 @@
-#!bin/bash
+#!/bin/bash
 #  Copyright 2015 Gemini Systems. All rights reserved
 
 #####AUOMATE tar and upload.,
@@ -138,6 +138,10 @@ then
         echo "File gemini.config.ini does not exist! Please copy the file and re-try"
         exit 1
 fi
+
+
+# If any docker build fails bail out
+set -o errexit
 
 #STEP 5: BUILD THE STACK CODE.
 #cp -f Dockerfile_BuildFromBase Dockerfile
