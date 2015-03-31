@@ -1,0 +1,107 @@
+#!/bin/bash
+GithubUser=$USER
+GEMINI_HOME=$HOME/Gemini-sys
+GEMINI_REPOS="Gemini-poc-mgnt Gemini-poc-stack cicd docs Gemini-CLI"
+#Override the above variables in your personal config in following order
+#Current directory
+#Home directory
+if [ -f  ./.g2config ]
+then
+  source ./.g2config
+elif [ -f  $HOME/.g2config ]
+then
+  source $HOME/.g2config
+fi
+
+if [ "$1" == "fork" ]
+then
+   for repo in $GEMINI_REPOS
+   do
+      echo ""
+      #curl -i -u $GithubUser  https://api.github.com/users/defunkt
+   done
+elif [ "$1" == "clone" ]
+then 
+   echo "Verifying Gemini Home directory $GEMINI_HOME"
+   mkdir -p $GEMINI_HOME
+   git config credential.helper "cache"
+   git config user.name "$GithubUser"
+   for repo in $GEMINI_REPOS
+   do
+      cd $GEMINI_HOME
+      #curl -i -u $GithubUser  https://api.github.com/users/defunkt
+      git clone https://${GithubUser}@github.com/${GithubUser}/${repo}.git
+      cd $GEMINI_HOME/$repo
+      git remote add upstream http://${GithubUser}@github.com/Gemini-sys/${repo}
+   done
+   cd $GEMINI_HOME
+elif [ "$1" == "checkout" ]
+then 
+   if [ "$2" == "" ] 
+   then 
+      BRANCH=master
+   else
+      BRANCH=$2
+   fi
+   for repo in $GEMINI_REPOS
+   do
+      cd $GEMINI_HOME/$repo
+      git checkout -b $BRANCH
+   done
+   cd $GEMINI_HOME
+elif [ "$1" == "fetch" ]
+then 
+   for repo in $GEMINI_REPOS
+   do
+      cd $GEMINI_HOME/$repo
+      git fetch upstream
+   done
+   cd $GEMINI_HOME
+elif [ "$1" == "pull" ]
+then 
+   for repo in $GEMINI_REPOS
+   do
+      cd $GEMINI_HOME/$repo
+      git pull 
+   done
+   cd $GEMINI_HOME
+elif [ "$1" == "rebase" ]
+then 
+   for repo in $GEMINI_REPOS
+   do
+      cd $GEMINI_HOME/$repo
+      git rebase upstream/master
+   done
+   cd $GEMINI_HOME
+elif [ "$1" == "commit" ]
+then 
+   for repo in $GEMINI_REPOS
+   do
+      cd $GEMINI_HOME/$repo
+      git commit -m "$2"
+   done
+   cd $GEMINI_HOME
+elif [ "$1" == "push" ]
+then 
+   if [ "$2" == "" ] 
+   then 
+      BRANCH=master
+   else
+      BRANCH=$2
+   fi
+   for repo in $GEMINI_REPOS
+   do
+      cd $GEMINI_HOME/$repo
+      git push -f origin $BRANCH
+   done
+   cd $GEMINI_HOME
+elif [ "$1" == "reset" ]
+then 
+   for repo in $GEMINI_REPOS
+   do
+      cd $GEMINI_HOME/$repo
+      git reset --hard HEAD
+      git pull 
+   done
+   cd $GEMINI_HOME
+fi
