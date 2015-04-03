@@ -11,7 +11,7 @@ if [ $deployType -eq 2 ]
 then
 #Docker LOGIN
 ## DOCKER LOGIN:::
-docker login https://docker-internal.example.com
+docker login https://secure-registry.gsintlab.com
 fi
 
 echo "Do you want to clean up the setup (removes db, Rabbitmq Data etc.,) ?"
@@ -63,19 +63,19 @@ if [ $deployType -eq 2 ]
 then
 	#sleep 500
 	echo "pull gemini base..."
-	docker pull docker-internal.example.com/gemini/gemini-base
+	docker pull secure-registry.gsintlab.com/gemini/gemini-base
 	echo "pull gemini stack base..."
-	docker pull docker-internal.example.com/gemini/gemini-stack-base
+	docker pull secure-registry.gsintlab.com/gemini/gemini-stack-base
 	echo "pull gemini stack ..."
-	docker pull docker-internal.example.com/gemini/gemini-stack
+	docker pull secure-registry.gsintlab.com/gemini/gemini-stack
 	echo "pull gemini platform base..."
-	docker pull docker-internal.example.com/gemini/gemini-platform-base
+	docker pull secure-registry.gsintlab.com/gemini/gemini-platform-base
 	echo "pull gemini platform..."
-	docker pull docker-internal.example.com/gemini/gemini-platform
+	docker pull secure-registry.gsintlab.com/gemini/gemini-platform
 	echo "gemini stack run..."
-	docker run -t --name gemini-stack -p 8888:8888 -e GEMINI_PLATFORM_WS_HOST=$hostip -e GEMINI_STACK_IPANEMA=1 -e GEMINI_PLATFORM_WS_PORT=9999 -d docker-internal.example.com/gemini/gemini-stack
+	docker run -t --name gemini-stack -p 8888:8888 -e GEMINI_PLATFORM_WS_HOST=$hostip -e GEMINI_STACK_IPANEMA=1 -e GEMINI_PLATFORM_WS_PORT=9999 -d secure-registry.gsintlab.com/gemini/gemini-stack
 	echo "platform run ..."
-	docker run -t --name gemini-platform -p 9999:8888 -p 80:3000 -e GEMINI_STACK_WS_HOST=$hostip -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode --link db:db -d docker-internal.example.com/gemini/gemini-platform
+	docker run -t --name gemini-platform -p 9999:8888 -p 80:3000 -e GEMINI_STACK_WS_HOST=$hostip -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode --link db:db -d secure-registry.gsintlab.com/gemini/gemini-platform
 	echo "end ..."
 
 elif [ $deployType -eq 1 ]
