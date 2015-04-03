@@ -1,0 +1,5 @@
+[gemrepo]
+name=gemini Repository
+baseurl=http://repos2.gsintlab.com/repos/
+enabled=1
+gpgcheck=0
