@@ -1,8 +1,8 @@
 #/bin/bash
 yum install git -y
 yum install rsync -y
-rm -rf /opt/encoding/Gemini-poc-stack.git
-rm -rf /opt/encoding/Gemini-poc-mgnt.git
+rm -rf /opt/encoding/Gemini-poc-stack
+rm -rf /opt/encoding/Gemini-poc-mgnt
 rm -rf /opt/encrypted
 mkdir /opt/encrypted
 if [ ! -d /opt/encoding ]; then
