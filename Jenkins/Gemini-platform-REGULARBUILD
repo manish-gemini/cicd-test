@@ -1,0 +1,23 @@
+Gemini-platform-REGULARBUILD
+============================
+
+cd $WORKSPACE
+
+docker login -u gemini -e admin@gemini-systems.net -p dogreat12 https://secure-registry.gsintlab.com
+
+/usr/local/rubyencoder/bin/rubyencoder  --ruby 2.1.0 --ruby 2.2.0 -r "$WORKSPACE/*.rb"
+
+cp -r /usr/local/rubyencoder/rgloader $WORKSPACE
+
+
+docker pull secure-registry.gsintlab.com/gemini/gemini-base
+docker pull secure-registry.gsintlab.com/gemini/gemini-platform-base
+
+docker tag -f secure-registry.gsintlab.com/gemini/gemini-base gemini/gemini-base 
+docker tag -f secure-registry.gsintlab.com/gemini/gemini-platform-base gemini/gemini-platform-base
+
+docker build -t gemini/gemini-platform -f Dockerfiles/GeminiPlatform .
+
+docker tag -f gemini/gemini-platform  secure-registry.gsintlab.com/gemini/gemini-platform
+
+docker tag -f gemini/gemini-platform  secure-registry.gsintlab.com/gemini/gemini-platform:BUILD-$BUILD_NUMBER
