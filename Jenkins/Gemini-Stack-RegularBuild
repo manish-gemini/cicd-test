@@ -7,21 +7,7 @@ INIT_VECTOR=f7BjRhMOAfuDNafQTSRJmg=" > gemini.config.ini
 
 docker login -u gemini -e admin@gemini-systems.net -p dogreat12 https://secure-registry.gsintlab.com
 
-#python encryption
-
-rm -rf ./replicate-transport-python
-rm -rf ./orchestrate
-rm -rf ./replicate
-rm -rf ./appdb
-
-find . -name "*.pyc" -print -exec rm -f {} \;
-
-python -m compileall .
-
-find . -name "*.py" -print -exec rm -f {} \;
-
-rm -rf ./jcommon
-rm -rf ./p2v_convert
+/var/lib/jenkins/python-encrption.sh
 
 docker pull secure-registry.gsintlab.com/gemini/gemini-base
 docker pull secure-registry.gsintlab.com/gemini/gemini-stack-base
