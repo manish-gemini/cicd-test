@@ -1,5 +1,6 @@
 #!/bin/bash
 
+#use this file to /var/lib/jenkins/python-encryption.sh and make sure your this path in build commands
 #python encryption
 
 rm -rf ./replicate-transport-python
