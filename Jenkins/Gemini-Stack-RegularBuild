@@ -1,0 +1,38 @@
+Gemini-Stack-RegularBuild
+=========================
+
+[config]
+SECRET_KEY=71Z2LBKnRr6EzVsGcvysQYhqAHgEcm1e8oF/xCZdhbw=
+INIT_VECTOR=f7BjRhMOAfuDNafQTSRJmg=" > gemini.config.ini
+
+docker login -u gemini -e admin@gemini-systems.net -p dogreat12 https://secure-registry.gsintlab.com
+
+#python encryption
+
+rm -rf ./replicate-transport-python
+rm -rf ./orchestrate
+rm -rf ./replicate
+rm -rf ./appdb
+
+find . -name "*.pyc" -print -exec rm -f {} \;
+
+python -m compileall .
+
+find . -name "*.py" -print -exec rm -f {} \;
+
+rm -rf ./jcommon
+rm -rf ./p2v_convert
+
+docker pull secure-registry.gsintlab.com/gemini/gemini-base
+docker pull secure-registry.gsintlab.com/gemini/gemini-stack-base
+
+docker tag -f secure-registry.gsintlab.com/gemini/gemini-base gemini/gemini-base
+docker tag -f secure-registry.gsintlab.com/gemini/gemini-stack-base gemini/gemini-stack-base
+
+docker build -t gemini/gemini-stack -f Dockerfiles/GeminiStack .
+
+docker tag -f gemini/gemini-stack secure-registry.gsintlab.com/gemini/gemini-stack
+docker tag -f gemini/gemini-stack secure-registry.gsintlab.com/gemini/gemini-stack:BUILD-$BUILD_NUMBER
+
+docker push secure-registry.gsintlab.com/gemini/gemini-stack
+docker push secure-registry.gsintlab.com/gemini/gemini-stack:BUILD-$BUILD_NUMBER
