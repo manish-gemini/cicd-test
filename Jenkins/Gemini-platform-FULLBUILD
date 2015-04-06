@@ -1,0 +1,32 @@
+Gemini-platform-FULLBUILD
+=========================
+
+cd $WORKSPACE
+
+#Ruby encoding.
+
+/usr/local/rubyencoder/bin/rubyencoder  --ruby 2.1.0 --ruby 2.2.0 -r "$WORKSPACE/*.rb"
+
+cp -r /usr/local/rubyencoder/rgloader $WORKSPACE
+
+docker login -u gemini -e admin@gemini-systems.net -p dogreat12 https://secure-registry.gsintlab.com
+
+docker build -t gemini/gemini-base -f Dockerfiles/GeminiBase .
+docker build -t gemini/gemini-platform-base -f Dockerfiles/GeminiPlatformBase .
+docker build -t gemini/gemini-platform -f Dockerfiles/GeminiPlatform .
+
+docker tag -f gemini/gemini-base  secure-registry.gsintlab.com/gemini/gemini-base
+docker tag -f gemini/gemini-platform-base  secure-registry.gsintlab.com/gemini/gemini-platform-base
+docker tag -f gemini/gemini-platform  secure-registry.gsintlab.com/gemini/gemini-platform
+
+docker tag -f gemini/gemini-base  secure-registry.gsintlab.com/gemini/gemini-base:BUILD-$BUILD_NUMBER
+docker tag -f gemini/gemini-platform-base  secure-registry.gsintlab.com/gemini/gemini-platform-base:BUILD-$BUILD_NUMBER
+docker tag -f gemini/gemini-platform  secure-registry.gsintlab.com/gemini/gemini-platform:BUILD-$BUILD_NUMBER
+
+
+docker push secure-registry.gsintlab.com/gemini/gemini-base
+docker push secure-registry.gsintlab.com/gemini/gemini-stack-base
+docker push secure-registry.gsintlab.com/gemini/gemini-platform:BUILD-$BUILD_NUMBER
+docker push secure-registry.gsintlab.com/gemini/gemini-platform
+
+
