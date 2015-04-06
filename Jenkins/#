@@ -1,4 +1,0 @@
-#!/bin/bash
-#make sure you have include this file in /var/lib/jenkins and updated path in jenkins command line.
-/usr/local/rubyencoder/bin/rubyencoder --ruby 2.1.0 --ruby 2.2.0 -r '*.rb'
-cp -r /usr/local/rubyencoder/rgloader .
