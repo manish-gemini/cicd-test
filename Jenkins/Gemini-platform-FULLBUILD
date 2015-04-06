@@ -5,9 +5,7 @@ cd $WORKSPACE
 
 #Ruby encoding.
 
-/usr/local/rubyencoder/bin/rubyencoder  --ruby 2.1.0 --ruby 2.2.0 -r "$WORKSPACE/*.rb"
-
-cp -r /usr/local/rubyencoder/rgloader $WORKSPACE
+/var/lib/jenkins/ruby_encryption.sh
 
 docker login -u gemini -e admin@gemini-systems.net -p dogreat12 https://secure-registry.gsintlab.com
 
