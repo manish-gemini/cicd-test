@@ -4,6 +4,8 @@ echo "Enter the deploy type:"
 echo "Deploy from Local image = 1"
 echo "Deploy from internal registry = 2"
 echo "Dev Mode with Volume Mount Option = 3"
+echo "Deploy from a insecure registry = 4"
+
 read deployType
 echo $deployType
 
@@ -12,6 +14,21 @@ then
 #Docker LOGIN
 ## DOCKER LOGIN:::
 docker login https://secure-registry.gsintlab.com
+fi
+
+if [ $deployType -eq 4 ]
+then
+ echo "Enter the Insecure Registry Access URL : \n Example : 209.205.208.111:5000"
+ read insecureRegistry
+ echo $insecureRegistry
+
+ if [ -z $insecureRegistry ]
+ then
+	echo "Specify a valid Insecure Registry ! Exiting..."
+	exit
+ fi
+ echo "[Warning] Ensure that you have started the docker service in the host machine with --insecure-registry option , else deploy will fail"
+
 fi
 
 echo "Do you want to clean up the setup (removes db, Rabbitmq Data etc.,) ?"
@@ -84,6 +101,13 @@ then
 	docker run -t --name gemini-stack -p 8888:8888 -e GEMINI_PLATFORM_WS_HOST=$hostip -e GEMINI_PLATFORM_WS_PORT=9999 -e GEMINI_STACK_IPANEMA=1 -d gemini/gemini-stack
 	echo "platform run ..."
 	docker run -t --name gemini-platform -p 9999:8888 -p 80:3000 -e GEMINI_STACK_WS_HOST=$hostip -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode --link db:db -d gemini/gemini-platform
+	echo "end ..."
+elif [ $deployType -eq 4 ]
+then
+	echo "gemini stack run..."
+	docker run -t --name gemini-stack -p 8888:8888 -e GEMINI_PLATFORM_WS_HOST=$hostip -e GEMINI_PLATFORM_WS_PORT=9999 -e GEMINI_STACK_IPANEMA=1 -d $insecureRegistry/gemini/gemini-stack
+	echo "platform run ..."
+	docker run -t --name gemini-platform -p 9999:8888 -p 80:3000 -e GEMINI_STACK_WS_HOST=$hostip -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode --link db:db -d $insecureRegistry/gemini/gemini-platform
 	echo "end ..."
 else
 	echo "Enter stack dir : example : /opt/mydevdir/ :"
