@@ -151,6 +151,16 @@ then
 fi
 
 
+#BUILD THE CHEF CONTAINER
+
+echo "Start building Chef Container first...."
+cd ChefContainer
+docker build -t gemini/gemini-chef .
+echo "Chef Container Build Complete..."
+#Completed Building
+
+cd ..
+
 # If any docker build fails bail out
 set -o errexit
 
