@@ -149,6 +149,7 @@ set -o errexit
 #BUILD THE BASE IMAGE
 echo "Build Base Image..."
 cd Dockerfiles
+cp ../gemini.repo .
 docker build -t gemini/gemini-base:$commitID -f GeminiBase .
 echo "Build Stack Base Image..."
 docker build -t gemini/gemini-stack-base:$commitID -f GeminiStackBase .
@@ -170,7 +171,7 @@ tar cf Dockerfiles/GeminiStack.tar -T Dockerfiles/GeminiStack.lst
 cd Dockerfiles
 echo "Build Stack Image..."
 docker build -t gemini/gemini-stack:$commitID -f GeminiStack .
-rm GeminiStack.tar gemini.config.ini
+rm GeminiStack.tar gemini.config.ini gemini.repo
 
 #PLATFORM CODE :
 
@@ -180,11 +181,12 @@ cd $dirToCheckOut/Gemini-poc-mgnt
 
 cd Dockerfiles
 echo "Gemini Base Image..."
+cp ../gemini.repo .
 docker build -t gemini/gemini-base:$commitID -f GeminiBase .
 echo "Gemini Platform Base Image..."
 cp ../Gemfile .
 docker build -t gemini/gemini-platform-base:$commitID -f GeminiPlatformBase .
-rm Gemfile 
+rm Gemfile gemini.repo
 cd ..
 
 #echo "pull gemini-stack image from the internal repo"
