@@ -148,9 +148,11 @@ set -o errexit
 #docker build -t gemini/gemini-stack:$commitID .
 #BUILD THE BASE IMAGE
 echo "Build Base Image..."
-docker build -t gemini/gemini-base:$commitID -f Dockerfiles/GeminiBase .
+cd Dockerfiles
+cp ../gemini.repo .
+docker build -t gemini/gemini-base:$commitID -f GeminiBase .
 echo "Build Stack Base Image..."
-docker build -t gemini/gemini-stack-base:$commitID -f Dockerfiles/GeminiStackBase .
+docker build -t gemini/gemini-stack-base:$commitID -f GeminiStackBase .
 
 echo "pull gemini-base image from the internal repo"
 #docker pull docker-internal.example.com/gemini/gemini-base
@@ -162,8 +164,14 @@ echo "tag as gemini/gemini-base..."
 #echo "tag as gemini/gemini-stack..."
 #docker tag -f docker-internal.example.com/gemini/gemini-stack-base gemini/gemini-stack-base
 
+cd ..
+echo "Build Tar file for GeminiStack ..."
+cp gemini.config.ini Dockerfiles/
+tar cf Dockerfiles/GeminiStack.tar -T Dockerfiles/GeminiStack.lst
+cd Dockerfiles
 echo "Build Stack Image..."
-docker build -t gemini/gemini-stack:$commitID -f Dockerfiles/GeminiStack .
+docker build -t gemini/gemini-stack:$commitID -f GeminiStack .
+rm GeminiStack.tar gemini.config.ini gemini.repo
 
 #PLATFORM CODE :
 
@@ -171,10 +179,15 @@ cd $dirToCheckOut/Gemini-poc-mgnt
 #cp -f Dockerfile_BuildFromBase Dockerfile
 #docker build -t gemini/gemini-platform:$commitID .
 
+cd Dockerfiles
 echo "Gemini Base Image..."
-docker build -t gemini/gemini-base:$commitID -f Dockerfiles/GeminiBase .
+cp ../gemini.repo .
+docker build -t gemini/gemini-base:$commitID -f GeminiBase .
 echo "Gemini Platform Base Image..."
-docker build -t gemini/gemini-platform-base:$commitID -f Dockerfiles/GeminiPlatformBase .
+cp ../Gemfile .
+docker build -t gemini/gemini-platform-base:$commitID -f GeminiPlatformBase .
+rm Gemfile gemini.repo
+cd ..
 
 #echo "pull gemini-stack image from the internal repo"
 #docker pull docker-internal.example.com/gemini/gemini-platform-base
