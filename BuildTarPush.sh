@@ -1,22 +1,25 @@
 #!/bin/bash
 #  Copyright 2015 Gemini Systems. All rights reserved
 
-#####AUOMATE tar and upload.,
+#####AUTOMATE tar and upload.,
 
+trap times EXIT
 
 echo "Enter the build type:"
 echo "Build a Tar file = 1"
 echo "Build and push to internal Reg = 2"
 echo "Build both Tar and push to internal Reg = 3"
 echo "Build Test = 4"
-read buildType
+
+read -p "Default(4):" buildType
+buildType=${buildType:-4}
 echo $buildType
 
 if [ $buildType -eq 2 ] || [ $buildType -eq 3 ]
 then
 	## DOCKER LOGIN:::
 	echo "Login to the Docker Registry...."
-	docker login https://docker-internal.example.com
+	docker login https://secure-registry.gsintlab.com
 fi
 sourceType=1
 if [ $buildType -eq 4 ]
@@ -24,7 +27,8 @@ then
 	echo "Enter the Source type for build :"
 	echo "Clone from Repository =  1"
 	echo "Build from the Local Directory = 2"
-	read sourceType
+	read -p "Default(2):" sourceType
+        sourceType=${sourceType:-2}
 	echo $sourceType
 fi
 
@@ -32,8 +36,9 @@ fi
 if [ $sourceType -eq 2 ]
 then
 	echo "Enter the directory where Gemini-poc-mgnt and Gemini-poc-stack exist :"
-	echo "Example : /opt/Mydir/"
-	read dirToCheckOut
+	echo "Example: /opt/Mydir/"
+	read -p "Default(/home/gemini/):" dirToCheckOut
+        dirToCheckOut=${dirToCheckOut:-"/home/gemini"}
 	echo $dirToCheckOut
 	if [ ! -d $dirToCheckOut ]
 	then
@@ -116,13 +121,19 @@ else
 	fi
 fi
 echo -n "Enter the SECRET_KEY:"
-read secretkey
+read -p "Default(71Z2LBKnRr6EzVsGcvysQYhqAHgEcm1e8oF/xCZdhbw=):" secretkey
+secretkey=${secretkey:-"=71Z2LBKnRr6EzVsGcvysQYhqAHgEcm1e8oF/xCZdhbw="}
 echo $secretkey
 
 echo -n "Enter the INIT_VECTOR:"
-read initVector
+read -p "Default(f7BjRhMOAfuDNafQTSRJmg=):" initVector
+initVector=${initVector:-"f7BjRhMOAfuDNafQTSRJmg="}
 echo $initVector
 
+echo  "Enter 1 for Quick Build Gemini-stack & Gemini-platform or 2 for to build all "
+read -p "Default(1):" quickBuild
+quickBuild=${quickBuild:-1}
+echo $initVector
 
 #STEP 3: NAVIGATE TO THE DIR WHERE Dockerfile EXIST
 cd $dirToCheckOut
@@ -144,25 +155,16 @@ fi
 set -o errexit
 
 #STEP 5: BUILD THE STACK CODE.
-#cp -f Dockerfile_BuildFromBase Dockerfile
-#docker build -t gemini/gemini-stack:$commitID .
 #BUILD THE BASE IMAGE
-echo "Build Base Image..."
 cd Dockerfiles
 cp ../gemini.repo .
-docker build -t gemini/gemini-base:$commitID -f GeminiBase .
-echo "Build Stack Base Image..."
-docker build -t gemini/gemini-stack-base:$commitID -f GeminiStackBase .
-
-echo "pull gemini-base image from the internal repo"
-#docker pull docker-internal.example.com/gemini/gemini-base
-echo "tag as gemini/gemini-base..."
-#docker tag -f docker-internal.example.com/gemini/gemini-base gemini/gemini-base
-
-#echo "pull gemini-stack image from the internal repo"
-#docker pull docker-internal.example.com/gemini/gemini-stack-base
-#echo "tag as gemini/gemini-stack..."
-#docker tag -f docker-internal.example.com/gemini/gemini-stack-base gemini/gemini-stack-base
+if [ $quickBuild != 1 ]
+then
+  echo "Build Base Image..."
+  docker build -t gemini/gemini-base:$commitID -f GeminiBase .
+  echo "Build Stack Base Image..."
+  docker build -t gemini/gemini-stack-base:$commitID -f GeminiStackBase .
+fi 
 
 cd ..
 echo "Build Tar file for GeminiStack ..."
@@ -176,16 +178,17 @@ rm GeminiStack.tar gemini.config.ini gemini.repo
 #PLATFORM CODE :
 
 cd $dirToCheckOut/Gemini-poc-mgnt
-#cp -f Dockerfile_BuildFromBase Dockerfile
-#docker build -t gemini/gemini-platform:$commitID .
 
 cd Dockerfiles
-echo "Gemini Base Image..."
 cp ../gemini.repo .
-docker build -t gemini/gemini-base:$commitID -f GeminiBase .
-echo "Gemini Platform Base Image..."
 cp ../Gemfile .
-docker build -t gemini/gemini-platform-base:$commitID -f GeminiPlatformBase .
+if [ $quickBuild != 1 ]
+then
+  # echo "Gemini Base Image..."
+  # docker build -t gemini/gemini-base:$commitID -f GeminiBase .
+  echo "Gemini Platform Base Image..."
+  docker build -t gemini/gemini-platform-base:$commitID -f GeminiPlatformBase .
+fi
 rm Gemfile gemini.repo
 cd ..
 
@@ -207,14 +210,8 @@ fi
 
 if [ $buildType -eq 2 ] || [ $buildType -eq 3 ]
 then
-	#docker tag -f gemini/gemini-base:$commitID docker-internal.example.com/gemini/gemini-base:$commitID
-	#docker tag -f gemini/gemini-stack-base:$commitID docker-internal.example.com/gemini/gemini-stack-base:$commitID
-	docker tag -f gemini/gemini-stack:$commitID docker-internal.example.com/gemini/gemini-stack:$commitID
-	#docker push docker-internal.example.com/gemini/gemini-base:$commitID
-	#docker push docker-internal.example.com/gemini/gemini-stack-base:$commitID
-	docker push docker-internal.example.com/gemini/gemini-stack:$commitID
-	#docker tag -f gemini/gemini-platform-base:$commitID docker-internal.example.com/gemini/gemini-platform-base:$commitID
-	docker tag -f gemini/gemini-platform:$commitID docker-internal.example.com/gemini/gemini-platform:$commitID
-	#docker push  docker-internal.example.com/gemini/gemini-platform-base:$commitID
-	docker push docker-internal.example.com/gemini/gemini-platform:$commitID
+	docker tag -f gemini/gemini-stack:$commitID secure-registry.gsintlab.com/gemini/gemini-stack:$commitID
+	docker push secure-registry.gsintlab.com/gemini/gemini-stack:$commitID
+	docker tag -f gemini/gemini-platform:$commitID secure-registry.gsintlab.com/gemini-platform:$commitID
+	docker push secure-registry.gsintlab.com/gemini/gemini-platform:$commitID
 fi
