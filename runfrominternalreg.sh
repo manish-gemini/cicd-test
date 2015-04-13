@@ -71,7 +71,7 @@ fi
 echo "continue to deploy..."
 
 
-docker rm -f gemini-stack gemini-platform db rabbitmq 
+docker rm -f gemini-stack gemini-platform db gemini-chef
 
 echo "db run .."
 docker run --name db -e MYSQL_ROOT_PASSWORD=admin -e MYSQL_USER=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -v /var/dbstore:/var/lib/mysql -d mysql
