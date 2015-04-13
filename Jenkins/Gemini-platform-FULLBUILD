@@ -17,8 +17,6 @@ docker tag -f gemini/gemini-base  secure-registry.gsintlab.com/gemini/gemini-bas
 docker tag -f gemini/gemini-platform-base  secure-registry.gsintlab.com/gemini/gemini-platform-base
 docker tag -f gemini/gemini-platform  secure-registry.gsintlab.com/gemini/gemini-platform
 
-docker tag -f gemini/gemini-base  secure-registry.gsintlab.com/gemini/gemini-base:BUILD-$BUILD_NUMBER
-docker tag -f gemini/gemini-platform-base  secure-registry.gsintlab.com/gemini/gemini-platform-base:BUILD-$BUILD_NUMBER
 docker tag -f gemini/gemini-platform  secure-registry.gsintlab.com/gemini/gemini-platform:BUILD-$BUILD_NUMBER
 
 
