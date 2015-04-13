@@ -7,7 +7,6 @@ docker login -u gemini -e admin@gemini-systems.net -p dogreat12 https://secure-r
 
 /var/lib/jenkins/ruby_encryption.sh
 
-
 docker pull secure-registry.gsintlab.com/gemini/gemini-base
 docker pull secure-registry.gsintlab.com/gemini/gemini-platform-base
 
@@ -17,5 +16,7 @@ docker tag -f secure-registry.gsintlab.com/gemini/gemini-platform-base gemini/ge
 docker build -t gemini/gemini-platform -f Dockerfiles/GeminiPlatform .
 
 docker tag -f gemini/gemini-platform  secure-registry.gsintlab.com/gemini/gemini-platform
-
 docker tag -f gemini/gemini-platform  secure-registry.gsintlab.com/gemini/gemini-platform:BUILD-$BUILD_NUMBER
+
+docker push secure-registry.gsintlab.com/gemini/gemini-platform
+docker push secure-registry.gsintlab.com/gemini/gemini-platform:BUILD-$BUILD_NUMBER
