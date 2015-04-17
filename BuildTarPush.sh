@@ -130,9 +130,18 @@ read -p "Default(f7BjRhMOAfuDNafQTSRJmg=):" initVector
 initVector=${initVector:-"f7BjRhMOAfuDNafQTSRJmg="}
 echo $initVector
 
+if docker images |grep -a gemini/gemini-stack; then
+	echo "gemini-stack exists.,"
+	quickBuildStack=1
+
+else
+	echo "gemini-stack does not exist"
+	quickBuildStack=2
+fi
+
 echo  "Enter 1 for Quick Build Gemini-stack & Gemini-platform or 2 for to build all "
-read -p "Default(1):" quickBuild
-quickBuild=${quickBuild:-1}
+read -p "Default($quickBuildStack):" quickBuild
+quickBuild=${quickBuild:-$quickBuildStack}
 echo $initVector
 
 #STEP 3: NAVIGATE TO THE DIR WHERE Dockerfile EXIST
@@ -153,13 +162,6 @@ fi
 
 #BUILD THE CHEF CONTAINER
 
-echo "Start building Chef Container first...."
-cd ChefContainer
-docker build -t gemini/gemini-chef .
-echo "Chef Container Build Complete..."
-#Completed Building
-
-cd ..
 
 # If any docker build fails bail out
 set -o errexit
@@ -170,6 +172,14 @@ cd Dockerfiles
 cp ../gemini.repo .
 if [ $quickBuild != 1 ]
 then
+  echo "Start building Chef Container first...."
+  cd ..
+  cd ChefContainer
+  docker build -t gemini/gemini-chef .
+  echo "Chef Container Build Complete..."
+  #Completed Building
+  cd ..
+  cd Dockerfiles
   echo "Build Base Image..."
   docker build -t gemini/gemini-base:$commitID -f GeminiBase .
   echo "Build Stack Base Image..."
