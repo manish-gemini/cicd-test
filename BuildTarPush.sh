@@ -37,8 +37,8 @@ if [ $sourceType -eq 2 ]
 then
 	echo "Enter the directory where Gemini-poc-mgnt and Gemini-poc-stack exist :"
 	echo "Example: /opt/Mydir/"
-	read -p "Default(/home/gemini/):" dirToCheckOut
-        dirToCheckOut=${dirToCheckOut:-"/home/gemini"}
+	read -p "Default(${PWD}):" dirToCheckOut
+        dirToCheckOut=${dirToCheckOut:-${PWD}}
 	echo $dirToCheckOut
 	if [ ! -d $dirToCheckOut ]
 	then
