@@ -1,13 +1,15 @@
 Gemini-Stack-RegularBuild
 =========================
 
+cd $WORKSPACE
+echo "
 [config]
 SECRET_KEY=71Z2LBKnRr6EzVsGcvysQYhqAHgEcm1e8oF/xCZdhbw=
 INIT_VECTOR=f7BjRhMOAfuDNafQTSRJmg=" > gemini.config.ini
 
 docker login -u gemini -e admin@gemini-systems.net -p dogreat12 https://secure-registry.gsintlab.com
 
-/var/lib/jenkins/python-encrption.sh
+#/var/lib/jenkins/python_encryption.sh
 
 docker pull secure-registry.gsintlab.com/gemini/gemini-base
 docker pull secure-registry.gsintlab.com/gemini/gemini-stack-base
@@ -15,10 +17,20 @@ docker pull secure-registry.gsintlab.com/gemini/gemini-stack-base
 docker tag -f secure-registry.gsintlab.com/gemini/gemini-base gemini/gemini-base
 docker tag -f secure-registry.gsintlab.com/gemini/gemini-stack-base gemini/gemini-stack-base
 
-docker build -t gemini/gemini-stack -f Dockerfiles/GeminiStack .
+echo "Build Tar file for GeminiStack ..."
+cp gemini.config.ini Dockerfiles/
+tar cf Dockerfiles/GeminiStack.tar -T Dockerfiles/GeminiStack.lst
+cd Dockerfiles
+echo "Build Stack Image..."
+docker build -t gemini/gemini-stack -f GeminiStack .
+rm GeminiStack.tar gemini.config.ini gemini.repo
+
 
 docker tag -f gemini/gemini-stack secure-registry.gsintlab.com/gemini/gemini-stack
 docker tag -f gemini/gemini-stack secure-registry.gsintlab.com/gemini/gemini-stack:BUILD-$BUILD_NUMBER
 
 docker push secure-registry.gsintlab.com/gemini/gemini-stack
 docker push secure-registry.gsintlab.com/gemini/gemini-stack:BUILD-$BUILD_NUMBER
+
+docker rmi secure-registry.gsintlab.com/gemini/gemini-stack:BUILD-$BUILD_NUMBER
+

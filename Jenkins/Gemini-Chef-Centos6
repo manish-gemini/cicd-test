@@ -1,0 +1,15 @@
+cd $WORKSPACE
+
+docker login -u gemini -e admin@gemini-systems.net -p dogreat12 https://secure-registry.gsintlab.com
+
+cd ./ChefContainer
+
+docker build -t gemini/gemini-chef -f Dockerfile .
+
+docker tag -f gemini/gemini-chef secure-registry.gsintlab.com/gemini/gemini-chef
+docker tag -f gemini/gemini-chef secure-registry.gsintlab.com/gemini/gemini-chef:BUILD-$BUILD_NUMBER
+
+docker push secure-registry.gsintlab.com/gemini/gemini-chef
+docker push secure-registry.gsintlab.com/gemini/gemini-chef:BUILD-$BUILD_NUMBER
+
+docker rmi secure-registry.gsintlab.com/gemini/gemini-chef:BUILD-$BUILD_NUMBER
