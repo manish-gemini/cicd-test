@@ -1,0 +1,21 @@
+#Gemini-Mist
+
+cd $WORKSPACE
+
+docker login -u gemini -e admin@gemini-systems.net -p dogreat12 https://secure-registry.gsintlab.com
+
+cp -Rf /var/lib/jenkins/jobs/dev-mist-cgp/lastSuccessful/archive/run/generated/distributions/executable/run.jar $WORKSPACE/run/
+
+docker pull secure-registry.gsintlab.com/gemini/gemini-base
+
+docker build -t gemini/gemini-mist .
+
+
+
+docker tag -f gemini/gemini-mist secure-registry.gsintlab.com/gemini/gemini-mist
+docker tag -f gemini/gemini-mist secure-registry.gsintlab.com/gemini/gemini-mist:BUILD-$BUILD_NUMBER
+
+docker push secure-registry.gsintlab.com/gemini/gemini-mist
+docker push secure-registry.gsintlab.com/gemini/gemini-mist:BUILD-$BUILD_NUMBER
+
+docker rmi secure-registry.gsintlab.com/gemini/gemini-mist:BUILD-$BUILD_NUMBER
