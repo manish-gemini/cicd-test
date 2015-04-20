@@ -9,6 +9,21 @@ cd $WORKSPACE
 
 docker login -u gemini -e admin@gemini-systems.net -p dogreat12 https://secure-registry.gsintlab.com
 
+#Build number
+
+cd config
+echo "build:
+  version:
+    major: BUILD_VERSION_MIJOR
+    minor: BUILD_VERSION_MINOR
+    patch: BUILD_VERSION_PATCH
+    
+  number: $BUILD_NUMBER
+  type: Pro
+  timestamp: `date +"%Y-%m-%d_%H:%M:%S"`" > build.yml
+  
+cd ..
+
 docker build -t gemini/gemini-base -f Dockerfiles/GeminiBase .
 docker build -t gemini/gemini-platform-base -f Dockerfiles/GeminiPlatformBase .
 docker build -t gemini/gemini-platform -f Dockerfiles/GeminiPlatform .
