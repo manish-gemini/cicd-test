@@ -1,0 +1,37 @@
+
+Login your server which you want rubyencoder.
+
+cd /usr/local/
+
+Download tar file from rubyencoder.com
+
+https://www.rubyencoder.com/profile.html?cm_id=151&action=download&id=7ea050467fba29aee7452d3e680a920c
+
+rubyencoder-2.2-evaluation-linux-i386.tar.gz
+
+tar -zxvf rubyencoder-2.2-evaluation-linux-i386.tar.gz
+mv rubyencoder-2.2-evaluation rubyencoder
+
+./rubyencoder/bin/rubyencoder
+
+You will get license agreement page.. Once completed you will get Registration key.
+
+ex:
+
+Web site:         http://www.rubyencoder.com/
+Registration key: 6385F09177121F260080C680A9E9F7F2
+
+Download the license file and copy it into this directory:
+
+/usr/local/rubyencoder/bin/
+
+
+Go to your https://www.rubyencoder.com/profile.html license page and entry that registration key to get the license files.
+
+Download encode.lic file and move /usr/local/rubyencoder/bin/ folder
+
+Thats it.
+
+example encoder command
+
+/usr/local/rubyencoder/bin/rubyencoder  --ruby 2.1.0 --ruby 2.2.0 -r "/Gemini-poc-mgnt/*.rb" >> /home/rubyencoder.log
