@@ -70,7 +70,7 @@ fi
 
 echo "continue to deploy..."
 
-docker rm -f gemini-stack gemini-platform db gemini-chef
+docker rm -f gemini-stack gemini-platform db gemini-chef gemini-mist
 
 echo "db run .."
 docker run --name db -e MYSQL_ROOT_PASSWORD=admin -e MYSQL_USER=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -v /var/dbstore:/var/lib/mysql -d mysql
@@ -94,6 +94,8 @@ then
 	docker pull secure-registry.gsintlab.com/gemini/gemini-mist
 	echo "Gemini-chef Run..."	
         docker run -it -p 443:443 -v /etc/chef-server/ --privileged --name gemini-chef -h $hostip -d secure-registry.gsintlab.com/gemini/gemini-chef
+        echo "waiting..."
+        sleep 60
 	echo "gemini stack run..."
         docker run -t --name gemini-stack -p 8888:8888 -e CHEF_URL=https://$hostip:443 -e GEMINI_PLATFORM_WS_HOST=$hostip -e GEMINI_STACK_IPANEMA=1 -e GEMINI_PLATFORM_WS_PORT=9999 --volumes-from gemini-chef -d secure-registry.gsintlab.com/gemini/gemini-stack
 	echo "Mist Run"
@@ -106,7 +108,8 @@ elif [ $deployType -eq 1 ]
 then
 	echo "Gemini chef run..."
         docker run -it -p 443:443 -h $hostip -v /etc/chef-server/ --privileged --name gemini-chef -d gemini/gemini-chef
-        sleep 25
+        echo "waiting..."
+        sleep 60
 	echo "gemini stack run..."
 	docker run -t --name gemini-stack -p 8888:8888 -e CHEF_URL=https://$hostip:443 -e GEMINI_PLATFORM_WS_HOST=$hostip -e GEMINI_PLATFORM_WS_PORT=9999 -e GEMINI_STACK_IPANEMA=1 --volumes-from gemini-chef -d gemini/gemini-stack    	
 	echo "gemini Mist Run..."
@@ -117,7 +120,8 @@ then
 elif [ $deployType -eq 4 ]
 then
 	docker run -it -p 443:443 -v /etc/chef-server/ -h $hostip --privileged --name gemini-chef -d $insecureRegistry/gemini/gemini-chef
-	sleep 25
+	echo "waiting..."
+        sleep 60
 	echo "gemini stack run..."
 	docker run -t --name gemini-stack -p 8888:8888 -e GEMINI_PLATFORM_WS_HOST=$hostip -e GEMINI_PLATFORM_WS_PORT=9999 -e GEMINI_STACK_IPANEMA=1 -d $insecureRegistry/gemini/gemini-stack
 	echo "gemini Mist Run..."
@@ -133,7 +137,8 @@ else
 	echo "gemini stack DEV MODE run..."
 
 	docker run -it -p 443:443 -v /etc/chef-server/ -h $hostip --privileged --name gemini-chef -d gemini/gemini-chef
-        sleep 25
+        echo "waiting..."
+        sleep 60
         docker run -t --name gemini-stack -p 8888:8888 -e CHEF_URL=https://$hostip:443 -e GEMINI_PLATFORM_WS_HOST=$hostip -e GEMINI_STACK_IPANEMA=1 -e GEMINI_PLATFORM_WS_PORT=9999 -v $stackDir/Gemini-poc-stack:/home/gemini/gemini-stack  --volumes-from gemini-chef -d gemini/gemini-stack
 	echo "gemini Mist Run..."
 	docker run --name gemini-mist -e MYSQL_USER=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_mist --link db:db -e RABBITMQ_HOST=gemini-stack --link gemini-stack:gemini-stack -p 9090:8080 -d gemini/gemini-mist
