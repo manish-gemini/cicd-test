@@ -70,7 +70,11 @@ fi
 
 echo "continue to deploy..."
 
-docker rm -f gemini-stack gemini-platform db gemini-chef gemini-mist
+docker rm -f gemini-stack gemini-platform db gemini-chef 
+
+if docker ps -a |grep -a gemini-mist; then
+	docker rm -f gemini-mist
+fi
 
 echo "db run .."
 docker run --name db -e MYSQL_ROOT_PASSWORD=admin -e MYSQL_USER=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -v /var/dbstore:/var/lib/mysql -d mysql
@@ -112,8 +116,13 @@ then
         sleep 60
 	echo "gemini stack run..."
 	docker run -t --name gemini-stack -p 8888:8888 -e CHEF_URL=https://$hostip:443 -e GEMINI_PLATFORM_WS_HOST=$hostip -e GEMINI_PLATFORM_WS_PORT=9999 -e GEMINI_STACK_IPANEMA=1 --volumes-from gemini-chef -d gemini/gemini-stack    	
-	echo "gemini Mist Run..."
-	docker run --name gemini-mist -e MYSQL_USER=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_mist --link db:db -e RABBITMQ_HOST=gemini-stack --link gemini-stack:gemini-stack -p 9090:8080 -d gemini/gemini-mist
+#	echo "gemini Mist Run..."
+#	if docker images |grep -a secure-registry.gsintlab.com/gemini/gemini-mist; then
+#		docker tag secure-registry.gsintlab.com/gemini/gemini-mist gemini/gemini-mist
+#	else
+#		echo "No Mist.,you will have to pull from sercure registry....Press 1- Pull From Secure Registry, 2- Continue without Mist"
+#	fi
+#	docker run --name gemini-mist -e MYSQL_USER=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_mist --link db:db -e RABBITMQ_HOST=gemini-stack --link gemini-stack:gemini-stack -p 9090:8080 -d gemini/gemini-mist
 	echo "platform run ..."
 	docker run -t --name gemini-platform -p 9999:8888 -p 80:3000 -e GEMINI_STACK_WS_HOST=$hostip -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode --link db:db -d gemini/gemini-platform
 	echo "end ..."
@@ -124,8 +133,8 @@ then
         sleep 60
 	echo "gemini stack run..."
 	docker run -t --name gemini-stack -p 8888:8888 -e GEMINI_PLATFORM_WS_HOST=$hostip -e GEMINI_PLATFORM_WS_PORT=9999 -e GEMINI_STACK_IPANEMA=1 -d $insecureRegistry/gemini/gemini-stack
-	echo "gemini Mist Run..."
-	docker run --name gemini-mist -e MYSQL_USER=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_mist --link db:db -e RABBITMQ_HOST=gemini-stack --link gemini-stack:gemini-stack -p 9090:8080 -d $insecureRegistry/gemini/gemini-mist
+#	echo "gemini Mist Run..."
+#	docker run --name gemini-mist -e MYSQL_USER=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_mist --link db:db -e RABBITMQ_HOST=gemini-stack --link gemini-stack:gemini-stack -p 9090:8080 -d $insecureRegistry/gemini/gemini-mist
 	echo "platform run ..."
 	docker run -t --name gemini-platform -p 9999:8888 -p 80:3000 -e GEMINI_STACK_WS_HOST=$hostip -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode --link db:db -d $insecureRegistry/gemini/gemini-platform
 	echo "end ..."
@@ -140,8 +149,8 @@ else
         echo "waiting..."
         sleep 60
         docker run -t --name gemini-stack -p 8888:8888 -e CHEF_URL=https://$hostip:443 -e GEMINI_PLATFORM_WS_HOST=$hostip -e GEMINI_STACK_IPANEMA=1 -e GEMINI_PLATFORM_WS_PORT=9999 -v $stackDir/Gemini-poc-stack:/home/gemini/gemini-stack  --volumes-from gemini-chef -d gemini/gemini-stack
-	echo "gemini Mist Run..."
-	docker run --name gemini-mist -e MYSQL_USER=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_mist --link db:db -e RABBITMQ_HOST=gemini-stack --link gemini-stack:gemini-stack -p 9090:8080 -d gemini/gemini-mist
+#	echo "gemini Mist Run..."
+#	docker run --name gemini-mist -e MYSQL_USER=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_mist --link db:db -e RABBITMQ_HOST=gemini-stack --link gemini-stack:gemini-stack -p 9090:8080 -d gemini/gemini-mist
 	echo "platform run ..."
 	docker run -t --name gemini-platform -p 9999:8888 -p 80:3000 -e GEMINI_STACK_WS_HOST=$hostip -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode -v $platformDir/Gemini-poc-mgnt:/home/gemini/gemini-platform --link db:db -d gemini/gemini-platform
 	echo "end ..."

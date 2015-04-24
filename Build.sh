@@ -54,7 +54,9 @@ then
 		
 else
 	echo -n "Enter the Directory to checkout source and Save Tar Files"
-	read dirToCheckOut
+	echo "Example: /opt/Mydir/"
+	read -p "Default(${PWD}):" dirToCheckOut
+	dirToCheckOut=${dirToCheckOut:-${PWD}}
 	echo $dirToCheckOut
 	echo -n "Enter the commit ID/Tag ID:"
 	echo -n "(if left empty will pull the latest code.)"
@@ -69,6 +71,10 @@ else
 	echo "..."
 
 	#echo $buildType  $dirToCheckout $InternalRegistry $commitID
+
+	echo "Enter the git user name"
+	read gituserName
+	echo $gituserName
 
 
 	#STEP 2: URL FROM WHICH CODE IS TO BE CHECKED OUT. GIT LOGIN STUFF SHOULD HAVE ALREADY HAPPENED..
@@ -90,7 +96,7 @@ else
 		fi
 	else
 		echo "clone..."
-	        git clone "git@github.com:Gemini-sys/Gemini-poc-stack.git"
+	        git clone "https://$gituserName@github.com/Gemini-sys/Gemini-poc-stack.git"
 		echo "clone completed..."
 		echo "checkout..."
 		git checkout tags/$commitID
@@ -114,7 +120,7 @@ else
 	        fi
 	else
 	        echo "clone..."
-		git clone "git@github.com:Gemini-sys/Gemini-poc-mgnt.git"
+		git clone "https://$gituserName@github.com/Gemini-sys/Gemini-poc-mgnt.git"
 		echo "git checkout ...."
 		git checkout tags/$commitID
 		echo "git checkout completed..."
