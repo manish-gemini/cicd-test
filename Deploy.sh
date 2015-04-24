@@ -6,7 +6,8 @@ echo "Deploy from internal registry = 2"
 echo "Dev Mode with Volume Mount Option = 3"
 echo "Deploy from a insecure registry = 4"
 
-read deployType
+read -p "Default(1):" deployType
+deployType=${deployType:-1}
 echo $deployType
 
 if [ $deployType -eq 2 ]
@@ -34,7 +35,8 @@ fi
 echo "Do you want to clean up the setup (removes db, Rabbitmq Data etc.,) ?"
 echo "press 1 to clean the setup."
 echo "press 2 to retain the older entries.."
-read cleanSetup
+read -p "Default(1):" cleanSetup
+cleanSetup=${cleanSetup:-1}
 echo $cleanSetup
 
 if [ $cleanSetup -eq 1 ]
@@ -48,7 +50,8 @@ mkdir -p "/var/dbstore"
 chcon -Rt svirt_sandbox_file_t /var/dbstore
 
 printf "Mode of Operation: \n Type 1 for ON PREM MODE \n Type 2 for SAAS MODE :"
-read onPremMode
+read -p "Default(1):" onPremMode
+onPremMode=${onPremMode:-1}
 echo $onPremMode
 if [ $onPremMode -eq 1 ]
 then
@@ -69,7 +72,7 @@ fi
 
 
 echo "continue to deploy..."
-
+echo "Removing if any existing docker process with same name to avoid conflicts"
 docker rm -f gemini-stack gemini-platform db gemini-chef 
 
 if docker ps -a |grep -a gemini-mist; then
