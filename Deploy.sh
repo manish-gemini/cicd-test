@@ -61,8 +61,10 @@ else
 fi
 echo $onPremMode
 
+ip=`curl -s http://ipecho.net/plain; echo`
 printf "Enter the Host IP :"
-read hostip
+read -p "Default($ip):" hostip
+hostip=${hostip:-$ip}
 echo $hostip
 if [ -z $hostip ]
 then
