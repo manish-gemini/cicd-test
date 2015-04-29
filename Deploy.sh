@@ -5,10 +5,37 @@ echo "Deploy from Local image = 1"
 echo "Deploy from internal registry = 2"
 echo "Dev Mode with Volume Mount Option = 3"
 echo "Deploy from a insecure registry = 4"
+echo "Deploy from tar file = 5"
 
 read -p "Default(1):" deployType
 deployType=${deployType:-1}
 echo $deployType
+
+if [ $deployType -eq 5 ]
+then
+	echo "Enter the Full location of the Tar File :"
+	read tarballLocation
+	echo $tarballLocation
+
+	echo "Check for File Existence."
+
+	echo "untar the package..."
+
+	mkdir -p /tmp
+	cd /tmp
+	tar -xvf $tarballLocation
+
+	cd /tmp/GeminiPackages/
+
+	echo "Loading Platform ... "
+	docker load < gemini-platform.tar
+	echo "Loading Stack ..."
+	docker load < gemini-stack.tar
+	echo "Loading Gemini-chef ..."
+	docker load < gemini-chef.tar
+	echo "Loading Mysql ..."
+	docker load < mysql.tar
+fi
 
 if [ $deployType -eq 2 ]
 then
@@ -111,7 +138,7 @@ then
 	docker run -t --name gemini-platform -p 9999:8888 -p 80:3000 -e GEMINI_STACK_WS_HOST=$hostip -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode --link db:db -d secure-registry.gsintlab.com/gemini/gemini-platform
 	echo "end ..."
 
-elif [ $deployType -eq 1 ]
+elif [ $deployType -eq 1 ] || [ $deployType -eq 5 ]
 then
 	echo "Gemini chef run..."
         docker run -it -p 443:443 -h $hostip -v /etc/chef-server/ --privileged --name gemini-chef -d gemini/gemini-chef
