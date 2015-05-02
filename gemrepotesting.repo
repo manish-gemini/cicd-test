@@ -1,5 +1,0 @@
-[gemrepotesting]
-name=gemini Testing Repository
-baseurl=http://repos.gsintlab.com/repostesting/
-enabled=1
-gpgcheck=0
