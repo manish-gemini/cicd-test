@@ -112,6 +112,10 @@ if docker ps -a |grep -a gemini-mist; then
 	docker rm -f gemini-mist
 fi
 
+echo "Setting up iptables rules..."
+iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited
+iptables -D  FORWARD -j REJECT --reject-with icmp-host-prohibited
+
 echo "db run .."
 docker run --name db -e MYSQL_ROOT_PASSWORD=admin -e MYSQL_USER=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -v /var/dbstore:/var/lib/mysql -d mysql
 
