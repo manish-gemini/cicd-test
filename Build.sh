@@ -187,14 +187,6 @@ cd Dockerfiles
 cp ../gemini.repo .
 if [ $quickBuild != 1 ]
 then
-  echo "Start building Chef Container first...."
-  cd ..
-  cd ChefContainer
-  docker build -t gemini/gemini-chef .
-  echo "Chef Container Build Complete..."
-  #Completed Building
-  cd ..
-  cd Dockerfiles
   echo "Build Base Image..."
   docker build -t gemini/gemini-base:$commitID -f GeminiBase .
   echo "Build Stack Base Image..."

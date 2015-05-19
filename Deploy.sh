@@ -31,8 +31,6 @@ then
 	docker load < gemini-platform.tar
 	echo "Loading Stack ..."
 	docker load < gemini-stack.tar
-	echo "Loading Gemini-chef ..."
-	docker load < gemini-chef.tar
 	echo "Loading Mysql ..."
 	docker load < mysql.tar
 fi
@@ -111,11 +109,16 @@ fi
 
 echo "continue to deploy..."
 echo "Removing if any existing docker process with same name to avoid conflicts"
-docker rm -f gemini-stack gemini-platform db gemini-chef 
+docker rm -f gemini-stack gemini-platform db  
 
 if docker ps -a |grep -a gemini-mist; then
 	docker rm -f gemini-mist
 fi
+
+if docker ps -a |grep -a gemini-chef; then
+	docker rm -f gemini-chef
+fi
+
 
 echo "Setting up iptables rules..."
 iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited
@@ -138,14 +141,10 @@ then
 	docker pull secure-registry.gsintlab.com/gemini/gemini-platform-base
 	echo "pull gemini platform..."
 	docker pull secure-registry.gsintlab.com/gemini/gemini-platform
-	echo  "pull  gemini chef..."
-	docker pull secure-registry.gsintlab.com/gemini/gemini-chef
 #	echo  "pull gemini-mist..."
 #	docker pull secure-registry.gsintlab.com/gemini/gemini-mist
-	echo "Gemini-chef Run..."	
-        docker run -it -p 443:443 -v /etc/chef-server/ --privileged --name gemini-chef -h $hostip -d secure-registry.gsintlab.com/gemini/gemini-chef
-        echo "gemini stack run..."
-       	docker run -t --name gemini-stack -p 8888:8888 -e GEMINI_INT_REPO=$internalRepo -e CHEF_URL=https://$hostip:443  -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_mist -e GEMINI_PLATFORM_WS_HOST=$hostip -e GEMINI_PLATFORM_WS_PORT=9999 -e GEMINI_STACK_IPANEMA=1 --volumes-from gemini-chef --link db:db -d  secure-registry.gsintlab.com/gemini/gemini-stack    	
+	echo "gemini stack run..."
+       	docker run -t --name gemini-stack -p 8888:8888 -e GEMINI_INT_REPO=$internalRepo -e CHEF_URL=https://$hostip:443  -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_mist -e GEMINI_PLATFORM_WS_HOST=$hostip -e GEMINI_PLATFORM_WS_PORT=9999 -e GEMINI_STACK_IPANEMA=1 --link db:db -d  secure-registry.gsintlab.com/gemini/gemini-stack    	
 #	echo "Mist Run"
 #	docker run --name gemini-mist -e MYSQL_USER=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_mist --link db:db -e RABBITMQ_HOST=gemini-stack --link gemini-stack:gemini-stack -p 9090:8080 -d secure-registry.gsintlab.com/gemini/gemini-mist
 	echo "platform run ..."
@@ -154,11 +153,9 @@ then
 
 elif [ $deployType -eq 1 ] || [ $deployType -eq 5 ]
 then
-	echo "Gemini chef run..."
-        docker run -it -p 443:443 -h $hostip -v /etc/chef-server/ --privileged --name gemini-chef -d gemini/gemini-chef
-       
+   
 	echo "gemini stack run..."
-	docker run -t --name gemini-stack -p 8888:8888 -e GEMINI_INT_REPO=$internalRepo -e CHEF_URL=https://$hostip:443  -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_mist -e GEMINI_PLATFORM_WS_HOST=$hostip -e GEMINI_PLATFORM_WS_PORT=9999 -e GEMINI_STACK_IPANEMA=1 -v /var/lib/gemini/sshKey_root:/root --volumes-from gemini-chef --link db:db -d gemini/gemini-stack    	
+	docker run -t --name gemini-stack -p 8888:8888 -e GEMINI_INT_REPO=$internalRepo -e CHEF_URL=https://$hostip:443  -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_mist -e GEMINI_PLATFORM_WS_HOST=$hostip -e GEMINI_PLATFORM_WS_PORT=9999 -e GEMINI_STACK_IPANEMA=1 --link db:db -d gemini/gemini-stack    	
 #	echo "gemini Mist Run..."
 #	if docker images |grep -a secure-registry.gsintlab.com/gemini/gemini-mist; then
 #		docker tag secure-registry.gsintlab.com/gemini/gemini-mist gemini/gemini-mist
@@ -171,9 +168,8 @@ then
 	echo "end ..."
 elif [ $deployType -eq 4 ]
 then
-	docker run -it -p 443:443 -v /etc/chef-server/ -h $hostip --privileged --name gemini-chef -d $insecureRegistry/gemini/gemini-chef
 	echo "gemini stack run..."
-	docker run -t --name gemini-stack -p 8888:8888 -e GEMINI_INT_REPO=$internalRepo -e CHEF_URL=https://$hostip:443  -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_mist -e GEMINI_PLATFORM_WS_HOST=$hostip -e GEMINI_PLATFORM_WS_PORT=9999 -e GEMINI_STACK_IPANEMA=1 --volumes-from gemini-chef --link db:db -d $insecureRegistry/gemini/gemini-stack
+	docker run -t --name gemini-stack -p 8888:8888 -e GEMINI_INT_REPO=$internalRepo -e CHEF_URL=https://$hostip:443  -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_mist -e GEMINI_PLATFORM_WS_HOST=$hostip -e GEMINI_PLATFORM_WS_PORT=9999 -e GEMINI_STACK_IPANEMA=1 --link db:db -d $insecureRegistry/gemini/gemini-stack
 #	echo "gemini Mist Run..."
 #	docker run --name gemini-mist -e MYSQL_USER=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_mist --link db:db -e RABBITMQ_HOST=gemini-stack --link gemini-stack:gemini-stack -p 9090:8080 -d $insecureRegistry/gemini/gemini-mist
 	echo "platform run ..."
@@ -186,9 +182,7 @@ else
 	read platformDir
 	echo "gemini stack DEV MODE run..."
 
-	docker run -it -p 443:443 -v /etc/chef-server/ -h $hostip --privileged --name gemini-chef -d gemini/gemini-chef
-        
-	docker run -t --name gemini-stack -p 8888:8888 -e GEMINI_INT_REPO=$internalRepo -e CHEF_URL=https://$hostip:443  -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_mist -e GEMINI_PLATFORM_WS_HOST=$hostip -e GEMINI_PLATFORM_WS_PORT=9999 -e GEMINI_STACK_IPANEMA=1 -v $stackDir/Gemini-poc-stack:/home/gemini/gemini-stack --volumes-from gemini-chef --link db:db -d  gemini/gemini-stack
+	docker run -t --name gemini-stack -p 8888:8888 -e GEMINI_INT_REPO=$internalRepo -e CHEF_URL=https://$hostip:443  -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_mist -e GEMINI_PLATFORM_WS_HOST=$hostip -e GEMINI_PLATFORM_WS_PORT=9999 -e GEMINI_STACK_IPANEMA=1 -v $stackDir/Gemini-poc-stack:/home/gemini/gemini-stack --link db:db -d  gemini/gemini-stack
 #	echo "gemini Mist Run..."
 #	docker run --name gemini-mist -e MYSQL_USER=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_mist --link db:db -e RABBITMQ_HOST=gemini-stack --link gemini-stack:gemini-stack -p 9090:8080 -d gemini/gemini-mist
 	echo "platform run ..."
