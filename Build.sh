@@ -148,6 +148,10 @@ fi
 echo "copying Executables.."
 #scp root@209.205.208.181:/var/lib/jenkins/jobs/dev-mist-cgp/lastSuccessful/archive/run/generated/distributions/executable/run.jar $dirToCheckOut/Gemini-poc-stack/mist-cgp/.
 cd $dirToCheckOut/Gemini-poc-stack/mist-cgp/
+
+if [ -f run.jar ]; then
+	rm -f run.jar
+fi
 wget http://repos.gsintlab.com/repos/mist/run.jar
 
 echo  "Enter 1 for Quick Build Gemini-stack & Gemini-platform or 2 for to build all "
