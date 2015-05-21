@@ -17,6 +17,7 @@ then
   echo "Pull Chef Server from Internal Registry..."
   docker pull secure-registry.gsintlab.com/gemini/gemini-chef
   echo "Continue to run chef ..."
+  docker rm -f gemini-chef
   ip=`curl -s http://ipecho.net/plain; echo`
   docker run -it -p 443:443 --privileged --name gemini-chef -h $ip -d secure-registry.gsintlab.com/gemini/gemini-chef
 fi
