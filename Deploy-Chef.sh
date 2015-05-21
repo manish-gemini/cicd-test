@@ -19,6 +19,6 @@ then
   echo "Continue to run chef ..."
   docker rm -f gemini-chef
   ip=`curl -s http://ipecho.net/plain; echo`
-  docker run -it -p 443:443 --privileged --name gemini-chef -h $ip -d secure-registry.gsintlab.com/gemini/gemini-chef
+  docker run -it -p 443:443 --privileged -v /etc/chef-server/ --name gemini-chef -h $ip -d secure-registry.gsintlab.com/gemini/gemini-chef
 fi
 
