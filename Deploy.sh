@@ -115,10 +115,6 @@ if docker ps -a |grep -a gemini-mist; then
 	docker rm -f gemini-mist
 fi
 
-if docker ps -a |grep -a gemini-chef; then
-	echo "You are running gemini-chef on the same host machine, Do you want"
-fi
-
 
 echo "Setting up iptables rules..."
 iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited
