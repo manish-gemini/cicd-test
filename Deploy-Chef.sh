@@ -1,4 +1,4 @@
-#!bin/bash
+#!/bin/bash
 
 
 #### SCRIPT TO DO PRE INSTALLATION STEPS FOR GEMINI
