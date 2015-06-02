@@ -73,17 +73,16 @@ echo $cleanSetup
 if [ $cleanSetup -eq 1 ]
 then
 	rm -rf "/var/dbstore"
+	rm -rf "/var/lib/gemini/sshKey_root"
 fi
 
 #mkdir -p "/var/lib/gemini"
 mkdir -p "/var/dbstore"
-
-# clean up of ssh key required ?
-
+# clean up of ssh key required 
 mkdir -p /var/lib/gemini/sshKey_root
 
-
 chcon -Rt svirt_sandbox_file_t /var/dbstore
+chcon -Rt svirt_sandbox_file_t /var/lib/gemini/sshKey_root
 
 printf "Mode of Operation: \n Type 1 for ON PREM MODE \n Type 2 for SAAS MODE :"
 read -p "Default(1):" onPremMode
