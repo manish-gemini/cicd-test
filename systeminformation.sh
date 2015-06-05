@@ -157,7 +157,7 @@ docker logs db >>  /var/log/gemini/db.log
 
 write_header "Read Chef container log from /var/log/gemini/chef.log"
 
-docker logs db >>  /var/log/gemini/chef.log
+docker logs gemini-chef >>  /var/log/gemini/chef.log
 
 
 echo "END OF GEMINI SYS LOGS" >> /var/log/gemini/sysinfo.log
