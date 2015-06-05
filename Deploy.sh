@@ -204,5 +204,5 @@ else
 		echo "platform run ..."
 		docker run -t --name gemini-platform -p 9999:8888 -p 80:3000 -e GEMINI_STACK_WS_HOST=$hostip -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode -v $platformDir/Gemini-poc-mgnt:/home/gemini/gemini-platform -v /var/log/gemini/geminiplatform:/var/log/gemini -v /var/lib/gemini/sshKey_root:/root --link db:db -d gemini/gemini-platform
 	fi
-	echo "end ..."
+	echo "end ...."
 fi
