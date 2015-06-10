@@ -29,6 +29,8 @@ echo "Flush Iptables"
 
 iptables -F
 
-echo "yum install -y git wget"
+#echo "Install -y git wget"
+
+#yum install -y git wget
 
 
