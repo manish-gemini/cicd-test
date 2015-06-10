@@ -1,7 +1,4 @@
 #!/bin/bash
-# Define variables
-LSB=/usr/bin/lsb_release
- 
  
 # Purpose - Display header message
 # $1 - message
@@ -16,7 +13,6 @@ function write_header(){
 function os_info(){
 	write_header " System information "
 	echo "Operating system : $(uname)" 
-	[ -x $LSB ] && $LSB -a || echo "$LSB command is not insalled (set \$LSB variable)"
 }
  
 # Purpose - Get info about host such as dns, IP, and hostname
@@ -37,7 +33,7 @@ function net_info(){
 	echo "Total network interfaces found : $(wc -w <<<${devices})" 
  
 	echo "*** IP Addresses Information ***"
-	ip -4 address show >> /var/log/gemini/sysinfo.log
+	ip -4 address show
  
 	echo "***********************"
 	echo "*** Network routing ***"
@@ -164,4 +160,7 @@ docker logs gemini-chef >>  /var/log/gemini/chef.log
 
 echo "END OF GEMINI SYS LOGS" >> /var/log/gemini/sysinfo.log
 
+echo "Find LOG Bundle at /opt/var_log_gemini.tar.gz"
+mkdir -p /opt
+tar -cvzf /opt/var_log_gemini.tar.gz /var/log/gemini > /dev/Null
  
