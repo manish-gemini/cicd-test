@@ -110,8 +110,9 @@ B=1024
 KB=$((B * B))
 nvcpu=`nproc`
 ramkb=$(grep MemTotal /proc/meminfo | awk '{print $2}')
-ramgb=$((ramkb/KB))
-RAM_PER_PROCESS=$((ramgb/nvcpu))
+ramgb=$(((ramkb+(KB-1))/KB))
+RAM_PER_PROCESS=$(((ramgb+(nvcpu-1))/nvcpu))
+echo "RAM_PER_PROCESS: " $RAM_PER_PROCESS
 adjvar1=75
 adjvar2=100
 if [ $RAM_PER_PROCESS = 0 ]
