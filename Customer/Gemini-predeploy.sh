@@ -35,7 +35,7 @@ echo "Install Security Certificate for Docker repo access"
 numOfTry=0
 until [ $numOfTry -ge 5 ]
 do
-	echo "Enter the Full path of the Certificate file:"
+	echo "Enter the Full path of the Certificate Location:"
 	read -p "Default(${PWD}):" certFilePath
 	certFilePath=${certFilePath:-${PWD}}
 	echo $certFilePath
