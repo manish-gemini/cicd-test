@@ -32,14 +32,14 @@ then
 	docker load < mysql.tar
 fi
 
-if [ $deployType -eq 1 ]
-then
-	if !(docker login https://secure-registry.gsintlab.com)
-	then
-		echo "Docker Secure Registry Login Failed., Exiting..."
-		exit
-	fi
-fi
+#if [ $deployType -eq 1 ]
+#then
+#	if !(docker login https://secure-registry.gsintlab.com)
+#	then
+#		echo "Docker Secure Registry Login Failed., Exiting..."
+#		exit
+#	fi
+#fi
 
 intrepo="http://repos.gsintlab.com/repos/"
 echo "Enter the Internal Package Repo :[http://repos.gsintlab.com/repos]:"
