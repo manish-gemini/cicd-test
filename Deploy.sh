@@ -125,7 +125,7 @@ then
 	max_app_processes=1
 fi
 
-echo $max_app_processes
+echo "Setting MAX PHUSION PROCESS:"$max_app_processes
 
 echo "continue to deploy..."
 echo "Removing if any existing docker process with same name to avoid conflicts"
