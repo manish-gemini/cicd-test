@@ -82,6 +82,8 @@ mkdir -p "/var/lib/gemini/sshKey_root"
 
 chcon -Rt svirt_sandbox_file_t /var/dbstore
 chcon -Rt svirt_sandbox_file_t /var/lib/gemini/sshKey_root
+chcon -Rt svirt_sandbox_file_t /var/log/gemini/stack
+chcon -Rt svirt_sandbox_file_t /var/log/gemini/platform
 
 printf "Mode of Operation: \n Type 1 for ON PREM MODE \n Type 2 for SAAS MODE :"
 read -p "Default(1):" onPremMode
