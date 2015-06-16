@@ -112,6 +112,7 @@ function dockerRun_info() {
 #main logic
 echo "Gemini Sys logs ... "
 echo "Log Location : /var/log/gemini/sysinfo.log"
+mkdir -p /var/log/gemini/
 date > /var/log/gemini/sysinfo.log
 
 os_info >> /var/log/gemini/sysinfo.log
