@@ -163,5 +163,6 @@ echo "END OF GEMINI SYS LOGS" >> /var/log/gemini/sysinfo.log
 
 echo "Find LOG Bundle at /opt/var_log_gemini.tar.gz"
 mkdir -p /opt
-tar -cvzf /opt/var_log_gemini.tar.gz /var/log/gemini > /dev/Null
+NOW=$(date +"%H-%M-%m-%d-%Y")
+tar -cvzf /opt/var_log_gemini$NOW.tar.gz /var/log/gemini > /dev/Null
  
