@@ -112,6 +112,7 @@ function dockerRun_info() {
 #main logic
 echo "Gemini Sys logs ... "
 echo "Log Location : /var/log/gemini/sysinfo.log"
+mkdir -p /var/log/gemini/
 date > /var/log/gemini/sysinfo.log
 
 os_info >> /var/log/gemini/sysinfo.log
@@ -162,5 +163,6 @@ echo "END OF GEMINI SYS LOGS" >> /var/log/gemini/sysinfo.log
 
 echo "Find LOG Bundle at /opt/var_log_gemini.tar.gz"
 mkdir -p /opt
-tar -cvzf /opt/var_log_gemini.tar.gz /var/log/gemini > /dev/Null
+NOW=$(date +"%H-%M-%m-%d-%Y")
+tar -cvzf /opt/var_log_gemini$NOW.tar.gz /var/log/gemini > /dev/Null
  
