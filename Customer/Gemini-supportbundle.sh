@@ -158,6 +158,7 @@ write_header "Read Chef container log from /var/log/gemini/chef.log"
 
 docker logs gemini-chef >>  /var/log/gemini/chef.log
 
+docker exec -it gemini-stack bash -l -c "/home/gemini/gemini-stack/utils/logmodule/master.sh"
 
 echo "END OF GEMINI SYS LOGS" >> /var/log/gemini/sysinfo.log
 
