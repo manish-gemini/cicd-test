@@ -12,7 +12,8 @@ function write_header(){
 # Purpose - Get info about your operating system
 function os_info(){
 	write_header " System information "
-	echo "Operating system : $(uname)" 
+	echo "Operating system : $(uname -a)"
+	cat /etc/issue.net 
 }
  
 # Purpose - Get info about host such as dns, IP, and hostname
