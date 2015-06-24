@@ -1,0 +1,12 @@
+set PATH=%PATH%;C:\Program Files\Git\cmd
+set PATH=%PATH%;C:\Program Files (x86)\Bazaar
+set PATH=%PATH%;C:\go\bin
+set PATH=%PATH%;%GOPATH%\bin
+
+git clone https://user:pass@github.com/Gemini-sys/Gemini-CLI
+
+cd Gemini-CLI/src/github.com/gemini
+go get github.com/tools/godep
+
+godep restore
+go install
