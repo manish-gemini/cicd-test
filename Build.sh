@@ -201,7 +201,7 @@ tar cf Dockerfiles/GeminiStack.tar -T Dockerfiles/GeminiStack.lst
 cd Dockerfiles
 echo "Build Stack Image..."
 docker build -t gemini/gemini-stack:$commitID -f GeminiStack .
-rm GeminiStack.tar gemini.config.ini gemini.repo
+rm GeminiStack.tar gemini.config.ini gemini.repo CentOS-Base.repo
 
 #PLATFORM CODE :
 
