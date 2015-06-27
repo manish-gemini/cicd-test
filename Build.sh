@@ -185,6 +185,7 @@ set -o errexit
 #BUILD THE BASE IMAGE
 cd Dockerfiles
 cp ../gemini.repo .
+cp ../CentOS-Base.repo .
 if [ $quickBuild != 1 ]
 then
   echo "Build Base Image..."
