@@ -185,6 +185,7 @@ set -o errexit
 #BUILD THE BASE IMAGE
 cd Dockerfiles
 cp ../gemini.repo .
+cp ../CentOS-Base.repo .
 if [ $quickBuild != 1 ]
 then
   echo "Build Base Image..."
@@ -200,7 +201,7 @@ tar cf Dockerfiles/GeminiStack.tar -T Dockerfiles/GeminiStack.lst
 cd Dockerfiles
 echo "Build Stack Image..."
 docker build -t gemini/gemini-stack:$commitID -f GeminiStack .
-rm GeminiStack.tar gemini.config.ini gemini.repo
+rm GeminiStack.tar gemini.config.ini gemini.repo CentOS-Base.repo
 
 #PLATFORM CODE :
 
