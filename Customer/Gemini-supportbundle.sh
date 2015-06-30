@@ -14,6 +14,7 @@ function os_info(){
 	write_header " System information "
 	echo "Operating system : "
 	cat /etc/redhat-release
+        cat /etc/centos-release
 	write_header "Kernel Version "
 	uname -a	
 }
