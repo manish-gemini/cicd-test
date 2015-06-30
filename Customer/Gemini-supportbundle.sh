@@ -68,7 +68,7 @@ function mem_info(){
     echo "*********************************" 
 	echo "*** Virtual memory statistics ***"
     echo "*********************************"
-	vmstat >> /var/log/gemini/host/sysinfo.log
+	vmstat 2 5 >> /var/log/gemini/host/sysinfo.log
     echo "***********************************" 
 	echo "*** Top 5 memory eating process ***" 
     echo "***********************************"	
