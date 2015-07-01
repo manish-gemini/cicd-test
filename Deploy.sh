@@ -64,8 +64,8 @@ echo $internalRepo
 echo "Do you want to clean up the setup (removes db, Rabbitmq Data etc.,) ?"
 echo "press 1 to clean the setup."
 echo "press 2 to retain the older entries.."
-read -p "Default(1):" cleanSetup
-cleanSetup=${cleanSetup:-1}
+read -p "Default(2):" cleanSetup
+cleanSetup=${cleanSetup:-2}
 echo $cleanSetup
 
 if [ $cleanSetup -eq 1 ]
