@@ -4,15 +4,19 @@
 # $1 - message
 function write_header(){
 	local h="$@"
-	echo "---------------------------------------------------------------" >> /var/log/gemini/sysinfo.log
-	echo "     ${h}" >> /var/log/gemini/sysinfo.log
-	echo "---------------------------------------------------------------" >> /var/log/gemini/sysinfo.log
+	echo "---------------------------------------------------------------" >> /var/log/gemini/host/sysinfo.log
+	echo "     ${h}" >> /var/log/gemini/host/sysinfo.log
+	echo "---------------------------------------------------------------" >> /var/log/gemini/host/sysinfo.log
 }
  
 # Purpose - Get info about your operating system
 function os_info(){
 	write_header " System information "
-	echo "Operating system : $(uname)" 
+	echo "Operating system : "
+	cat /etc/redhat-release
+        cat /etc/centos-release
+	write_header "Kernel Version "
+	uname -a	
 }
  
 # Purpose - Get info about host such as dns, IP, and hostname
@@ -65,7 +69,7 @@ function mem_info(){
     echo "*********************************" 
 	echo "*** Virtual memory statistics ***"
     echo "*********************************"
-	vmstat >> /var/log/gemini/sysinfo.log
+	vmstat 2 5 >> /var/log/gemini/host/sysinfo.log
     echo "***********************************" 
 	echo "*** Top 5 memory eating process ***" 
     echo "***********************************"	
@@ -111,59 +115,59 @@ function dockerRun_info() {
 
 #main logic
 echo "Gemini Sys logs ... "
-echo "Log Location : /var/log/gemini/sysinfo.log"
-mkdir -p /var/log/gemini/
-date > /var/log/gemini/sysinfo.log
+echo "Log Location : /var/log/gemini/host/sysinfo.log"
+mkdir -p /var/log/gemini/host
+date > /var/log/gemini/host/sysinfo.log
 
-os_info >> /var/log/gemini/sysinfo.log
+os_info >> /var/log/gemini/host/sysinfo.log
 
-cpu_info >> /var/log/gemini/sysinfo.log
+cpu_info >> /var/log/gemini/host/sysinfo.log
 
-mem_info  >> /var/log/gemini/sysinfo.log
+mem_info  >> /var/log/gemini/host/sysinfo.log
 
-hardDisk_info  >> /var/log/gemini/sysinfo.log
+hardDisk_info  >> /var/log/gemini/host/sysinfo.log
 
-host_info >> /var/log/gemini/sysinfo.log
+host_info >> /var/log/gemini/host/sysinfo.log
 
-net_info >> /var/log/gemini/sysinfo.log
+net_info >> /var/log/gemini/host/sysinfo.log
 
-user_info "who" >> /var/log/gemini/sysinfo.log
+user_info "who" >> /var/log/gemini/host/sysinfo.log
 
-user_info "last" >> /var/log/gemini/sysinfo.log
+user_info "last" >> /var/log/gemini/host/sysinfo.log
 
 
 write_header "Software Requirments "
 
-docker_info >> /var/log/gemini/sysinfo.log
+docker_info >> /var/log/gemini/host/sysinfo.log
 
-selinux_info >> /var/log/gemini/sysinfo.log
+selinux_info >> /var/log/gemini/host/sysinfo.log
 
-iptables_info >> /var/log/gemini/sysinfo.log
+iptables_info >> /var/log/gemini/host/sysinfo.log
 
-dockerRun_info >> /var/log/gemini/sysinfo.log
+dockerRun_info >> /var/log/gemini/host/sysinfo.log
 
-write_header "Read Platform container log from /var/log/gemini/platform.log"
+write_header "Read Platform container log from /var/log/gemini/host/platform.log"
 
-docker logs gemini-platform >>  /var/log/gemini/platform.log
+docker logs gemini-platform >>  /var/log/gemini/host/platform.log
 
-write_header "Read Stack container log from /var/log/gemini/stack.log"
+write_header "Read Stack container log from /var/log/gemini/host/stack.log"
 
-docker logs gemini-stack >>  /var/log/gemini/stack.log
+docker logs gemini-stack >>  /var/log/gemini/host/stack.log
 
-write_header "Read Mysql DB container log from /var/log/gemini/db.log"
+write_header "Read Mysql DB container log from /var/log/gemini/host/db.log"
 
-docker logs db >>  /var/log/gemini/db.log
+docker logs db >>  /var/log/gemini/host/db.log
 
-write_header "Read Chef container log from /var/log/gemini/chef.log"
+write_header "Read Chef container log from /var/log/gemini/host/chef.log"
 
-docker logs gemini-chef >>  /var/log/gemini/chef.log
+docker logs gemini-chef >>  /var/log/gemini/host/chef.log
 
 docker exec -it gemini-stack bash -l -c "/home/gemini/gemini-stack/utils/logmodule/master.sh"
 
-echo "END OF GEMINI SYS LOGS" >> /var/log/gemini/sysinfo.log
+echo "END OF GEMINI SYS LOGS" >> /var/log/gemini/host/sysinfo.log
 
-echo "Find LOG Bundle at /opt/var_log_gemini.tar.gz"
 mkdir -p /opt
 NOW=$(date +"%H-%M-%m-%d-%Y")
+echo "Find LOG Bundle at /opt/var_log_gemini$NOW.tar.gz"
 tar -cvzf /opt/var_log_gemini$NOW.tar.gz /var/log/gemini > /dev/Null
  
