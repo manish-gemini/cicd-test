@@ -1,8 +1,8 @@
 #!/bin/bash
 echo "...."
 echo "Enter the deploy type:"
-echo "Deploy from internal registry = 1"
-echo "Deploy from tar file = 2"
+echo "Deploy from Registry = 1"
+echo "Deploy from Tar file = 2"
 
 read -p "Default(1):" deployType
 deployType=${deployType:-1}
@@ -42,10 +42,7 @@ fi
 #fi
 
 intrepo="http://repos.gsintlab.com/repos/"
-echo "Enter the Internal Package Repo :[http://repos.gsintlab.com/repos]:"
-read -p "Default($intrepo):" internalRepo
-internalRepo=${internalRepo:-$intrepo}
-echo $internalRepo
+
 echo "Do you want to clean up the setup (removes db, Rabbitmq Data etc.,) ?"
 echo "press 1 to clean the setup."
 echo "press 2 to retain the older entries.."

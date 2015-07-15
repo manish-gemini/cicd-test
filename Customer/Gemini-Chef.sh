@@ -11,7 +11,7 @@ then
 #	echo "Try Running Again with Corrrect Login Credentials. ERROR: Login Failed...Exiting..."
 #	exit
 #  fi         
-  echo "Pull Chef Server from Internal Registry..."
+  echo "Pull Chef Server from Registry..."
   docker pull registry.gemini-systems.net/gemini/gemini-chef
   echo "Continue to run chef ..."
   docker rm -f gemini-chef
