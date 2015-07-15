@@ -97,9 +97,10 @@ else
 fi
 echo $onPremMode
 
+theme="gemini"
 printf "Enter the Theme Name :"
-read -p "Default(gemini):" themeName
-themeName=$(themeName:-gemini)
+read -p "Default($theme):" themeName
+themeName=${themeName:-$theme}
 echo $themeName
 
 ip=`curl -s http://ipecho.net/plain; echo`
