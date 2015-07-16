@@ -1,5 +1,5 @@
 [gemrepo-testing]
 name=Gemini Testing Repository
-baseurl=http://repos.gsintlab.com/repos/testing/
+baseurl=http://repos.gsintlab.com/testing/
 enabled=1
 gpgcheck=0
