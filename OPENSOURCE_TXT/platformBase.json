@@ -1,0 +1,65 @@
+[
+    {
+        "library": "ruby-2.1.4",
+        "version": "2.1.4",
+        "source": "http://ruby-lang.org/",
+        "license": "RubyorBSD",
+        "link": "https://www.ruby-lang.org/en/about/license.txt"
+    },
+    {
+        "library": "nc/nmap-ncat",
+        "version": 6.4,
+        "source": "http://nmap.org/",
+        "license": "GPLv2andLGPLv2+andGPLv2+and",
+        "link": "https://www.gnu.org/licenses/gpl-2.0.txt"
+    },
+    {
+        "library": "mysql",
+        "version": "1.2.3",
+        "source": "http://sourceforge.net/projects/mysql-python/",
+        "license": "GPLv2+",
+        "link": "https://www.gnu.org/licenses/gpl-2.0.txt"
+    },
+    {
+        "library": "httpd",
+        "version": "2.4.6",
+        "source": "http://httpd.apache.org/",
+        "license": "ASL2.0",
+        "link": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+    },
+    {
+        "library": "rubygems",
+        "version": "2.2.2",
+        "source": "https://rubygems.org/",
+        "license": "RubyorMIT",
+        "link": "https://www.ruby-lang.org/en/about/license.txt"
+    },
+    {
+        "library": "bzip2",
+        "version": "1.0.6",
+        "source": "http://www.bzip.org/",
+        "license": "BSD",
+        "link": "http://www.schillmania.com/projects/soundmanager2/license.txt"
+    },
+    {
+        "library": "unzip",
+        "version": 6,
+        "source": "http://www.info-zip.org/UnZip.html",
+        "license": "BSD",
+        "link": "http://www.schillmania.com/projects/soundmanager2/license.txt"
+    },
+    {
+        "library": "erlang",
+        "version": 17.4,
+        "source": "http://www.erlang.org",
+        "license": "ERPL",
+        "link": "http://www.erlang.org/EPLICENSE"
+    },
+    {
+        "library": "rabbitmq-server-3.5.1-1.noarch.rpm",
+        "version": "3.5.1",
+        "source": "http://www.rabbitmq.com/",
+        "license": "MPLv1.1andMITandASL2.0",
+        "link": "https://www.apache.org/licenses/LICENSE-2.0.txt"
+    }
+]
