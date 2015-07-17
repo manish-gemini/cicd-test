@@ -61,5 +61,263 @@
         "source": "http://www.rabbitmq.com/",
         "license": "MPLv1.1andMITandASL2.0",
         "link": "https://www.apache.org/licenses/LICENSE-2.0.txt"
+    },
+    {
+        "library": "rails",
+        "version": "4.2.1",
+        "source": "https://rubygems.org/",
+        "license": "MIT",
+        "link": "http://opensource.org/licenses/MIT"
+    },
+    {
+        "library": "sqlite3",
+        "version": "1.3.10",
+        "source": "https://rubygems.org/",
+        "license": "Public Domain",
+        "link": "http://unlicense.org/UNLICENSE"
+    },
+    {
+        "library": "mysql",
+        "version": "2.9.1",
+        "source": "https://rubygems.org/",
+        "license": "MIT",
+        "link": "http://opensource.org/licenses/MIT"
+    },
+    {
+        "library": "sass-rails",
+        "version": "4.0.5",
+        "source": "https://rubygems.org/",
+        "license": "MIT",
+        "link": "http://opensource.org/licenses/MIT"
+    },
+    {
+        "library": "uglifier",
+        "version": "2.7.1",
+        "source": "https://rubygems.org/",
+        "license": "MIT",
+        "link": "http://opensource.org/licenses/MIT"
+    },
+    {
+        "library": "coffee-rails",
+        "version": "4.0.1",
+        "source": "https://rubygems.org/",
+        "license": "MIT",
+        "link": "http://opensource.org/licenses/MIT"
+    },
+    {
+        "library": "therubyracer",
+        "version": "0.12.2",
+        "source": "https://rubygems.org/",
+        "license": "MIT",
+        "link": "http://opensource.org/licenses/MIT"
+    },
+    {
+        "library": "jquery-rails",
+        "version": "4.0.3",
+        "source": "https://rubygems.org/",
+        "license": "MIT",
+        "link": "http://opensource.org/licenses/MIT"
+    },
+    {
+        "library": "turbolinks",
+        "version": "2.5.3",
+        "source": "https://rubygems.org/",
+        "license": "MIT",
+        "link": "http://opensource.org/licenses/MIT"
+    },
+    {
+        "library": "jbuilder",
+        "version": "2.2.12",
+        "source": "https://rubygems.org/",
+        "license": "MIT",
+        "link": "http://opensource.org/licenses/MIT"
+    },
+    {
+        "library": "sdoc",
+        "version": "0.4.1",
+        "source": "https://rubygems.org/",
+        "license": "MIT",
+        "link": "http://opensource.org/licenses/MIT"
+    },
+    {
+        "library": "tzinfo-data",
+        "source": "https://rubygems.org/",
+        "license": "MIT",
+        "link": "http://opensource.org/licenses/MIT"
+    },
+    {
+        "library": "sprockets-rails",
+        "version": "2.1.3",
+        "source": "https://rubygems.org/",
+        "license": "MIT",
+        "link": "http://opensource.org/licenses/MIT"
+    },
+    {
+        "library": "bootstrap-sass",
+        "version": "3.2.0.2",
+        "source": "https://rubygems.org/",
+        "license": "MIT",
+        "link": "http://opensource.org/licenses/MIT"
+    },
+    {
+        "library": "autoprefixer-rails",
+        "version": "5.1.8",
+        "source": "https://rubygems.org/",
+        "license": "MIT",
+        "link": "http://opensource.org/licenses/MIT"
+    },
+    {
+        "library": "devise",
+        "version": "3.4.1",
+        "source": "https://rubygems.org/",
+        "license": "MIT",
+        "link": "http://opensource.org/licenses/MIT"
+    },
+    {
+        "library": "em-websocket",
+        "version": "0.5.1",
+        "source": "https://rubygems.org/",
+        "license": "N/A",
+        "link": "none"
+    },
+    {
+        "library": "bunny",
+        "version": "0.9.8",
+        "source": "https://rubygems.org/",
+        "license": "MIT",
+        "link": "http://opensource.org/licenses/MIT"
+    },
+    {
+        "library": "json",
+        "version": "1.8.2",
+        "source": "https://rubygems.org/",
+        "license": "RUBY",
+        "link": "https://www.ruby-lang.org/en/about/license.txt"
+    },
+    {
+        "library": "websocket-eventmachine-client",
+        "version": "1.1.0",
+        "source": "https://rubygems.org/",
+        "license": "N/A",
+        "link": "none"
+    },
+    {
+        "library": "activerecord-session_store",
+        "version": "0.1.1",
+        "source": "https://rubygems.org/",
+        "license": "MIT",
+        "link": "http://opensource.org/licenses/MIT"
+    },
+    {
+        "library": "docker",
+        "version": "0.0.1",
+        "source": "https://rubygems.org/",
+        "license": "MIT",
+        "link": "http://opensource.org/licenses/MIT"
+    },
+    {
+        "library": "docker-api",
+        "version": "1.13.7",
+        "source": "https://rubygems.org/",
+        "license": "MIT",
+        "link": "http://opensource.org/licenses/MIT"
+    },
+    {
+        "library": "thor",
+        "version": "0.19.1",
+        "source": "https://rubygems.org/",
+        "license": "MIT",
+        "link": "http://opensource.org/licenses/MIT"
+    },
+    {
+        "library": "dotenv",
+        "version": "0.11.1",
+        "source": "https://rubygems.org/",
+        "license": "MIT",
+        "link": "http://opensource.org/licenses/MIT"
+    },
+    {
+        "library": "net-ssh",
+        "version": "2.9.2",
+        "source": "https://rubygems.org/",
+        "license": "MIT",
+        "link": "http://opensource.org/licenses/MIT"
+    },
+    {
+        "library": "net-scp",
+        "version": "1.2.1",
+        "source": "https://rubygems.org/",
+        "license": "MIT",
+        "link": "http://opensource.org/licenses/MIT"
+    },
+    {
+        "library": "themes_on_rails",
+        "version": "0.2.2",
+        "source": "https://rubygems.org/",
+        "license": "MIT",
+        "link": "http://opensource.org/licenses/MIT"
+    },
+    {
+        "library": "remotipart",
+        "version": "1.2.1",
+        "source": "https://rubygems.org/",
+        "license": "N/A",
+        "link": "none"
+    },
+    {
+        "library": "rake",
+        "version": "10.4.2",
+        "source": "https://rubygems.org/",
+        "license": "MIT",
+        "link": "http://opensource.org/licenses/MIT"
+    },
+    {
+        "library": "passenger",
+        "version": "5.0.7",
+        "source": "https://rubygems.org/",
+        "license": "N/A",
+        "link": "none"
+    },
+    {
+        "library": "tiddle",
+        "version": "0.4.0",
+        "source": "https://rubygems.org/",
+        "license": "MIT",
+        "link": "http://opensource.org/licenses/MIT"
+    },
+    {
+        "library": "pundit",
+        "version": "0.3.0",
+        "source": "https://rubygems.org/",
+        "license": "MIT",
+        "link": "http://opensource.org/licenses/MIT"
+    },
+    {
+        "library": "workflow",
+        "version": "1.2.0",
+        "source": "https://rubygems.org/",
+        "license": "N/A",
+        "link": "none"
+    },
+    {
+        "library": "sshkey",
+        "version": "1.6.1",
+        "source": "https://rubygems.org/",
+        "license": "MIT",
+        "link": "http://opensource.org/licenses/MIT"
+    },
+    {
+        "library": "breadcrumbs_on_rails",
+        "version": "2.3.0",
+        "source": "https://rubygems.org/",
+        "license": "N/A",
+        "link": "none"
+    },
+    {
+        "library": "rufus-scheduler",
+        "version": "3.1.3",
+        "source": "https://rubygems.org/",
+        "license": "MIT",
+        "link": "http://opensource.org/licenses/MIT"
     }
 ]

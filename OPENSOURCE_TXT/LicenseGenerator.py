@@ -19,6 +19,9 @@ with open(jsonFile, 'r') as f:
         file.write('\n');
         file.write('License:' + items.get('license'));
         file.write('\n');
+        if str(items.get('link')) == 'none':
+            file.write("--------------------------------------------------------------------------------------------\n");
+            continue;
         response = urllib.request.urlopen(items.get('link'));
         file.write(response.read().decode('utf-8'));
         file.write("--------------------------------------------------------------------------------------------\n");
