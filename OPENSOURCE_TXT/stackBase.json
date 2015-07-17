@@ -1,0 +1,205 @@
+[
+    {
+        "library": "mysql",
+        "version": "1.2.3",
+        "source": "http://sourceforge.net/projects/mysql-python/",
+        "license": "GPLv2+",
+        "link": "https://www.gnu.org/licenses/gpl-2.0.txt"
+    },
+    {
+        "library": "python-pip",
+        "version": "1.5.6",
+        "source": "http://www.pip-installer.org",
+        "license": "MIT",
+        "link": "http://opensource.org/licenses/MIT"
+    },
+    {
+        "library": "python-devel",
+        "version": "2.7.5",
+        "source": "http://www.python.org/",
+        "license": "Python",
+        "link": "http://vdt.cs.wisc.edu/licenses/2.0.0/python_license.txt"
+    },
+    {
+        "library": "python-crypto",
+        "version": "2.6.1",
+        "source": "http://www.pycrypto.org/",
+        "license": "PublicDomainandPython",
+        "link": "http://vdt.cs.wisc.edu/licenses/2.0.0/python_license.txt"
+    },
+    {
+        "library": "python-tornado",
+        "version": "2.2.1",
+        "source": "http://www.tornadoweb.org",
+        "license": "ASL2.0",
+        "link": "https://www.apache.org/licenses/LICENSE-2.0.txt"
+    },
+    {
+        "library": "python-wheel",
+        "version": "0.24.0",
+        "source": "http://bitbucket.org/dholth/wheel/",
+        "license": "MIT",
+        "link": "http://opensource.org/licenses/MIT"
+    },
+    {
+        "library": "fabric",
+        "version": "1.6.2",
+        "source": "http://www.fabfile.org",
+        "license": "BSD",
+        "link": "http://www.schillmania.com/projects/soundmanager2/license.txt"
+    },
+    {
+        "library": "PyYAML",
+        "version": 3.11,
+        "source": "http://pyyaml.org/",
+        "license": "MIT",
+        "link": "http://opensource.org/licenses/MIT"
+    },
+    {
+        "library": "pexpect",
+        "version": 2.3,
+        "source": "http://pexpect.sourceforge.net/",
+        "license": "MIT",
+        "link": "http://opensource.org/licenses/MIT"
+    },
+    {
+        "library": "pyOpenSSL",
+        "version": "0.13.1",
+        "source": "http://pyopenssl.sourceforge.net/",
+        "license": "ASL2.0",
+        "link": "https://www.apache.org/licenses/LICENSE-2.0.txt"
+    },
+    {
+        "library": "erlang-17.4",
+        "version": 17.4,
+        "source": "http://www.erlang.org",
+        "license": "ERPL",
+        "link": "http://www.erlang.org/EPLICENSE"
+    },
+    {
+        "library": "ruby-2.1.4",
+        "version": "2.1.4",
+        "source": "http://ruby-lang.org/",
+        "license": "RubyorBSD",
+        "link": "https://www.ruby-lang.org/en/about/license.txt"
+    },
+    {
+        "library": "libxml2",
+        "version": "2.9.1",
+        "source": "http://xmlsoft.org/",
+        "license": "MIT",
+        "link": "http://opensource.org/licenses/MIT"
+    },
+    {
+        "library": "libxslt",
+        "version": "1.1.28",
+        "source": "http://xmlsoft.org/XSLT/",
+        "license": "MIT",
+        "link": "http://opensource.org/licenses/MIT"
+    },
+    {
+        "library": "zlib",
+        "version": "1.2.7",
+        "source": "http://www.zlib.net/",
+        "license": "zlibandBoost",
+        "link": "ftp://qiftp.tudelft.nl/DIPimage/licenses/zlib_license.txt"
+    },
+    {
+        "library": "libiconv",
+        "version": "NONE",
+        "source": "NONE",
+        "license": "GPLv2+",
+        "link": "https://www.gnu.org/licenses/gpl-2.0.txt"
+    },
+    {
+        "library": "rabbitmq-server-3.5.1-1.noarch.rpm",
+        "version": "3.5.1",
+        "source": "http://www.rabbitmq.com/",
+        "license": "MPLv1.1andMITandASL2.0",
+        "link": "https://www.apache.org/licenses/LICENSE-2.0.txt"
+    },
+    {
+        "library": "java-1.8.0-openjdk",
+        "version": "1.8.0.31",
+        "source": "http://openjdk.java.net/",
+        "license": "ASL1.1andASL2.0and",
+        "link": "https://www.apache.org/licenses/LICENSE-2.0.txt"
+    },
+    {
+        "library": "MySQL-python",
+        "version": "1.2.3",
+        "source": "http://sourceforge.net/projects/mysql-python/",
+        "license": "GPLv2+",
+        "link": "https://www.gnu.org/licenses/gpl-2.0.txt"
+    },
+    {
+        "library": "websocket-client",
+        "version": "NONE",
+        "source": "NONE",
+        "license": "MIT",
+        "link": "http://opensource.org/licenses/MIT"
+    },
+    {
+        "library": "pexpect",
+        "version": 2.3,
+        "source": "http://pexpect.sourceforge.net/",
+        "license": "MIT",
+        "link": "http://opensource.org/licenses/MIT"
+    },
+    {
+        "library": "tornado",
+        "version": "2.2.1",
+        "source": "http://www.tornadoweb.org",
+        "license": "ASL2.0",
+        "link": "https://www.apache.org/licenses/LICENSE-2.0.txt"
+    },
+    {
+        "library": "pika",
+        "version": "NONE",
+        "source": "NONE",
+        "license": "GPLv2.0",
+        "link": "https://www.gnu.org/licenses/gpl-2.0.txt"
+    },
+    {
+        "library": "fabric",
+        "version": "1.6.2",
+        "source": "http://www.fabfile.org",
+        "license": "BSD",
+        "link": "http://www.schillmania.com/projects/soundmanager2/license.txt"
+    },
+    {
+        "library": "python-six",
+        "version": "1.3.0",
+        "source": "http://pypi.python.org/pypi/six/",
+        "license": "MIT",
+        "link": "http://opensource.org/licenses/MIT"
+    },
+    {
+        "library": "cfgparse-0.1",
+        "version": "NONE",
+        "source": "NONE",
+        "license": "GPLv2.0",
+        "link": "https://www.gnu.org/licenses/gpl-2.0.txt"
+    },
+    {
+        "library": "knife-rackspace",
+        "version": "NONE",
+        "source": "NONE",
+        "license": "MIT",
+        "link": "http://opensource.org/licenses/MIT"
+    },
+    {
+        "library": "chef",
+        "version": "12.4.0",
+        "source": "https://www.chef.io",
+        "license": "Apache License",
+        "link": "https://www.apache.org/licenses/LICENSE-2.0.txt"
+    },
+    {
+        "library": "knife-attribute",
+        "version": "1.0.4",
+        "source": "NONE",
+        "license": "MIT",
+        "link": "http://opensource.org/licenses/MIT"
+    }
+]
