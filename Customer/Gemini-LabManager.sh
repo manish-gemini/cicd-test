@@ -78,6 +78,8 @@ else
 fi
 echo $onPremMode
 
+themeName="gemini"
+
 ip=`curl -s http://ipecho.net/plain; echo`
 printf "Enter the Host IP :"
 read -p "Default($ip):" hostip
@@ -126,11 +128,11 @@ then
 	if docker ps -a |grep -a gemini-chef; then
 		docker run -t --name gemini-stack -p 8888:8888 -e GEMINI_INT_REPO=$internalRepo -e CHEF_URL=https://$hostip:443  -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_mist -e GEMINI_PLATFORM_WS_HOST=$hostip -e GEMINI_PLATFORM_WS_PORT=9999 -e GEMINI_STACK_IPANEMA=1 --link db:db -v /var/lib/gemini/sshKey_root:/root --volumes-from gemini-chef -d  registry.gemini-systems.net/gemini/gemini-stack	
 		echo "platform run ..."
-		docker run -t --name gemini-platform -p 9999:8888 -p 80:3000  -e CHEF_URL=https://$hostip:443 -e GEMINI_STACK_WS_HOST=$hostip -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode --link db:db --volumes-from gemini-chef -d registry.gemini-systems.net/gemini/gemini-platform
+		docker run -t --name gemini-platform -p 9999:8888 -p 80:3000 -e CHEF_URL=https://$hostip:443 -e GEMINI_STACK_WS_HOST=$hostip -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName --link db:db --volumes-from gemini-chef -d registry.gemini-systems.net/gemini/gemini-platform
 	else
 		docker run -t --name gemini-stack -p 8888:8888 -e GEMINI_INT_REPO=$internalRepo -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_mist -e GEMINI_PLATFORM_WS_HOST=$hostip -e GEMINI_PLATFORM_WS_PORT=9999 -e GEMINI_STACK_IPANEMA=1 --link db:db  -v /var/lib/gemini/sshKey_root:/root -d  registry.gemini-systems.net/gemini/gemini-stack	
 		echo "platform run ..."
-		docker run -t --name gemini-platform -p 9999:8888 -p 80:3000 -e GEMINI_STACK_WS_HOST=$hostip -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode --link db:db -d registry.gemini-systems.net/gemini/gemini-platform
+		docker run -t --name gemini-platform -p 9999:8888 -p 80:3000 -e GEMINI_STACK_WS_HOST=$hostip -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName --link db:db -d registry.gemini-systems.net/gemini/gemini-platform
 
 	fi
 	echo "end ..."
@@ -142,11 +144,11 @@ then
 	if docker ps -a |grep -a gemini-chef; then
 		docker run -t --name gemini-stack -p 8888:8888 -e GEMINI_INT_REPO=$internalRepo -e CHEF_URL=https://$hostip:443  -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_mist -e GEMINI_PLATFORM_WS_HOST=$hostip -e GEMINI_PLATFORM_WS_PORT=9999 -e GEMINI_STACK_IPANEMA=1 --link db:db -v /var/lib/gemini/sshKey_root:/root --volumes-from gemini-chef -d gemini/gemini-stack    	
 		echo "platform run ..."
-		docker run -t --name gemini-platform -p 9999:8888 -p 80:3000 -e CHEF_URL=https://$hostip:443 -e GEMINI_STACK_WS_HOST=$hostip -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode --link db:db --volumes-from gemini-chef -d gemini/gemini-platform
+		docker run -t --name gemini-platform -p 9999:8888 -p 80:3000 -e CHEF_URL=https://$hostip:443 -e GEMINI_STACK_WS_HOST=$hostip -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName --link db:db --volumes-from gemini-chef -d gemini/gemini-platform
 	else
 		docker run -t --name gemini-stack -p 8888:8888 -e GEMINI_INT_REPO=$internalRepo -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_mist -e GEMINI_PLATFORM_WS_HOST=$hostip -e GEMINI_PLATFORM_WS_PORT=9999 -e GEMINI_STACK_IPANEMA=1 --link db:db  -v /var/lib/gemini/sshKey_root:/root -d gemini/gemini-stack    	
 		echo "platform run ..."
-		docker run -t --name gemini-platform -p 9999:8888 -p 80:3000 -e GEMINI_STACK_WS_HOST=$hostip -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode --link db:db -d gemini/gemini-platform
+		docker run -t --name gemini-platform -p 9999:8888 -p 80:3000 -e GEMINI_STACK_WS_HOST=$hostip -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName --link db:db -d gemini/gemini-platform
 	fi
 	echo "end ..."
 fi
