@@ -14,7 +14,7 @@ then
   echo "Pull Chef Server from Registry..."
   docker pull registry.gemini-systems.net/gemini/gemini-chef
   echo "Continue to run chef ..."
-  if docker ps -a |grep -a gemini-chef > /dev/null; then
+  if docker ps -a |grep -aq gemini-chef; then
         docker rm -f gemini-chef
   fi
 
