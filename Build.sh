@@ -136,6 +136,12 @@ read -p "Default(f7BjRhMOAfuDNafQTSRJmg=):" initVector
 initVector=${initVector:-"f7BjRhMOAfuDNafQTSRJmg="}
 echo $initVector
 
+echo "Enter the Repos to include:"
+echo "Local Repo = 1"
+echo "Production Repo = 2"
+read -p "Default(1):"repoType
+repoType=${repoType:-"1"}
+
 if docker images |grep -a gemini/gemini-stack; then
 	echo "gemini-stack exists.,"
 	quickBuildStack=1
@@ -184,8 +190,16 @@ set -o errexit
 #STEP 5: BUILD THE STACK CODE.
 #BUILD THE BASE IMAGE
 cd Dockerfiles
-cp ../gemini.repo .
-cp ../CentOS-Base.repo .
+if [ $repoType == 1 ]
+then
+    cp ../gemini.repo .
+    cp ../CentOS-Base.repo .
+    cp ../geminitest.repo .
+else
+    cp ../gemini.repo .
+    cp ../CentOS-Base.repo .
+fi
+
 if [ $quickBuild != 1 ]
 then
   echo "Build Base Image..."
