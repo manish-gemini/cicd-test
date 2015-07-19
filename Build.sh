@@ -137,10 +137,10 @@ initVector=${initVector:-"f7BjRhMOAfuDNafQTSRJmg="}
 echo $initVector
 
 echo "Enter the Repos to include:"
-echo "Local Repo = 1"
-echo "Production Repo = 2"
-read -p "Default(1):"repoType
-repoType=${repoType:-"1"}
+echo "Test Repo = 1"
+echo "Master Repo = 2"
+read -p "Default(2):"repoType
+repoType=${repoType:-"2"}
 
 if docker images |grep -a gemini/gemini-stack; then
 	echo "gemini-stack exists.,"
