@@ -1,5 +1,5 @@
 [gemrepo-prod]
 name=Gemini Production Repository
-baseurl=http://repos.gsintlab.com/repos/release/1.0/
+baseurl=http://repos.gsintlab.com/repos/
 enabled=1
 gpgcheck=0

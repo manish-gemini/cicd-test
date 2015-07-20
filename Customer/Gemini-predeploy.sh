@@ -29,39 +29,9 @@ echo "Flush Iptables"
 
 iptables -F
 
-echo "Install Security Certificate for Docker repo access"
+echo "Login to Gemini Docker Registry:"
 
-
-numOfTry=0
-until [ $numOfTry -ge 5 ]
-do
-	echo "Enter the Full path of the Certificate Location:"
-	read -p "Default(${PWD}):" certFilePath
-	certFilePath=${certFilePath:-${PWD}}
-	echo $certFilePath
-        certFile=$certFilePath/server.crt
-	echo $certFile
-	if [ ! -f $certFile ]
-	then
-	     echo "File seems to not exist.. "
-             if [ $numOfTry = 4 ]
-	     then
-		echo "ERROR: NO VALID CERTIFICATE FILE ...Exiting..."
-		exit
-	     fi
-	 else
-	      break
-         fi
-	 numOfTry=$[$numOfTry+1]
-	     
-done
-echo "Installing Certificate file"
-yum install -y ca-certificates
-update-ca-trust enable
-cp $certFile /etc/pki/ca-trust/source/anchors/.
-update-ca-trust extract
-service docker restart
-docker login https://secure-registry.gsintlab.com
+docker login https://registry.gemini-systems.net/
 
 
 
