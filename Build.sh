@@ -193,11 +193,13 @@ set -o errexit
 cd Dockerfiles
 if [ $repoType == 1 ]
 then
-    cp ../gemini.repo .
+    echo "copying repoType testingg.."
+    cp ../gemini-master.repo .
     cp ../CentOS-Base.repo .
-    cp ../geminitest.repo .
+    cp ../gemini-test.repo .
 else
-    cp ../gemini-production.repo .
+    echo "copying repoType RELEASE"
+    cp ../gemini-release.repo .
     cp ../CentOS-Base.repo .
 fi
 
@@ -225,13 +227,15 @@ cd $dirToCheckOut/Gemini-poc-mgnt
 cd Dockerfiles
 if [ $repoType == 1 ]
 then
-    cp ../gemini.repo .
-    cp ../geminitest.repo .
-    cp ../Gemfiletesting Gemfile
+    echo "copying repoType testingg.."
+    cp ../gemini-master.repo .
+    cp ../gemini-test.repo .
+    cp ../Gemfile-master Gemfile
     
 else
-    cp ../gemini-production.repo .
-    cp ../Gemfile-production Gemfile
+    echo "copying repoType RELEASE"
+    cp ../gemini-release.repo .
+    cp ../Gemfile-release Gemfile
 fi
 
 if [ $quickBuild != 1 ]
