@@ -193,11 +193,13 @@ set -o errexit
 cd Dockerfiles
 if [ $repoType == 1 ]
 then
-    cp ../gemini.repo .
+    echo "copying repoType testingg.."
+    cp ../gemini-master.repo .
     cp ../CentOS-Base.repo .
-    cp ../geminitest.repo .
+    cp ../gemini-test.repo .
 else
-    cp ../gemini.repo .
+    echo "copying repoType RELEASE"
+    cp ../gemini-release.repo .
     cp ../CentOS-Base.repo .
 fi
 
@@ -216,15 +218,26 @@ tar cf Dockerfiles/GeminiStack.tar -T Dockerfiles/GeminiStack.lst
 cd Dockerfiles
 echo "Build Stack Image..."
 docker build -t gemini/gemini-stack:$commitID -f GeminiStack .
-rm GeminiStack.tar gemini.config.ini gemini.repo CentOS-Base.repo
+rm GeminiStack.tar gemini.config.ini gemini*.repo CentOS-Base.repo
 
 #PLATFORM CODE :
 
 cd $dirToCheckOut/Gemini-poc-mgnt
 
 cd Dockerfiles
-cp ../gemini.repo .
-cp ../Gemfile .
+if [ $repoType == 1 ]
+then
+    echo "copying repoType testingg.."
+    cp ../gemini-master.repo .
+    cp ../gemini-test.repo .
+    cp ../Gemfile-master Gemfile
+    
+else
+    echo "copying repoType RELEASE"
+    cp ../gemini-release.repo .
+    cp ../Gemfile-release Gemfile
+fi
+
 if [ $quickBuild != 1 ]
 then
   # echo "Gemini Base Image..."
@@ -232,7 +245,7 @@ then
   echo "Gemini Platform Base Image..."
   docker build -t gemini/gemini-platform-base:$commitID -f GeminiPlatformBase .
 fi
-rm Gemfile gemini.repo
+rm Gemfile gemini*.repo
 cd ..
 
 #echo "pull gemini-stack image from the internal repo"
