@@ -136,9 +136,10 @@ read -p "Default(f7BjRhMOAfuDNafQTSRJmg=):" initVector
 initVector=${initVector:-"f7BjRhMOAfuDNafQTSRJmg="}
 echo $initVector
 
-echo "Enter the Repos to include:"
+echo "Enter the Repos to test:"
 echo "Test Repo = 1"
 echo "Master Repo = 2"
+echo "Release Repo = 3"
 read -p "Default(2):" repoType
 repoType=${repoType:-"2"}
 echo $repoType
@@ -193,10 +194,15 @@ set -o errexit
 cd Dockerfiles
 if [ $repoType == 1 ]
 then
-    echo "copying repoType testingg.."
+    echo "copying repoType Integration"
+    cp ../gemini-test.repo .
     cp ../gemini-master.repo .
     cp ../CentOS-Base.repo .
-    cp ../gemini-test.repo .
+elif [ $repoType == 2 ]
+then
+    echo "copying repoType Master"
+    cp ../gemini-master.repo .
+    cp ../CentOS-Base.repo .
 else
     echo "copying repoType RELEASE"
     cp ../gemini-release.repo .
@@ -227,11 +233,15 @@ cd $dirToCheckOut/Gemini-poc-mgnt
 cd Dockerfiles
 if [ $repoType == 1 ]
 then
-    echo "copying repoType testingg.."
+    echo "copying repoType Integration"
     cp ../gemini-master.repo .
     cp ../gemini-test.repo .
     cp ../Gemfile-master Gemfile
-    
+elif [ $repoType == 2 ]
+then
+    echo "copying repoType Master"
+    cp ../gemini-master.repo .
+    cp ../Gemfile-master Gemfile
 else
     echo "copying repoType RELEASE"
     cp ../gemini-release.repo .
