@@ -75,7 +75,12 @@ else
 fi
 echo $onPremMode
 
-themeName="gemini"
+if [ $# -eq 0 ]
+  then
+    themeName="gemini"
+fi
+
+themeName=$1
 
 ip=`curl -s http://ipecho.net/plain; echo`
 printf "Enter the Host IP :"
