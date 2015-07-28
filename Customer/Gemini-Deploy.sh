@@ -14,8 +14,23 @@ case $yn in
         * ) echo "Please answer yes or no.";;
 esac
 
+while getopts e: option
+do
+        case "${option}"
+        in
+                e) theme=${OPTARG};;
+        esac
+done
+
+if [ -z "$theme" ];
+then
+	theme="gemini" 
+else 
+	echo "theme is set to '$theme'";
+fi
+
 echo "Deploy GeminiLabManager...."
-if ! bash Gemini-LabManager.sh
+if ! bash Gemini-LabManager.sh $theme
 then
         exit
 fi
