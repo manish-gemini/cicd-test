@@ -67,7 +67,7 @@
         "version": "4.2.1",
         "source": "https://rubygems.org/",
         "license": "MIT",
-        "link": "http://opensource.org/licenses/MIT"
+        "link": "https://raw.githubusercontent.com/rails/rails/master/activejob/MIT-LICENSE"
     },
     {
         "library": "sqlite3",
@@ -81,97 +81,97 @@
         "version": "2.9.1",
         "source": "https://rubygems.org/",
         "license": "MIT",
-        "link": "http://opensource.org/licenses/MIT"
+        "link": "https://raw.githubusercontent.com/mysql/mysql-server/5.7/README"
     },
     {
         "library": "sass-rails",
         "version": "4.0.5",
         "source": "https://rubygems.org/",
         "license": "MIT",
-        "link": "http://opensource.org/licenses/MIT"
+        "link": "https://raw.githubusercontent.com/rails/sass-rails/master/MIT-LICENSE"
     },
     {
         "library": "uglifier",
         "version": "2.7.1",
         "source": "https://rubygems.org/",
         "license": "MIT",
-        "link": "http://opensource.org/licenses/MIT"
+        "link": "https://raw.githubusercontent.com/lautis/uglifier/master/LICENSE.txt"
     },
     {
         "library": "coffee-rails",
         "version": "4.0.1",
         "source": "https://rubygems.org/",
         "license": "MIT",
-        "link": "http://opensource.org/licenses/MIT"
+        "link": "https://raw.githubusercontent.com/rails/coffee-rails/master/MIT-LICENSE"
     },
     {
         "library": "therubyracer",
         "version": "0.12.2",
         "source": "https://rubygems.org/",
         "license": "MIT",
-        "link": "http://opensource.org/licenses/MIT"
+        "link": "http://www.opensource.apple.com/source/ruby/ruby-83.4/rake-0.8.7/MIT-LICENSE?txt"
     },
     {
         "library": "jquery-rails",
         "version": "4.0.3",
         "source": "https://rubygems.org/",
         "license": "MIT",
-        "link": "http://opensource.org/licenses/MIT"
+        "link": "https://raw.githubusercontent.com/rails/jquery-rails/master/LICENSE"
     },
     {
         "library": "turbolinks",
         "version": "2.5.3",
         "source": "https://rubygems.org/",
         "license": "MIT",
-        "link": "http://opensource.org/licenses/MIT"
+        "link": "https://raw.githubusercontent.com/rails/turbolinks/master/MIT-LICENSE"
     },
     {
         "library": "jbuilder",
         "version": "2.2.12",
         "source": "https://rubygems.org/",
         "license": "MIT",
-        "link": "http://opensource.org/licenses/MIT"
+        "link": "https://raw.githubusercontent.com/rails/jbuilder/master/MIT-LICENSE"
     },
     {
         "library": "sdoc",
         "version": "0.4.1",
         "source": "https://rubygems.org/",
         "license": "MIT",
-        "link": "http://opensource.org/licenses/MIT"
+        "link": "https://raw.githubusercontent.com/voloko/sdoc/master/LICENSE"
     },
     {
         "library": "tzinfo-data",
         "source": "https://rubygems.org/",
         "license": "MIT",
-        "link": "http://opensource.org/licenses/MIT"
+        "link": "https://raw.githubusercontent.com/tzinfo/tzinfo-data/master/LICENSE"
     },
     {
         "library": "sprockets-rails",
         "version": "2.1.3",
         "source": "https://rubygems.org/",
         "license": "MIT",
-        "link": "http://opensource.org/licenses/MIT"
+        "link": "https://raw.githubusercontent.com/rails/sprockets-rails/master/LICENSE"
     },
     {
         "library": "bootstrap-sass",
         "version": "3.2.0.2",
         "source": "https://rubygems.org/",
         "license": "MIT",
-        "link": "http://opensource.org/licenses/MIT"
+        "link": "https://raw.githubusercontent.com/twbs/bootstrap-sass/master/LICENSE"
     },
     {
         "library": "autoprefixer-rails",
         "version": "5.1.8",
         "source": "https://rubygems.org/",
         "license": "MIT",
-        "link": "http://opensource.org/licenses/MIT"
+        "link": "https://raw.githubusercontent.com/ai/autoprefixer-rails/master/LICENSE"
     },
     {
         "library": "devise",
         "version": "3.4.1",
         "source": "https://rubygems.org/",
         "license": "MIT",
-        "link": "http://opensource.org/licenses/MIT"
+        "link": "https://raw.githubusercontent.com/plataformatec/devise/master/MIT-LICENSE"
     },
     {
         "library": "em-websocket",
@@ -185,7 +185,7 @@
         "version": "0.9.8",
         "source": "https://rubygems.org/",
         "license": "MIT",
-        "link": "http://opensource.org/licenses/MIT"
+        "link": "https://raw.githubusercontent.com/ruby-amqp/bunny/master/LICENSE"
     },
     {
         "library": "json",
@@ -206,56 +206,56 @@
         "version": "0.1.1",
         "source": "https://rubygems.org/",
         "license": "MIT",
-        "link": "http://opensource.org/licenses/MIT"
+        "link": "https://raw.githubusercontent.com/rails/activerecord-session_store/master/LICENSE"
     },
     {
         "library": "docker",
         "version": "0.0.1",
         "source": "https://rubygems.org/",
-        "license": "MIT",
-        "link": "http://opensource.org/licenses/MIT"
+        "license": "Apache",
+        "link": "https://raw.githubusercontent.com/docker/docker/master/LICENSE"
     },
     {
         "library": "docker-api",
         "version": "1.13.7",
         "source": "https://rubygems.org/",
         "license": "MIT",
-        "link": "http://opensource.org/licenses/MIT"
+        "link": "https://raw.githubusercontent.com/swipely/docker-api/master/LICENSE"
     },
     {
         "library": "thor",
         "version": "0.19.1",
         "source": "https://rubygems.org/",
         "license": "MIT",
-        "link": "http://opensource.org/licenses/MIT"
+        "link": "https://raw.githubusercontent.com/erikhuda/thor/master/LICENSE.md"
     },
     {
         "library": "dotenv",
         "version": "0.11.1",
         "source": "https://rubygems.org/",
         "license": "MIT",
-        "link": "http://opensource.org/licenses/MIT"
+        "link": "https://raw.githubusercontent.com/bkeepers/dotenv/master/LICENSE"
     },
     {
         "library": "net-ssh",
         "version": "2.9.2",
         "source": "https://rubygems.org/",
         "license": "MIT",
-        "link": "http://opensource.org/licenses/MIT"
+        "link": "https://raw.githubusercontent.com/net-ssh/net-ssh/master/LICENSE.txt"
     },
     {
         "library": "net-scp",
         "version": "1.2.1",
         "source": "https://rubygems.org/",
         "license": "MIT",
-        "link": "http://opensource.org/licenses/MIT"
+        "link": "https://raw.githubusercontent.com/net-ssh/net-scp/master/LICENSE.txt"
     },
     {
         "library": "themes_on_rails",
         "version": "0.2.2",
         "source": "https://rubygems.org/",
         "license": "MIT",
-        "link": "http://opensource.org/licenses/MIT"
+        "link": "https://raw.githubusercontent.com/yoolk/themes_on_rails/master/MIT-LICENSE"
     },
     {
         "library": "remotipart",
@@ -269,7 +269,7 @@
         "version": "10.4.2",
         "source": "https://rubygems.org/",
         "license": "MIT",
-        "link": "http://opensource.org/licenses/MIT"
+        "link": "https://raw.githubusercontent.com/ruby/rake/master/MIT-LICENSE"
     },
     {
         "library": "passenger",
@@ -283,14 +283,14 @@
         "version": "0.4.0",
         "source": "https://rubygems.org/",
         "license": "MIT",
-        "link": "http://opensource.org/licenses/MIT"
+        "link": "https://raw.githubusercontent.com/adamniedzielski/tiddle/master/LICENSE.txt"
     },
     {
         "library": "pundit",
         "version": "0.3.0",
         "source": "https://rubygems.org/",
         "license": "MIT",
-        "link": "http://opensource.org/licenses/MIT"
+        "link": "https://raw.githubusercontent.com/elabs/pundit/master/LICENSE.txt"
     },
     {
         "library": "workflow",
@@ -304,7 +304,7 @@
         "version": "1.6.1",
         "source": "https://rubygems.org/",
         "license": "MIT",
-        "link": "http://opensource.org/licenses/MIT"
+        "link": "https://raw.githubusercontent.com/isaacs/ssh-key-decrypt/master/LICENSE"
     },
     {
         "library": "breadcrumbs_on_rails",
@@ -318,6 +318,6 @@
         "version": "3.1.3",
         "source": "https://rubygems.org/",
         "license": "MIT",
-        "link": "http://opensource.org/licenses/MIT"
+        "link": "https://raw.githubusercontent.com/jmettraux/rufus-scheduler/master/LICENSE.txt"
     }
 ]

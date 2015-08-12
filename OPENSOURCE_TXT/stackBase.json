@@ -11,7 +11,7 @@
         "version": "1.5.6",
         "source": "http://www.pip-installer.org",
         "license": "MIT",
-        "link": "http://opensource.org/licenses/MIT"
+        "link": "https://raw.githubusercontent.com/pypa/pip/develop/LICENSE.txt"
     },
     {
         "library": "python-devel",
@@ -39,7 +39,7 @@
         "version": "0.24.0",
         "source": "http://bitbucket.org/dholth/wheel/",
         "license": "MIT",
-        "link": "http://opensource.org/licenses/MIT"
+        "link": "https://bitbucket.org/pypa/wheel/raw/f746a01eab7a673cb628a52f99c129d0d5741bcf/LICENSE.txt"
     },
     {
         "library": "fabric",
@@ -53,14 +53,14 @@
         "version": 3.11,
         "source": "http://pyyaml.org/",
         "license": "MIT",
-        "link": "http://opensource.org/licenses/MIT"
+        "link": "https://raw.githubusercontent.com/ravenac95/PyYAML/master/LICENSE"
     },
     {
         "library": "pexpect",
         "version": 2.3,
         "source": "http://pexpect.sourceforge.net/",
         "license": "MIT",
-        "link": "http://opensource.org/licenses/MIT"
+        "link": "https://raw.githubusercontent.com/pexpect/pexpect/master/LICENSE"
     },
     {
         "library": "pyOpenSSL",
@@ -88,14 +88,14 @@
         "version": "2.9.1",
         "source": "http://xmlsoft.org/",
         "license": "MIT",
-        "link": "http://opensource.org/licenses/MIT"
+        "link": "https://raw.githubusercontent.com/ConradIrwin/libxml2/master/Copyright"
     },
     {
         "library": "libxslt",
         "version": "1.1.28",
         "source": "http://xmlsoft.org/XSLT/",
         "license": "MIT",
-        "link": "http://opensource.org/licenses/MIT"
+        "link": "https://raw.githubusercontent.com/lrowe/libxslt/master/Copyright"
     },
     {
         "library": "zlib",
@@ -122,7 +122,7 @@
         "library": "java-1.8.0-openjdk",
         "version": "1.8.0.31",
         "source": "http://openjdk.java.net/",
-        "license": "ASL1.1andASL2.0and",
+        "license": "ASL1.1andASL2.0",
         "link": "https://www.apache.org/licenses/LICENSE-2.0.txt"
     },
     {
@@ -136,15 +136,15 @@
         "library": "websocket-client",
         "version": "NONE",
         "source": "NONE",
-        "license": "MIT",
-        "link": "http://opensource.org/licenses/MIT"
+        "license": "GPL",
+        "link": "https://raw.githubusercontent.com/liris/websocket-client/master/LICENSE"
     },
     {
         "library": "pexpect",
         "version": 2.3,
         "source": "http://pexpect.sourceforge.net/",
         "license": "MIT",
-        "link": "http://opensource.org/licenses/MIT"
+        "link": "https://raw.githubusercontent.com/pexpect/pexpect/master/LICENSE"
     },
     {
         "library": "tornado",
@@ -172,7 +172,7 @@
         "version": "1.3.0",
         "source": "http://pypi.python.org/pypi/six/",
         "license": "MIT",
-        "link": "http://opensource.org/licenses/MIT"
+        "link": "https://raw.githubusercontent.com/kelp404/six/master/LICENSE"
     },
     {
         "library": "cfgparse-0.1",
@@ -185,8 +185,8 @@
         "library": "knife-rackspace",
         "version": "NONE",
         "source": "NONE",
-        "license": "MIT",
-        "link": "http://opensource.org/licenses/MIT"
+        "license": "Apache License",
+        "link": "https://raw.githubusercontent.com/chef/knife-rackspace/master/LICENSE"
     },
     {
         "library": "chef",
@@ -200,6 +200,160 @@
         "version": "1.0.4",
         "source": "NONE",
         "license": "MIT",
-        "link": "http://opensource.org/licenses/MIT"
+        "link": "https://raw.githubusercontent.com/pdf/knife-attribute/master/LICENSE.txt"
+    },
+    {
+        "library": "autoconf-2.69-11.el7.noarch",
+        "version": 2.69,
+        "source": "http://www.gnu.org/software/autoconf/",
+        "license": "GPLv2+andGFDL",
+        "link": "https://www.gnu.org/licenses/gpl-2.0.txt"
+    },
+    {
+        "library": "bison-2.7-4.el7.x86_64",
+        "version": 2.7,
+        "source": "http://www.gnu.org/software/bison/",
+        "license": "GPLv3+",
+        "link": "https://www.gnu.org/licenses/gpl.txt"
+    },
+    {
+        "library": "flex-2.5.37-3.el7.x86_64",
+        "version": "2.5.37",
+        "source": "http://flex.sourceforge.net/",
+        "license": "BSDandLGPLv2+",
+        "link": "https://www.gnu.org/licenses/gpl-2.0.txt"
+    },
+    {
+        "library": "gcc-4.8.3-9.el7.x86_64",
+        "version": "4.8.3",
+        "source": "http://gcc.gnu.org",
+        "license": "GPLv3+andGPLv3+",
+        "link": "https://www.gnu.org/licenses/gpl.txt"
+    },
+    {
+        "library": "gcc-c++-4.8.3-9.el7.x86_64",
+        "version": "4.8.3",
+        "source": "http://gcc.gnu.org",
+        "license": "GPLv3+andGPLv3+",
+        "link": "https://www.gnu.org/licenses/gpl.txt"
+    },
+    {
+        "library": "kernel-devel-3.10.0-229.7.2.el7.x86_64",
+        "version": "3.10.0",
+        "source": "http://www.kernel.org/",
+        "license": "GPLv2",
+        "link": "https://www.gnu.org/licenses/gpl-2.0.txt"
+    },
+    {
+        "library": "make-3.82-21.el7.x86_64",
+        "version": 3.82,
+        "source": "http://www.gnu.org/software/make/",
+        "license": "GPLv2+",
+        "link": "https://www.gnu.org/licenses/gpl-2.0.txt"
+    },
+    {
+        "library": "m4-1.4.16-9.el7.x86_64",
+        "version": "1.4.16",
+        "source": "http://www.gnu.org/software/m4/",
+        "license": "GPLv3+",
+        "link": "https://www.gnu.org/licenses/gpl.txt"
+    },
+    {
+        "library": "patch-2.7.1-8.el7.x86_64",
+        "version": "2.7.1",
+        "source": "http://www.gnu.org/software/patch/patch.html",
+        "license": "GPLv3+",
+        "link": "https://www.gnu.org/licenses/gpl.txt"
+    },
+    {
+        "library": "gettext-0.18.2.1-4.el7.x86_64",
+        "version": "0.18.2.1",
+        "source": "http://www.gnu.org/software/gettext/",
+        "license": "GPLv3+andLGPLv2+",
+        "link": "https://www.gnu.org/licenses/gpl-2.0.txt"
+    },
+    {
+        "library": "ncurses-libs-5.9-13.20130511.el7.x86_64",
+        "version": 5.9,
+        "source": "http://invisible-island.net/ncurses/ncurses.html",
+        "license": "MIT",
+        "link": "https://raw.githubusercontent.com/jeaye/ncurses-rs/master/LICENSE"
+    },
+    {
+        "library": "firewalld-0.3.9-11.el7.noarch",
+        "version": "0.3.9",
+        "source": "http://fedorahosted.org/firewalld",
+        "license": "GPLv2+",
+        "link": "https://www.gnu.org/licenses/gpl-2.0.txt"
+    },
+    {
+        "library": "bridge-utils-1.5-9.el7.x86_64",
+        "version": 1.5,
+        "source": "http://www.linuxfoundation.org/collaborate/workgroups/networking/bridge",
+        "license": "GPLv2+",
+        "link": "https://www.gnu.org/licenses/gpl-2.0.txt"
+    },
+    {
+        "library": "net-tools-2.0-0.17.20131004git.el7.x86_64",
+        "version": 2,
+        "source": "http://sourceforge.net/projects/net-tools/",
+        "license": "GPLv2+",
+        "link": "https://www.gnu.org/licenses/gpl-2.0.txt"
+    },
+    {
+        "library": "iptables-1.4.21-13.el7.x86_64",
+        "version": "1.4.21",
+        "source": "http://www.netfilter.org/",
+        "license": "GPLv2",
+        "link": "https://www.gnu.org/licenses/gpl-2.0.txt"
+    },
+    {
+        "library": "iptables-services-1.4.21-13.el7.x86_64",
+        "version": "1.4.21",
+        "source": "http://www.netfilter.org/",
+        "license": "GPLv2",
+        "link": "https://www.gnu.org/licenses/gpl-2.0.txt"
+    },
+    {
+        "library": "etcd-2.0.1-0.1.el7.x86_64",
+        "version": "2.0.1",
+        "source": "https://github.com/coreos/etcd",
+        "license": "ASL2.0",
+        "link": "https://www.apache.org/licenses/LICENSE-2.0.txt"
+    },
+    {
+        "library": "flannel-0.2.0-7.el7.x86_64",
+        "version": "0.2.0",
+        "source": "https://github.com/coreos/flannel",
+        "license": "ASL2.0",
+        "link": "https://www.apache.org/licenses/LICENSE-2.0.txt"
+    },
+    {
+        "library": "kernel-headers-3.10.0-229.7.2.el7.x86_64",
+        "version": "3.10.0",
+        "source": "http://www.kernel.org/",
+        "license": "GPLv2",
+        "link": "https://www.gnu.org/licenses/gpl-2.0.txt"
+    },
+    {
+        "library": "zfs-release-1-2.el7.centos.noarch",
+        "version": 1,
+        "source": "http://zfsonlinux.org",
+        "license": "BSD",
+        "link": "http://www.schillmania.com/projects/soundmanager2/license.txt"
+    },
+    {
+        "library": "kubernetes-0.9.1-0.6.git7f5ed54.el7.x86_64",
+        "version": "0.9.1",
+        "source": "https://github.com/GoogleCloudPlatform/kubernetes",
+        "license": "ASL2.0",
+        "link": "https://www.apache.org/licenses/LICENSE-2.0.txt"
+    },
+    {
+        "library": "cadvisor-0.14.0-1.el7.x86_64",
+        "version": "0.14.0",
+        "source": "https://github.com/google/cadvisor",
+        "license": "ASL2.0",
+        "link": "https://www.apache.org/licenses/LICENSE-2.0.txt"
     }
 ]
