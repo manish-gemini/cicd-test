@@ -199,22 +199,18 @@ then
     cp ../gemini-dev.repo .
     cp ../gemini-test.repo .
     cp ../gemini-master.repo .
-    cp ../CentOS-Base.repo .
 elif [ $repoType == 3 ]
 then
     echo "copying repoType Integration"
     cp ../gemini-test.repo .
     cp ../gemini-master.repo .
-    cp ../CentOS-Base.repo .
 elif [ $repoType == 2 ]
 then
     echo "copying repoType Master"
     cp ../gemini-master.repo .
-    cp ../CentOS-Base.repo .
 else
     echo "copying repoType RELEASE"
     cp ../gemini-release.repo .
-    cp ../CentOS-Base.repo .
 fi
 
 if [ $quickBuild != 1 ]
