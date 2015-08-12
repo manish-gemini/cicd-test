@@ -137,9 +137,10 @@ initVector=${initVector:-"f7BjRhMOAfuDNafQTSRJmg="}
 echo $initVector
 
 echo "Enter the Repos to test:"
-echo "Test Repo = 1"
+echo "Release Repo = 1"
 echo "Master Repo = 2"
-echo "Release Repo = 3"
+echo "Test Repo = 3"
+echo "Dev Repo = 4"
 read -p "Default(2):" repoType
 repoType=${repoType:-"2"}
 echo $repoType
@@ -192,7 +193,14 @@ set -o errexit
 #STEP 5: BUILD THE STACK CODE.
 #BUILD THE BASE IMAGE
 cd Dockerfiles
-if [ $repoType == 1 ]
+if [ $repoType == 4 ]
+then
+    echo "copying repoType Dev"
+    cp ../gemini-dev.repo .
+    cp ../gemini-test.repo .
+    cp ../gemini-master.repo .
+    cp ../CentOS-Base.repo .
+elif [ $repoType == 3 ]
 then
     echo "copying repoType Integration"
     cp ../gemini-test.repo .
@@ -224,14 +232,21 @@ tar cf Dockerfiles/GeminiStack.tar -T Dockerfiles/GeminiStack.lst
 cd Dockerfiles
 echo "Build Stack Image..."
 docker build -t gemini/gemini-stack:$commitID -f GeminiStack .
-rm GeminiStack.tar gemini.config.ini gemini*.repo CentOS-Base.repo
+rm GeminiStack.tar gemini.config.ini gemini*.repo
 
 #PLATFORM CODE :
 
 cd $dirToCheckOut/Gemini-poc-mgnt
 
 cd Dockerfiles
-if [ $repoType == 1 ]
+if [ $repoType == 4 ]
+then
+    echo "copying repoType Dev"
+    cp ../gemini-dev.repo .
+    cp ../gemini-test.repo .
+    cp ../gemini-master.repo .
+    cp ../Gemfile-master Gemfile
+elif [ $repoType == 3 ]
 then
     echo "copying repoType Integration"
     cp ../gemini-master.repo .
