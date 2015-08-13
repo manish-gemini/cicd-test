@@ -193,6 +193,7 @@ set -o errexit
 #STEP 5: BUILD THE STACK CODE.
 #BUILD THE BASE IMAGE
 cd Dockerfiles
+cp ../CentOS-Base.repo .
 if [ $repoType == 4 ]
 then
     echo "copying repoType Dev"
