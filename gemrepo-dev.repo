@@ -1,5 +1,5 @@
 [gemrepo-dev]
 name=Gemini Dev Repository
-baseurl=http://repos.gsintlab.com/repos/
+baseurl=http://repos.gsintlab.com/dev/
 enabled=1
 gpgcheck=0

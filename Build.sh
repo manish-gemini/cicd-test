@@ -136,9 +136,11 @@ read -p "Default(f7BjRhMOAfuDNafQTSRJmg=):" initVector
 initVector=${initVector:-"f7BjRhMOAfuDNafQTSRJmg="}
 echo $initVector
 
-echo "Enter the Repos to include:"
-echo "Test Repo = 1"
+echo "Enter the Repos to test:"
+echo "Release Repo = 1"
 echo "Master Repo = 2"
+echo "Test Repo = 3"
+echo "Dev Repo = 4"
 read -p "Default(2):" repoType
 repoType=${repoType:-"2"}
 echo $repoType
@@ -191,14 +193,25 @@ set -o errexit
 #STEP 5: BUILD THE STACK CODE.
 #BUILD THE BASE IMAGE
 cd Dockerfiles
-if [ $repoType == 1 ]
+cp ../CentOS-Base.repo .
+if [ $repoType == 4 ]
 then
-    cp ../gemini.repo .
-    cp ../CentOS-Base.repo .
-    cp ../geminitest.repo .
+    echo "copying repoType Dev"
+    cp ../gemini-dev.repo .
+    cp ../gemini-test.repo .
+    cp ../gemini-master.repo .
+elif [ $repoType == 3 ]
+then
+    echo "copying repoType Integration"
+    cp ../gemini-test.repo .
+    cp ../gemini-master.repo .
+elif [ $repoType == 2 ]
+then
+    echo "copying repoType Master"
+    cp ../gemini-master.repo .
 else
-    cp ../gemini.repo .
-    cp ../CentOS-Base.repo .
+    echo "copying repoType RELEASE"
+    cp ../gemini-release.repo .
 fi
 
 if [ $quickBuild != 1 ]
@@ -216,15 +229,37 @@ tar cf Dockerfiles/GeminiStack.tar -T Dockerfiles/GeminiStack.lst
 cd Dockerfiles
 echo "Build Stack Image..."
 docker build -t gemini/gemini-stack:$commitID -f GeminiStack .
-rm GeminiStack.tar gemini.config.ini gemini.repo CentOS-Base.repo
+rm GeminiStack.tar gemini.config.ini gemini*.repo CentOS-Base.repo
 
 #PLATFORM CODE :
 
 cd $dirToCheckOut/Gemini-poc-mgnt
 
 cd Dockerfiles
-cp ../gemini.repo .
-cp ../Gemfile .
+if [ $repoType == 4 ]
+then
+    echo "copying repoType Dev"
+    cp ../gemini-dev.repo .
+    cp ../gemini-test.repo .
+    cp ../gemini-master.repo .
+    cp ../Gemfile-master Gemfile
+elif [ $repoType == 3 ]
+then
+    echo "copying repoType Integration"
+    cp ../gemini-master.repo .
+    cp ../gemini-test.repo .
+    cp ../Gemfile-master Gemfile
+elif [ $repoType == 2 ]
+then
+    echo "copying repoType Master"
+    cp ../gemini-master.repo .
+    cp ../Gemfile-master Gemfile
+else
+    echo "copying repoType RELEASE"
+    cp ../gemini-release.repo .
+    cp ../Gemfile-release Gemfile
+fi
+
 if [ $quickBuild != 1 ]
 then
   # echo "Gemini Base Image..."
@@ -232,7 +267,7 @@ then
   echo "Gemini Platform Base Image..."
   docker build -t gemini/gemini-platform-base:$commitID -f GeminiPlatformBase .
 fi
-rm Gemfile gemini.repo
+rm Gemfile gemini*.repo
 cd ..
 
 #echo "pull gemini-stack image from the internal repo"
