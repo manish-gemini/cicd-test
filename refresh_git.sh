@@ -1,4 +1,5 @@
 #!/bin/bash
+cpwd=`pwd`
 if [ "$1" == "" ]
 then 
   BRANCH=master
@@ -6,34 +7,20 @@ else
   #OPTIONS for BRANCH master, integration, dev
   BRANCH=$1
 fi
-cd ./Gemini-poc-stack
-echo "Working on:" `pwd`
+function git_refresh() {
+echo "Refreshing Git code on:" `pwd`
 git reset --hard HEAD
 git pull
 git checkout $BRANCH
-#git checkout tags/$commitID
-cd ../Gemini-poc-mgnt
-echo "Working on:" `pwd`
-git reset --hard HEAD
 git pull
-git checkout $BRANCH
-#git checkout tags/$commitID
-cd ../Gemini-CLI
-echo "Working on:" `pwd`
-git reset --hard HEAD
-git pull
-git checkout $BRANCH
-#git checkout tags/$commitID
-cd ../docs
-echo "Working on:" `pwd`
-git reset --hard HEAD
-git pull
-git checkout $BRANCH
-#git checkout tags/$commitID
-cd ../cicd
-echo "Working on:" `pwd`
-git reset --hard HEAD
-git pull
-git checkout $BRANCH
-#git checkout tags/$commitID
-cd ../
+
+}
+
+array=( Gemini-poc-stack Gemini-poc-mgnt Gemini-CLI docs cicd )
+for i in "${array[@]}"
+do
+    cd ${cpwd}/$i
+    git_refresh
+done
+cd ${cpwd}
+
