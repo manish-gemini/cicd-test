@@ -127,7 +127,7 @@ echo "Setting MAX PHUSION PROCESS:"$max_app_processes
 
 echo "continue to deploy..."
 echo "Removing if any existing docker process with same name to avoid conflicts"
-docker rm -f gemini-stack gemini-platform db  
+docker rm -f gemini-stack gemini-platform db gemini-rmq 
 
 if docker ps -a |grep -a gemini-mist; then
 	docker rm -f gemini-mist
@@ -140,6 +140,7 @@ iptables -D  FORWARD -j REJECT --reject-with icmp-host-prohibited
 
 echo "db run .."
 docker run --name db -e MYSQL_ROOT_PASSWORD=admin -e MYSQL_USER=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -v /var/dbstore:/var/lib/mysql -d mysql:5.6.24
+docker run -d --hostname rmq  --name gemini-rmq -d rabbitmq:3
 sleep 60
 
 if [ $deployType -eq 2 ]
