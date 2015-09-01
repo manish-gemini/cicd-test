@@ -82,7 +82,7 @@ fi
 
 themeName=$1
 
-ip=`curl -s http://ipecho.net/plain; echo`
+ip=`curl -s http://whatismyip.akamai.com; echo`
 printf "Enter the Host IP :"
 read -p "Default($ip):" hostip
 hostip=${hostip:-$ip}
