@@ -1,0 +1,6 @@
+#!/bin/bash
+echo "Welcome to Gemini";
+echo "Creating app deployment file..."
+curl -sS {{ url('deploy-yaml') }} > docker-compose.yaml
+echo "Deployment file created successfully!!!"
+echo "To run the app execute 'docker-compose up' from the current directory"

@@ -1,0 +1,66 @@
+geminiChef:
+  image: secure-registry.gsintlab.com/gemini/gemini-chef-test
+  privileged: true
+  volumes:
+    - /etc/chef-server/
+  ports:
+    - "8443:443"
+geminiRmq:
+  image: secure-registry.gsintlab.com/gemini/gemini-rmq
+  hostname: rmq
+  ports:
+    - "5672"
+db:
+  image: mysql:5.6.24
+  environment:
+    MYSQL_ROOT_PASSWORD: admin
+    MYSQL_USER: root
+    MYSQL_PASSWORD: admin
+    MYSQL_DATABASE: gemini_platform
+  volumes:
+    - /var/dbstore:/var/lib/mysql
+  ports:
+    - "3306"
+
+geminiStack:
+  image: gemini/gemini-stack
+  environment:
+    GEMINI_INT_REPO: http://repos.gsintlab.com/repos/
+    MYSQL_HOST: db
+    MYSQL_USERNAME: root
+    MYSQL_PASSWORD: admin
+    MYSQL_DATABASE: gemini_mist
+    GEMINI_STACK_IPANEMA: 1
+    CHEF_URL: https://209.205.208.52:8443
+    TERM: dumb
+  links:
+    - db:db
+    - geminiRmq:rmq
+    - geminiChef:chef
+  volumes:
+    - /var/log/gemini/stack:/var/log/gemini
+    - /var/lib/gemini/sshKey_root:/root
+  volumes_from:
+    - geminiChef
+
+geminiPlatform:
+  image: gemini/gemini-platform
+  environment:
+    MYSQL_USERNAME: root
+    MYSQL_PASSWORD: admin
+    MYSQL_DATABASE: gemini_platform
+    ON_PREM_MODE: true
+    THEME_NAME: gemini
+    MAX_POOL_SIZE: 1
+    CHEF_URL: https://209.205.208.52:8443
+    TERM: dumb
+  links:
+    - db:db
+    - geminiRmq:rmq
+    - geminiChef:chef
+  volumes_from:
+    - geminiChef
+  volumes:
+    - /var/log/gemini/platform:/var/log/gemini
+  ports:
+    - "80:3000"

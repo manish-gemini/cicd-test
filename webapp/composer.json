@@ -1,0 +1,19 @@
+{
+    "name": "geminisys/deploy-tool",
+    "description": "Gemini Deployment YAML generator for applications",
+    "require": {
+        "silex/silex": "^1.3",
+        "twig/twig": "^1.21",
+        "symfony/twig-bridge": "^2.7"
+    },
+    "authors": [
+        {
+            "name": "Sujai SD",
+            "email": "sujai@gemini-systems.net"
+        },
+        {
+            "name": "Sajith Kumar",
+            "email": "sajith@gemini-systems.net"
+        }
+    ]
+}

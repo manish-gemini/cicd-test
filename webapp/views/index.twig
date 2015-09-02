@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <title>:: Gemini Documentation ::</title>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      
+      <!-- Style sheet : Begins Here -->
+      <link href="{{ app.request.baseUrl }}/css/bootstrap.css" rel="stylesheet" type="text/css"/>
+      <link href="{{ app.request.baseUrl }}/css/normalize.css" rel="stylesheet" type="text/css"/>
+      <link href="{{ app.request.baseUrl }}/css/global.css" rel="stylesheet" type="text/css"/>
+      <link href="{{ app.request.baseUrl }}/css/userguide.css" rel="stylesheet" type="text/css"/>
+      <!-- Style sheet : Ends Here -->
+
+      <!-- Javascript :: Begins Here -->
+      <script src="{{ app.request.baseUrl }}/js/jquery.min.js" type="text/javascript"></script>
+      <script src="{{ app.request.baseUrl }}/js/bootstrap.js" type="text/javascript"></script>
+      <!-- Javascript :: Ends Here -->
+      
+   </head>
+   <body>
+      <!--Main Wrapper : Begins Here-->
+      <div >
+         <!--Header Section : Begins Here -->
+         <header>
+            <div class="container">
+               <img src="{{ app.request.baseUrl }}/images/logo.png" alt="logo" class="logo">
+            </div>
+         </header>
+         <!--Header Section : Ends Here -->
+
+         <!--Caption Section : Begins Here-->
+         <section id="caption">
+            <div class="container">
+               <h4 class="text-left">Gemini Application Deployment Tool</h4>
+               <h3 class="text-left">Just get started!!! With Gemini</h3>
+            </div>
+         </section>
+         <!--Caption Section : Begins Here-->
+
+         <!--Content Section : Begins Here-->
+         <section id="documentation">
+            <div class="container">
+               <!--More Resources: Begins Here-->
+               <div class="col-md-3">
+                  <h3>More Resources</h3>
+                  <hr>
+                  {% if build['build.branch'] != 'master' %}
+                      <ul class="list-group">
+                         <li class="list-group-item"><a href="{{ app.request.baseUrl }}/development/"> Development </a></li>
+                      </ul>
+
+                  {% endif %}
+               </div>
+               <!--More Resources: Ends Here-->
+
+               <!--Resource Content: Begins Here-->
+               <div class="col-md-9">
+                  <h3>Deploy Gemini</h3>
+                  <quote>
+                      Build Number: {{build['build.number']}} / {{build['build.time']}} / {{build['build.checksum']}}
+                  </quote>
+                  <hr>
+                  <h4>First Deployment Steps</h4>
+                  <pre>curl -sS {{ url('install-script') }} | bash</pre>
+                  <p>The above command should generate docker-compose.yaml<br></p>
+                   <hr>
+                  <pre>docker-compose up</pre>
+                  <p>docker compsoe should start gemini in your environment<br></p>
+                  <hr>
+                  <h4>Restarting and Reusing existing deployment</h4>
+                  <pre>docker-compose up</pre>
+                  <p>If you have installed already and have terminated previous instance  you can just start using docker-compose<br></p>
+               </div>
+               <!--Resource Content: Ends Here-->
+            </div>
+         </section>
+         <!--Content Section : Begins Here-->
+
+         <!--Footer Section : Begins Here-->
+         <footer></footer>
+         <!--Footer Section : Ends Here-->
+      </div>
+      <!--Main Wrapper : Ends Here-->
+   </body>
+</html>
