@@ -56,6 +56,11 @@
 
                <!--Resource Content: Begins Here-->
                <div class="col-md-9">
+                  {% if build['build.branch'] != 'master' %}
+                  <h3>Build Gemini</h3>
+                  <p>You can buid gemini from your source code by following the instruction</p>
+                  <hr>
+                  {% endif %} 
                   <h3>Deploy Gemini</h3>
                   <quote>
                       Build Number: {{build['build.number']}} / {{build['build.time']}} / {{build['build.checksum']}}
