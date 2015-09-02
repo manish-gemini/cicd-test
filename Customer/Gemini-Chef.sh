@@ -18,7 +18,7 @@ then
         docker rm -f gemini-chef
   fi
 
-  ip=`curl -s http://ipecho.net/plain; echo`
+  ip=`curl -s http://whatismyip.akamai.com; echo`
   docker run -it -p 443:443 --privileged -v /etc/chef-server/ --name gemini-chef -h $ip -d registry.gemini-systems.net/gemini/gemini-chef
 fi
 
