@@ -3,11 +3,12 @@ geminiChef:
   privileged: true
   volumes:
     - /etc/chef-server/
+  hostname: 209.205.208.52 
   ports:
     - "443:443" 
 
 geminiRmq:
-  image: secure-registry.gsintlab.com/gemini/gemini-rmq
+  image: gemini/gemini-rmq
   hostname: rmq
   ports:
     - "5672"
