@@ -86,5 +86,10 @@ cat compose1.yml | sed -e "s/mode/$onPremMode/g" > compose2.yml
 cat compose2.yml | sed -e "s/theme/$themeName/g" > docker-compose.yml
 
 rm -f compose*.yml
-docker-compose up --allow-insecure-ssl
+read -p "Do you wish to launch gemini ? [y/n]:" launch
+if [ $launch = "y" ]; then
+  docker-compose up --allow-insecure-ssl
+else
+  echo "you can continue running later, docker-compose up --allow-insecure-ssl"
+fi
 
