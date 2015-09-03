@@ -88,5 +88,10 @@ HOSTIP=`curl -s http://whatismyip.akamai.com; echo`
 curl -d "HOSTIP=$HOSTIP&ONPREM=$onPremMode&THEME=$themeName" -sS {{ url('deploy-yaml') }} > docker-compose.yaml
 #rm -f compose*.yml
 #docker-compose up --allow-insecure-ssl
-echo "Deployment file created successfully!!!"
-echo "To run the app execute 'docker-compose up' from the current directory"
+echo "you can continue running later, docker-compose up --allow-insecure-ssl"
+read -p "Do you wish to launch gemini ? [y/N]:" launch
+if [ $launch = "y" ]; then
+  docker-compose up --allow-insecure-ssl
+else
+  echo "Thanks, you can start later if you need using the above command."
+fi

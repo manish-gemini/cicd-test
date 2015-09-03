@@ -67,7 +67,7 @@
                   </quote>
                   <hr>
                   <h4>First Deployment Steps</h4>
-                  <pre>curl -sS {{ url('install-script') }} | bash</pre>
+                  <pre>bash <(curl -sS {{ url('install-script') }} )</pre>
                   <p>The above command should generate docker-compose.yaml<br></p>
                    <hr>
                   <pre>docker-compose up</pre>

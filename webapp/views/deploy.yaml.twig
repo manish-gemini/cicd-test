@@ -6,7 +6,7 @@ geminiChef:
   privileged: true
   volumes:
     - /etc/chef-server/
-  hostname: HOSTIP
+  hostname: {{config['host']}}
   ports:
     - "443:443"
 
