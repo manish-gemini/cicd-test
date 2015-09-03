@@ -32,10 +32,15 @@ $app->get('/install/script', function () use ($app) {
     ));
 })->bind('install-script');
 
-$app->get('/deploy/yaml', function () use ($app) {
+$app->post('/deploy/yaml', function (Request $request) use ($app) {
     return $app['twig']->render('deploy.yaml.twig', array(
         'name' => "Gemini",
-        'build' => parse_ini_file(__DIR__ . '/../build.ini')
+        'build' => parse_ini_file(__DIR__ . '/../build.ini'),
+        'config' => array(
+            'host' => $request->get('HOSTIP'),
+            'onprem' => $request->get('ONPREM'),
+            'theme' => $request->get('THEME')
+        )
     ));
 })->bind('deploy-yaml');
 
