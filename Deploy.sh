@@ -1,4 +1,7 @@
 #!/bin/bash
+echo "Time sync processing..."
+yum install -y ntp
+ntpdate -b -u time.nist.gov
 echo "...."
 echo "Enter the deploy type:"
 echo "Deploy from Local image = 1"
