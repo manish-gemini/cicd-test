@@ -1,12 +1,11 @@
 FROM centos:centos6.7
-#FROM centos:centos7.1.1503
+
 MAINTAINER  Gemini-CHEF <sajith@gemini-systems.net> -Sajith
 
 RUN mkdir -p /opt/geminichef /etc/init
 WORKDIR /opt/geminichef
 ADD pgdg-94-centos.repo /etc/yum.repos.d/
 RUN yum install -y hostname postgresql94 postgresql94-server; yum update -y; yum localinstall -y http://repos.gsintlab.com/repos/x86_64/RPMS/chef-server-11.1.6-1.el6.x86_64.rpm; yum clean all
-#RUN yum install -y hostname postgresql94 postgresql94-server; yum update -y; yum localinstall -y https://web-dl.packagecloud.io/chef/stable/packages/el/7/chef-server-core-12.2.0-1.el7.x86_64.rpm; yum clean all
 ADD chef-server.rb /etc/chef-server/chef-server.rb
 ADD . /opt/geminichef/
 RUN chmod +x entrypoint.sh
