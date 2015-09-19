@@ -27,5 +27,7 @@ fi
   docker pull secure-registry.gsintlab.com/gemini/gemini-chef
   echo "Continue to run chef ..."
   ip=`curl -s http://whatismyip.akamai.com; echo`
+  hname=gemini-chef.gemini-domain
   echo "Using ip address: $ip"
-  docker run -it -p 443:443 --privileged -v /etc/chef-server/ --name gemini-chef -h $ip -d secure-registry.gsintlab.com/gemini/gemini-chef
+  #docker run -m 2g -it -p 443:443  -v /etc/chef-server/ --name gemini-chef -h $ip -d secure-registry.gsintlab.com/gemini/gemini-chef
+  docker run -m 2g -it -p 443:443  -v /etc/chef-server/ --name gemini-chef -h $ip -d gemini/gemini-chef
