@@ -227,7 +227,7 @@ else
 
         cd $platformDir/Gemini-poc-mgnt/
 	rm -rf Gemfile.lock
-        mv Gemfile-master Gemfile
+        cp -f Gemfile-master Gemfile
 
 	echo "gemini stack DEV MODE run..."
 	if docker ps -a |grep -a gemini-chef; then
