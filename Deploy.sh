@@ -142,10 +142,24 @@ echo "...."
 
 echo "continue to deploy..."
 echo "Removing if any existing docker process with same name to avoid conflicts"
-docker rm -f gemini-stack gemini-platform db  
+
+if docker ps -a |grep -aq gemini-stack;
+then
+   docker rm -f gemini-stack
+fi
+
+if docker ps -a |grep -aq gemini-platform;
+then
+   docker rm -f gemini-platform
+fi
+
+if docker ps -a |grep -aq db;
+then
+   docker rm -f db
+fi
 
 if docker ps -a |grep -a gemini-mist; then
-	docker rm -f gemini-mist
+   docker rm -f gemini-mist
 fi
 
 
