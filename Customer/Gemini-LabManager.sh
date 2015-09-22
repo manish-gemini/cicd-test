@@ -114,6 +114,11 @@ if docker ps -a |grep -aq db; then
         docker rm -f db
 fi
 
+echo "Time sync processing..."
+yum install -y ntp
+ntpdate -b -u time.nist.gov
+echo "...."
+
 
 echo "Setting up iptables rules..."
 iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited

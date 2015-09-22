@@ -1,8 +1,4 @@
 #!/bin/bash
-echo "Time sync processing..."
-yum install -y ntp
-ntpdate -b -u time.nist.gov
-echo "...."
 echo "Enter the deploy type:"
 echo "Deploy from Local image = 1"
 echo "Deploy from internal registry = 2"
@@ -138,6 +134,11 @@ then
 fi
 
 echo "Setting MAX PHUSION PROCESS:"$max_app_processes
+
+echo "Time sync processing..."
+yum install -y ntp
+ntpdate -b -u time.nist.gov
+echo "...."
 
 echo "continue to deploy..."
 echo "Removing if any existing docker process with same name to avoid conflicts"
