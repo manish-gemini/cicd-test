@@ -132,8 +132,8 @@ secretkey=${secretkey:-"71Z2LBKnRr6EzVsGcvysQYhqAHgEcm1e8oF/xCZdhbw="}
 echo $secretkey
 
 echo -n "Enter the INIT_VECTOR:"
-read -p "Default(f7BjRhMOAfuDNafQTSRJmg=):" initVector
-initVector=${initVector:-"f7BjRhMOAfuDNafQTSRJmg="}
+read -p "Default(f7BjRhMOAfuDNafQTSRJmg==):" initVector
+initVector=${initVector:-"f7BjRhMOAfuDNafQTSRJmg=="}
 echo $initVector
 
 echo "Enter the Repos to test:"
