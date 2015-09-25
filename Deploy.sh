@@ -155,8 +155,8 @@ iptables -D  FORWARD -j REJECT --reject-with icmp-host-prohibited
 echo "/var/log/gemini/platform/*log /var/log/gemini/stack/*log  /var/log/gemini/stack/mist/*log {
   daily
   missingok
-  size 10M
-  rotate 10
+  size 50M
+  rotate 20
   compress
   copytruncate
 }" > /etc/logrotate.d/geminiLogRotate

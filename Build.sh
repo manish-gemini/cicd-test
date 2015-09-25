@@ -128,7 +128,7 @@ else
 fi
 echo -n "Enter the SECRET_KEY:"
 read -p "Default(71Z2LBKnRr6EzVsGcvysQYhqAHgEcm1e8oF/xCZdhbw=):" secretkey
-secretkey=${secretkey:-"=71Z2LBKnRr6EzVsGcvysQYhqAHgEcm1e8oF/xCZdhbw="}
+secretkey=${secretkey:-"71Z2LBKnRr6EzVsGcvysQYhqAHgEcm1e8oF/xCZdhbw="}
 echo $secretkey
 
 echo -n "Enter the INIT_VECTOR:"
