@@ -25,6 +25,7 @@ else
 	systemctl start docker.service
 fi
 
+
 echo "Setting sestatus to permissive"
 response="y"
 read -p "Do you want to continue ? [y]/n : " -r
@@ -38,6 +39,7 @@ else
     echo "sestatus must be set to permissive for deployment."
     exit;
 fi 
+
 
 echo "Flush Iptables"
 
