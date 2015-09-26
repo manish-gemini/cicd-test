@@ -84,6 +84,7 @@ themeName=$1
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> added old method of getting ip
 ip=`curl -s http://whatismyip.akamai.com; echo`
@@ -93,13 +94,19 @@ hostip=${hostip:-$ip}
 echo $hostip
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> Update the way ip is get
 #ip=`curl -s http://whatismyip.akamai.com; echo`
 #printf "Enter the Host IP :"
 #read -p "Default($ip):" hostip
 #hostip=${hostip:-$ip}
 #echo $hostip
+<<<<<<< HEAD
 #ifconfig |grep -B1 "inet" |awk '{ if ( $1 == "inet" ) { print $2 } else if ( $2 == "Link" ) { printf "%s:" ,$1 } }' |awk -F: '{ print $1 "  " $3}'
 ifconfig |grep -B1 "inet"|awk '{ if ( $1 == "inet" ) { print $2 } else if ( $3 == "mtu" ) { printf "%s " ,$1 }}'; echo
+=======
+/sbin/ifconfig |grep -B1 "inet addr" |awk '{ if ( $1 == "inet" ) { print $2 } else if ( $2 == "Link" ) { printf "%s:" ,$1 } }' |awk -F: '{ print $1 ": " $3 }'
+>>>>>>> Update the way ip is get
 echo "Choose one of the above accessible ips for Chef Deployment"
 read -p  "Enter the ip:" hostip
 
