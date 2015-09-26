@@ -25,7 +25,6 @@ else
 	systemctl start docker.service
 fi
 
-<<<<<<< HEAD
 echo "Setting sestatus to permissive"
 response="y"
 read -p "Do you want to continue ? [y]/n : " -r
@@ -39,9 +38,6 @@ else
     echo "sestatus must be set to permissive for deployment."
     exit;
 fi 
-=======
-yum -y install net-tools
->>>>>>> Added nettools in predeploy
 
 echo "Flush Iptables"
 
