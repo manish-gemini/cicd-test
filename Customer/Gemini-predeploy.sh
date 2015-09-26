@@ -25,6 +25,8 @@ else
 	systemctl start docker.service
 fi
 
+yum -y install net-tools
+
 echo "Flush Iptables"
 
 iptables -F
