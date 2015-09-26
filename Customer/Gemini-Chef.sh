@@ -16,8 +16,7 @@ then
   echo "Continue to run chef ..."
   if docker ps -a |grep -aq gemini-chef; then
         docker rm -f gemini-chef
-  fi
- 
+  fi 
   ip=`curl -s http://whatismyip.akamai.com; echo`
   printf "Enter the Host IP :"
   read -p "Default($ip):" hostip
