@@ -17,8 +17,17 @@ then
   if docker ps -a |grep -aq gemini-chef; then
         docker rm -f gemini-chef
   fi
+  echo "Listing the ips used in the setup..."
+  /sbin/ifconfig |grep -B1 "inet addr" |awk '{ if ( $1 == "inet" ) { print $2 } else if ( $2 == "Link" ) { printf "%s:" ,$1 } }' |awk -F: '{ print $1 ": " $3 }'  
+  echo "Choose one of the above accessible ips for Chef Deployment"
+  read -p  "Enter the ip:" ip
+  echo $ip
+  if [ -z $ip ]
+  then
+        printf "HostIp is Mandatory .. exiting....\n"
+        exit
+  fi
 
-  ip=`curl -s http://whatismyip.akamai.com; echo`
   docker run -it -p 443:443 --privileged -v /etc/chef-server/ --name gemini-chef -h $ip -d registry.gemini-systems.net/gemini/gemini-chef
 fi
 
