@@ -24,7 +24,7 @@ else
 	systemctl enable docker.service
 	systemctl start docker.service
 fi
-
+setenforce 0
 yum -y install net-tools
 
 echo "Flush Iptables"
