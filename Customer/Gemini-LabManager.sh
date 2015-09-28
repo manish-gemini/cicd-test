@@ -88,7 +88,7 @@ themeName=$1
 #hostip=${hostip:-$ip}
 #echo $hostip
 #ifconfig |grep -B1 "inet" |awk '{ if ( $1 == "inet" ) { print $2 } else if ( $2 == "Link" ) { printf "%s:" ,$1 } }' |awk -F: '{ print $1 "  " $3}'
-ifconfig |grep -B1 "inet"|awk '{ if ( $1 == "inet" ) { print $2 } else if ( $3 == "mtu" ) { printf "%s " ,$1 }}'
+ifconfig |grep -B1 "inet"|awk '{ if ( $1 == "inet" ) { print $2 } else if ( $3 == "mtu" ) { printf "%s " ,$1 }}'; echo
 echo "Choose one of the above accessible ips for Chef Deployment"
 read -p  "Enter the ip:" hostip
 
