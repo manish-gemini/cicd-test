@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 export PATH=$PATH:/opt/gradle-2.7/bin/
 echo 'Starting to clone MIST from Repo'
