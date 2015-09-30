@@ -162,11 +162,22 @@ echo $quickBuild
 echo "copying Executables.."
 #scp root@209.205.208.181:/var/lib/jenkins/jobs/dev-mist-cgp/lastSuccessful/archive/run/generated/distributions/executable/run.jar $dirToCheckOut/Gemini-poc-stack/mist-cgp/.
 cd $dirToCheckOut/Gemini-poc-stack/mist-cgp/
-
 if [ -f run.jar ]; then
 	rm -f run.jar
 fi
-wget http://repos.gsintlab.com/repos/mist/run.jar
+echo "1) Build Mist Locally"
+echo "2) Use the Mist Build from repo"
+read -p "Enter Mist Build you want to try [Default: 2]:" mistBuildType
+
+if [[ ( -z "$mistBuildType" ) || ( $mistBuildType -eq 2) ]]; then
+   wget http://repos.gsintlab.com/repos/mist/run.jar
+else
+   docker pull secure-registry.gsintlab.com/gemini/mist-builder
+   rm -rf /opt/MIST
+   mkdir -p /opt/MIST
+   docker run --rm -it -v /tmp:/tmp secure-registry.gsintlab.com/gemini/mist-builder
+   cp /tmp/run.jar .
+fi
 
 #STEP 3: NAVIGATE TO THE DIR WHERE Dockerfile EXIST
 cd $dirToCheckOut

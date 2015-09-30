@@ -13,4 +13,4 @@ if [ ! -z "$branch" ]; then
     git checkout $branch
 fi
 /opt/gradle-2.7/bin/gradle build run:export.run
-
+mv run/generated/distributions/executable/run.jar /tmp/.
