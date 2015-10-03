@@ -1,8 +1,4 @@
 #!/bin/bash
-echo "Time sync processing..."
-yum install -y ntp
-ntpdate -b -u time.nist.gov
-echo "...."
 echo "Enter the deploy type:"
 echo "Deploy from Local image = 1"
 echo "Deploy from internal registry = 2"
@@ -139,12 +135,31 @@ fi
 
 echo "Setting MAX PHUSION PROCESS:"$max_app_processes
 
+echo "Time sync processing..."
+yum install -y ntp
+ntpdate -b -u time.nist.gov
+echo "...."
+
 echo "continue to deploy..."
 echo "Removing if any existing docker process with same name to avoid conflicts"
-docker rm -f gemini-stack gemini-platform db  
+
+if docker ps -a |grep -aq gemini-stack;
+then
+   docker rm -f gemini-stack
+fi
+
+if docker ps -a |grep -aq gemini-platform;
+then
+   docker rm -f gemini-platform
+fi
+
+if docker ps -a |grep -aq db;
+then
+   docker rm -f db
+fi
 
 if docker ps -a |grep -a gemini-mist; then
-	docker rm -f gemini-mist
+   docker rm -f gemini-mist
 fi
 
 
@@ -218,9 +233,16 @@ else
 	read stackDir
 	echo "Enter platform dir : example : /opt/mydevDir/ :"
 	read platformDir
+        cd $stackDir/Gemini-poc-stack
+   	if [ -f run.jar ]; then
+        	rm -f run.jar
+	fi
+	wget http://repos.gsintlab.com/repos/mist/run.jar
+
         cd $platformDir/Gemini-poc-mgnt/
 	rm -rf Gemfile.lock
-        mv Gemfile-master Gemfile
+        cp -f Gemfile-master Gemfile
+
 	echo "gemini stack DEV MODE run..."
 	if docker ps -a |grep -a gemini-chef; then
 		docker run -t --name gemini-stack -p 8888:8888 -e GEMINI_INT_REPO=$internalRepo -e CHEF_URL=https://$hostip:443 -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_mist -e GEMINI_PLATFORM_WS_HOST=$hostip -e GEMINI_PLATFORM_WS_PORT=9999 -e GEMINI_STACK_IPANEMA=1 -v $stackDir/Gemini-poc-stack:/home/gemini/gemini-stack --link db:db -v /var/lib/gemini/sshKey_root:/root -v /var/log/gemini/stack:/var/log/gemini --volumes-from gemini-chef -d  gemini/gemini-stack
