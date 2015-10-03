@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 echo "Time sync processing..."
 yum install -y ntp
 ntpdate -b -u time.nist.gov
