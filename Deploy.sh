@@ -167,6 +167,21 @@ yum install -y ntp
 ntpdate -b -u time.nist.gov
 echo "...."
 
+echo "Setting sestatus to permissive"
+response="y"
+read -p "Do you want to continue ? [y]/n : " -r
+echo
+REPLY=${REPLY:-$response}
+if [[ $REPLY =~ ^[Yy] ]]
+then
+    setenforce 0
+    echo "successfully set sestatus to permissive";
+else
+    echo "sestatus must be set to permissive for deployment."
+    exit;
+fi 
+
+
 echo "db run .."
 docker run --name db -e MYSQL_ROOT_PASSWORD=admin -e MYSQL_USER=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -v /var/dbstore:/var/lib/mysql -d mysql:5.6.24
 sleep 60
