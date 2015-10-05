@@ -162,11 +162,14 @@ echo "Setting up iptables rules..."
 iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited
 iptables -D  FORWARD -j REJECT --reject-with icmp-host-prohibited
 
+<<<<<<< HEAD
 echo "Time sync processing..."
 yum install -y ntp
 ntpdate -b -u time.nist.gov
 echo "...."
 
+=======
+>>>>>>> Local deploy with setenforce 0
 
 echo "Setting sestatus to permissive"
 response="y"
