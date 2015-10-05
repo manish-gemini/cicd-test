@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 echo "Check for PreRequisite...."
 #CHECK FOR PREREQUISTE and LETS USER KNOW 
