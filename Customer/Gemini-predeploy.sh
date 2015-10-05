@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 echo "Check for PreRequisite...."
 #CHECK FOR PREREQUISTE and LETS USER KNOW 
@@ -24,8 +24,20 @@ else
 	systemctl enable docker.service
 	systemctl start docker.service
 fi
-setenforce 0
-yum -y install net-tools
+
+echo "Setting sestatus to permissive"
+response="y"
+read -p "Do you want to continue ? [y]/n : " -r
+echo
+REPLY=${REPLY:-$response}
+if [[ $REPLY =~ ^[Yy] ]]
+then
+    setenforce 0
+    echo "successfully set sestatus to permissive";
+else
+    echo "sestatus must be set to permissive for deployment."
+    exit;
+fi 
 
 echo "Flush Iptables"
 
