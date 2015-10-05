@@ -83,11 +83,15 @@ fi
 themeName=$1
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> added old method of getting ip
 ip=`curl -s http://whatismyip.akamai.com; echo`
 printf "Enter the Host IP :"
 read -p "Default($ip):" hostip
 hostip=${hostip:-$ip}
 echo $hostip
+<<<<<<< HEAD
 =======
 #ip=`curl -s http://whatismyip.akamai.com; echo`
 #printf "Enter the Host IP :"
@@ -107,6 +111,8 @@ then
 fi
 
 >>>>>>> Updated Customer Script
+=======
+>>>>>>> added old method of getting ip
 
 echo "continue to deploy..."
 echo "Removing if any existing docker process with same name to avoid conflicts"
