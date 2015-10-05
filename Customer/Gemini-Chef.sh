@@ -25,6 +25,7 @@ then
   docker run -it -p 443:443 --privileged -v /etc/chef-server/ --name gemini-chef -h $hostip -d registry.gemini-systems.net/gemini/gemini-chef
 =======
   fi
+<<<<<<< HEAD
   echo "Listing the ips used in the setup..."
 #  ifconfig |grep -B1 "inet" |awk '{ if ( $1 == "inet" ) { print $2 } else if ( $2 == "Link" ) { printf "%s:" ,$1 } }' |awk -F: '{ print $1 "  " $3}'  
   ifconfig |grep -B1 "inet"|awk '{ if ( $1 == "inet" ) { print $2 } else if ( $3 == "mtu" ) { printf "%s " ,$1 }}'; echo
@@ -39,5 +40,13 @@ then
 
   docker run -it -p 443:443 --privileged -v /etc/chef-server/ --name gemini-chef -h $ip -d registry.gemini-systems.net/gemini/gemini-chef
 >>>>>>> Updated Customer Script
+=======
+ 
+  ip=`curl -s http://whatismyip.akamai.com; echo`
+  printf "Enter the Host IP :"
+  read -p "Default($ip):" hostip
+  hostip=${hostip:-$ip}
+  docker run -it -p 443:443 --privileged -v /etc/chef-server/ --name gemini-chef -h $hostip -d registry.gemini-systems.net/gemini/gemini-chef
+>>>>>>> updated the way ip is got in chef deploy in customer script
 fi
 
