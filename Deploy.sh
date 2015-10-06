@@ -167,6 +167,7 @@ yum install -y ntp
 ntpdate -b -u time.nist.gov
 echo "...."
 
+
 echo "Setting sestatus to permissive"
 response="y"
 read -p "Do you want to continue ? [y]/n : " -r
