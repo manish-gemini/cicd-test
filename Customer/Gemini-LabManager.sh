@@ -87,12 +87,6 @@ printf "Enter the Host IP :"
 read -p "Default($ip):" hostip
 hostip=${hostip:-$ip}
 echo $hostip
-if [ -z $hostip ]
-then
-	printf "HostIp is Mandatory .. exiting....\n"
-	exit
-fi
-
 
 echo "continue to deploy..."
 echo "Removing if any existing docker process with same name to avoid conflicts"
@@ -114,15 +108,14 @@ if docker ps -a |grep -aq db; then
         docker rm -f db
 fi
 
+echo "Setting up iptables rules..."
+iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited
+iptables -D  FORWARD -j REJECT --reject-with icmp-host-prohibited
+
 echo "Time sync processing..."
 yum install -y ntp
 ntpdate -b -u time.nist.gov
 echo "...."
-
-
-echo "Setting up iptables rules..."
-iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited
-iptables -D  FORWARD -j REJECT --reject-with icmp-host-prohibited
 
 echo "db run .."
 docker run --name db -e MYSQL_ROOT_PASSWORD=admin -e MYSQL_USER=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -v /var/dbstore:/var/lib/mysql -d mysql:5.6.24

@@ -17,8 +17,11 @@ then
   if docker ps -a |grep -aq gemini-chef; then
         docker rm -f gemini-chef
   fi
-
+ 
   ip=`curl -s http://whatismyip.akamai.com; echo`
-  docker run -it -p 443:443 --privileged -v /etc/chef-server/ --name gemini-chef -h $ip -d registry.gemini-systems.net/gemini/gemini-chef
+  printf "Enter the Host IP :"
+  read -p "Default($ip):" hostip
+  hostip=${hostip:-$ip}
+  docker run -it -p 443:443 --privileged -v /etc/chef-server/ --name gemini-chef -h $hostip -d registry.gemini-systems.net/gemini/gemini-chef
 fi
 
