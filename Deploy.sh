@@ -135,6 +135,11 @@ fi
 
 echo "Setting MAX PHUSION PROCESS:"$max_app_processes
 
+echo "Time sync processing..."
+yum install -y ntp
+ntpdate -b -u time.nist.gov
+echo "...."
+
 echo "continue to deploy..."
 echo "Removing if any existing docker process with same name to avoid conflicts"
 
@@ -162,11 +167,6 @@ echo "Setting up iptables rules..."
 iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited
 iptables -D  FORWARD -j REJECT --reject-with icmp-host-prohibited
 
-echo "Time sync processing..."
-yum install -y ntp
-ntpdate -b -u time.nist.gov
-echo "...."
-
 
 echo "Setting sestatus to permissive"
 response="y"
@@ -180,8 +180,13 @@ then
 else
     echo "sestatus must be set to permissive for deployment."
     exit;
-fi 
+fi
 
+
+echo "Time sync processing..."
+yum install -y ntp
+ntpdate -b -u time.nist.gov
+echo "...."
 
 echo "db run .."
 docker run --name db -e MYSQL_ROOT_PASSWORD=admin -e MYSQL_USER=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -v /var/dbstore:/var/lib/mysql -d mysql:5.6.24
