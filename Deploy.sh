@@ -135,11 +135,6 @@ fi
 
 echo "Setting MAX PHUSION PROCESS:"$max_app_processes
 
-echo "Time sync processing..."
-yum install -y ntp
-ntpdate -b -u time.nist.gov
-echo "...."
-
 echo "continue to deploy..."
 echo "Removing if any existing docker process with same name to avoid conflicts"
 
@@ -166,6 +161,11 @@ fi
 echo "Setting up iptables rules..."
 iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited
 iptables -D  FORWARD -j REJECT --reject-with icmp-host-prohibited
+
+echo "Time sync processing..."
+yum install -y ntp
+ntpdate -b -u time.nist.gov
+echo "...."
 
 
 echo "Setting sestatus to permissive"
