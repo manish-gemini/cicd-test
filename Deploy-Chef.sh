@@ -21,6 +21,19 @@ if docker ps -a |grep -aq gemini-chef; then
    exit 1
   fi
 fi
+echo "Deploy from Local image = 1"
+echo "Deploy from internal registry = 2"
+read -p "Default(1):" deployType
+deployType=${deployType:-1}
+echo $deployType
+
+if [ $deployType -eq 1 ]
+then
+  echo "Continue to run chef ..."
+  ip=`curl -s http://whatismyip.akamai.com; echo`
+  hname=gemini-chef.gemini-domain
+  docker run -m 2g -it -p 9443:9443  -v /etc/chef-server/ --name gemini-chef -h $ip -d gemini/gemini-chef
+else
   echo "Login to the Internal Registry"
   docker login https://secure-registry.gsintlab.com
   echo "Pull Chef Server from Internal Registry..."
@@ -29,5 +42,5 @@ fi
   ip=`curl -s http://whatismyip.akamai.com; echo`
   hname=gemini-chef.gemini-domain
   echo "Using ip address: $ip"
-  #docker run -m 2g -it -p 443:443  -v /etc/chef-server/ --name gemini-chef -h $ip -d secure-registry.gsintlab.com/gemini/gemini-chef
-  docker run -m 2g -it -p 443:443  -v /etc/chef-server/ --name gemini-chef -h $ip -d gemini/gemini-chef
+  docker run -m 2g -it -p 9443:9443  -v /etc/chef-server/ --name gemini-chef -h $ip -d secure-registry.gsintlab.com/gemini/gemini-chef
+fi
