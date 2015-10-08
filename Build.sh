@@ -170,7 +170,22 @@ echo "2) Use the Mist Build from repo"
 read -p "Enter Mist Build you want to try [Default: 2]:" mistBuildType
 
 if [[ ( -z "$mistBuildType" ) || ( $mistBuildType -eq 2) ]]; then
-   wget http://repos.gsintlab.com/repos/mist/run.jar
+   echo "Enter the Mist Branch to pull jar file:"
+   echo "Master = 1"
+   echo "Integration = 2"
+   echo "Integration-features = 3"
+   read -p "Default(2):" mistRepo
+   mistRepo=${mistRepo:-"2"}
+   echo $mistRepo
+   if [ $mistRepo == 1 ]
+   then
+      wget http://repos.gsintlab.com/repos/mist/master/run.jar
+   elif [ $mistRepo == 2 ]
+   then
+      wget http://repos.gsintlab.com/repos/mist/integration/run.jar
+   else
+      wget http://repos.gsintlab.com/repos/mist/integration-features/run.jar
+   fi
 else
    docker pull secure-registry.gsintlab.com/gemini/mist-builder
    rm -rf /opt/MIST
@@ -178,7 +193,7 @@ else
    docker run --rm -it -v /tmp:/tmp secure-registry.gsintlab.com/gemini/mist-builder
    cp /tmp/run.jar .
 fi
-
+exit
 #STEP 3: NAVIGATE TO THE DIR WHERE Dockerfile EXIST
 cd $dirToCheckOut
 cd Gemini-poc-stack
