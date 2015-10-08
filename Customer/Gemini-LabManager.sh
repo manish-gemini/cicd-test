@@ -108,8 +108,13 @@ if docker ps -a |grep -aq db; then
         docker rm -f db
 fi
 
-echo "Time sync processing..."
+
+rpm -q ntp
+if [ $? -ne 0 ]
+then
 yum install -y ntp
+fi
+echo "Time sync processing..."
 ntpdate -b -u time.nist.gov
 echo "...."
 
