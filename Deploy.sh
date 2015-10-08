@@ -135,8 +135,13 @@ fi
 
 echo "Setting MAX PHUSION PROCESS:"$max_app_processes
 
-echo "Time sync processing..."
+rpm -q ntp
+if [ $? -ne 0 ]
+then
 yum install -y ntp
+fi
+
+echo "Time sync processing..."
 ntpdate -b -u time.nist.gov
 echo "...."
 
