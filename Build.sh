@@ -188,12 +188,12 @@ if [[ ( -z "$mistBuildType" ) || ( $mistBuildType -eq 2) ]]; then
    fi
 else
    docker pull secure-registry.gsintlab.com/gemini/mist-builder
-   rm -rf /opt/MIST
-   mkdir -p /opt/MIST
+   rm -rf /tmp/mist-cgp
+   mkdir -p /tmp
    docker run --rm -it -v /tmp:/tmp secure-registry.gsintlab.com/gemini/mist-builder
    cp /tmp/run.jar .
 fi
-exit
+
 #STEP 3: NAVIGATE TO THE DIR WHERE Dockerfile EXIST
 cd $dirToCheckOut
 cd Gemini-poc-stack
