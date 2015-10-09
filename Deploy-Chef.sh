@@ -23,8 +23,8 @@ if docker ps -a |grep -aq gemini-chef; then
 fi
 echo "Deploy from Local image = 1"
 echo "Deploy from internal registry = 2"
-read -p "Default(1):" deployType
-deployType=${deployType:-1}
+read -p "Default(2):" deployType
+deployType=${deployType:-2}
 echo $deployType
 
 if [ $deployType -eq 1 ]
