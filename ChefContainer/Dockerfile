@@ -10,7 +10,6 @@ RUN yum install -y hostname postgresql94 postgresql94-server; yum update -y; yum
 ADD chef-server.rb /etc/chef-server/chef-server.rb
 ADD . /opt/geminichef/
 RUN chmod +x entrypoint.sh
-RUN mkdir -p /etc/init
 RUN \cp /usr/pgsql-9.4/bin/* /opt/chef-server/embedded/bin; \cp /usr/pgsql-9.4/lib/* /opt/chef-server/embedded/lib; \cp -rp /usr/pgsql-9.4/share/* /opt/chef-server/embedded/share
 EXPOSE 9443
 CMD ["bash", "-l", "-c", "/opt/geminichef/entrypoint.sh"]
