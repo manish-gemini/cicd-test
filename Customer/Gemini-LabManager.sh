@@ -87,12 +87,6 @@ printf "Enter the Host IP :"
 read -p "Default($ip):" hostip
 hostip=${hostip:-$ip}
 echo $hostip
-if [ -z $hostip ]
-then
-	printf "HostIp is Mandatory .. exiting....\n"
-	exit
-fi
-
 
 echo "continue to deploy..."
 echo "Removing if any existing docker process with same name to avoid conflicts"
@@ -113,6 +107,16 @@ fi
 if docker ps -a |grep -aq db; then
         docker rm -f db
 fi
+
+
+rpm -q ntp
+if [ $? -ne 0 ]
+then
+yum install -y ntp
+fi
+echo "Time sync processing..."
+ntpdate -b -u time.nist.gov
+echo "...."
 
 
 echo "Setting up iptables rules..."
