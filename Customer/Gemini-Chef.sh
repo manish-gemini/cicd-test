@@ -15,6 +15,6 @@ then
   printf "Enter the Host IP :"
   read -p "Default($ip):" hostip
   hostip=${hostip:-$ip}
-  docker run -it -p 443:443 --privileged -v /etc/chef-server/ --name gemini-chef -h $hostip -d registry.gemini-systems.net/gemini/gemini-chef:0.9
+  docker run -m 2g -it -p 9443:9443  -v /etc/chef-server/ --name gemini-chef -h $hostip -d registry.gemini-systems.net/gemini/gemini-chef:1.0
 fi
 
