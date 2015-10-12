@@ -1,5 +1,4 @@
 FROM centos:centos6.7
-
 MAINTAINER  Gemini-CHEF <sajith@gemini-systems.net> -Sajith
 
 RUN mkdir -p /opt/geminichef /etc/init
