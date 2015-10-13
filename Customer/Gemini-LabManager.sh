@@ -32,7 +32,7 @@ then
 	docker load < mysql.tar
 fi
 
-if [ $dieployType -eq 1 ]
+if [ $deployType -eq 1 ]
 then
 	read -p "Enter the Build ID [Default: latest]:" pullId
 fi
