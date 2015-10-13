@@ -39,6 +39,7 @@ then
 #Docker LOGIN
 ## DOCKER LOGIN:::
 docker login https://secure-registry.gsintlab.com
+read -p  "Enter the Build ID [Default: latest]:" pullId
 fi
 
 if [ $deployType -eq 4 ]
@@ -199,7 +200,6 @@ sleep 60
 
 if [ $deployType -eq 2 ]
 then
-	read -p  "Enter the Build ID [Default: latest]:" pullId
         echo $pullId
 	echo "pull gemini base..."
 	docker pull secure-registry.gsintlab.com/gemini/gemini-base
