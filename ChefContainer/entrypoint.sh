@@ -10,4 +10,5 @@ cp postgresql.rb /opt/chef-server/embedded/cookbooks/chef-server/recipes/postgre
 # Now start Chef Server
 /opt/chef-server/embedded/bin/runsvdir-start &
 chef-server-ctl reconfigure
-tail -F /var/log/*.log
+tail -F /var/log/*.log &
+chef-server-ctl tail
