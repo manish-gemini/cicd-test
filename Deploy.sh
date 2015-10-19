@@ -263,10 +263,26 @@ else
 	echo "Enter platform dir : example : /opt/mydevDir/ :"
 	read platformDir
         cd $stackDir/Gemini-poc-stack
-   	if [ -f run.jar ]; then
-        	rm -f run.jar
-	fi
-	wget http://repos.gsintlab.com/repos/mist/run.jar
+
+   	echo "Enter the Mist Branch to pull jar file:"
+	echo "Master = 1"
+        echo "Integration = 2"
+        echo "Integration-features = 3"
+        read -p "Default(2):" mistRepo
+        mistRepo=${mistRepo:-"2"}
+        echo $mistRepo
+        if [ -f run.jar ]; then
+            rm -f run.jar
+        fi
+        if [ $mistRepo == 1 ]
+        then
+           wget http://repos.gsintlab.com/repos/mist/master/run.jar
+        elif [ $mistRepo == 2 ]
+        then
+           wget http://repos.gsintlab.com/repos/mist/integration/run.jar
+        else
+           wget http://repos.gsintlab.com/repos/mist/integration-features/run.jar
+        fi
 
         cd $platformDir/Gemini-poc-mgnt/
 	rm -rf Gemfile.lock
