@@ -196,6 +196,20 @@ yum install -y ntp
 ntpdate -b -u time.nist.gov
 echo "...."
 
+if [ ! -f /etc/logrotate.d/geminiLogRotate ]
+then
+	echo "/var/log/gemini/platform/*log /var/log/gemini/stack/*log  /var/log/gemini/stack/mist/*log {
+	  daily
+	  missingok
+	  size 50M
+	  rotate 20
+	  compress
+	  copytruncate
+	}" > /etc/logrotate.d/geminiLogRotate
+fi
+
+
+
 echo "db run .."
 docker run --name db -e MYSQL_ROOT_PASSWORD=admin -e MYSQL_USER=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -v /var/dbstore:/var/lib/mysql -d mysql:5.6.24
 sleep 60
