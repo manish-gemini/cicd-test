@@ -1,4 +1,6 @@
 #!/bin/bash
+
+_LOG_LEVEL_="DEBUG"
 echo "Enter the deploy type:"
 echo "Deploy from Local image = 1"
 echo "Deploy from internal registry = 2"
@@ -223,12 +225,12 @@ then
 	if docker ps -a |grep -a gemini-chef; then
 		docker run -t --name gemini-stack -e GEMINI_INT_REPO=$internalRepo -e CHEF_URL=https://$hostip:9443 -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_mist -e GEMINI_STACK_IPANEMA=1 --link db:db --link gemini-rmq:rmq -v /var/lib/gemini/sshKey_root:/root --volumes-from gemini-chef -v /var/log/gemini/stack:/var/log/gemini -d  secure-registry.gsintlab.com/gemini/gemini-stack	
 		echo "platform run ..."
-		docker run -t --name gemini-platform -p 80:3000 -e MAX_POOL_SIZE=$max_app_processes  -e CHEF_URL=https://$hostip:9443 -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName --link db:db --link gemini-rmq:rmq --volumes-from gemini-chef -v /var/log/gemini/platform:/var/log/gemini -d secure-registry.gsintlab.com/gemini/gemini-platform
+
+		docker run -t --name gemini-platform -p 80:3000 -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes  -e CHEF_URL=https://$hostip:9443 -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName --link db:db --link gemini-rmq:rmq --volumes-from gemini-chef -v /var/log/gemini/platform:/var/log/gemini -d secure-registry.gsintlab.com/gemini/gemini-platform
 	else
 		docker run -t --name gemini-stack -e GEMINI_INT_REPO=$internalRepo -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_mist  -e GEMINI_STACK_IPANEMA=1 --link db:db --link gemini-rmq:rmq -v /var/lib/gemini/sshKey_root:/root -v /var/log/gemini/stack:/var/log/gemini -d  secure-registry.gsintlab.com/gemini/gemini-stack	
 		echo "platform run ..."
-		docker run -t --name gemini-platform -p 80:3000 -e MAX_POOL_SIZE=$max_app_processes -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName --link db:db --link gemini-rmq:rmq -v /var/log/gemini/platform:/var/log/gemini -d secure-registry.gsintlab.com/gemini/gemini-platform
-
+		docker run -t --name gemini-platform -p 80:3000 -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName --link db:db --link gemini-rmq:rmq -v /var/log/gemini/platform:/var/log/gemini -d secure-registry.gsintlab.com/gemini/gemini-platform
 
 	fi
 
@@ -241,11 +243,11 @@ then
 	if docker ps -a |grep -a gemini-chef; then
 		docker run -t --name gemini-stack -e GEMINI_INT_REPO=$internalRepo -e CHEF_URL=https://$hostip:9443 -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_mist -e GEMINI_STACK_IPANEMA=1 --link db:db --link gemini-rmq:rmq -v /var/lib/gemini/sshKey_root:/root -v /var/log/gemini/stack:/var/log/gemini --volumes-from gemini-chef -d gemini/gemini-stack    	
 		echo "platform run ..."
-		docker run -t --name gemini-platform -p 80:3000 -e MAX_POOL_SIZE=$max_app_processes -e CHEF_URL=https://$hostip:9443 -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName  --link db:db --link gemini-rmq:rmq --volumes-from gemini-chef -v /var/log/gemini/platform:/var/log/gemini -d gemini/gemini-platform
+		docker run -t --name gemini-platform -p 80:3000 -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes -e CHEF_URL=https://$hostip:9443 -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName  --link db:db --link gemini-rmq:rmq --volumes-from gemini-chef -v /var/log/gemini/platform:/var/log/gemini -d gemini/gemini-platform
 	else
 		docker run -t --name gemini-stack -e GEMINI_INT_REPO=$internalRepo -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_mist -e GEMINI_STACK_IPANEMA=1 --link db:db --link gemini-rmq:rmq -v /var/log/gemini/stack:/var/log/gemini  -v /var/lib/gemini/sshKey_root:/root -d gemini/gemini-stack    	
 		echo "platform run ..."
-		docker run -t --name gemini-platform -p 80:3000 -e MAX_POOL_SIZE=$max_app_processes -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName --link db:db --link gemini-rmq:rmq -v /var/log/gemini/platform:/var/log/gemini -d gemini/gemini-platform
+		docker run -t --name gemini-platform -p 80:3000 -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName --link db:db --link gemini-rmq:rmq -v /var/log/gemini/platform:/var/log/gemini -d gemini/gemini-platform
 	fi
 	echo "end ..."
 elif [ $deployType -eq 4 ]
@@ -254,11 +256,11 @@ then
 	if docker ps -a |grep -a gemini-chef; then
 		docker run -t --name gemini-stack -e GEMINI_INT_REPO=$internalRepo -e CHEF_URL=https://$hostip:9443 -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_mist -e GEMINI_STACK_IPANEMA=1 --link db:db --link gemini-rmq:rmq  -v /var/lib/gemini/sshKey_root:/root -v /var/log/gemini/stack:/var/log/gemini --volumes-from gemini-chef -d $insecureRegistry/gemini/gemini-stack
 		echo "platform run ..."
-		docker run -t --name gemini-platform -p 80:3000 -e MAX_POOL_SIZE=$max_app_processes -e CHEF_URL=https://$hostip:9443 -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName  --link db:db --link gemini-rmq:rmq --volumes-from gemini-chef -v /var/log/gemini/platform:/var/log/gemini -d $insecureRegistry/gemini/gemini-platform
+		docker run -t --name gemini-platform -p 80:3000 -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes -e CHEF_URL=https://$hostip:9443 -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName  --link db:db --link gemini-rmq:rmq --volumes-from gemini-chef -v /var/log/gemini/platform:/var/log/gemini -d $insecureRegistry/gemini/gemini-platform
 	else
 		docker run -t --name gemini-stack -e GEMINI_INT_REPO=$internalRepo -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_mist -e GEMINI_STACK_IPANEMA=1 --link db:db --link gemini-rmq:rmq -v /var/lib/gemini/sshKey_root:/root -v /var/log/gemini/stack:/var/log/gemini -d $insecureRegistry/gemini/gemini-stack
 		echo "platform run ..."
-		docker run -t --name gemini-platform -p 80:3000 -e MAX_POOL_SIZE=$max_app_processes -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName --link db:db  --link gemini-rmq:rmq -v /var/log/gemini/platform:/var/log/gemini -d $insecureRegistry/gemini/gemini-platform
+		docker run -t --name gemini-platform -p 80:3000 -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName --link db:db  --link gemini-rmq:rmq -v /var/log/gemini/platform:/var/log/gemini -d $insecureRegistry/gemini/gemini-platform
 	fi
 	echo "end ..."
 else
@@ -267,10 +269,26 @@ else
 	echo "Enter platform dir : example : /opt/mydevDir/ :"
 	read platformDir
         cd $stackDir/Gemini-poc-stack
-   	if [ -f run.jar ]; then
-        	rm -f run.jar
-	fi
-	wget http://repos.gsintlab.com/repos/mist/run.jar
+
+   	echo "Enter the Mist Branch to pull jar file:"
+	echo "Master = 1"
+        echo "Integration = 2"
+        echo "Integration-features = 3"
+        read -p "Default(2):" mistRepo
+        mistRepo=${mistRepo:-"2"}
+        echo $mistRepo
+        if [ -f run.jar ]; then
+            rm -f run.jar
+        fi
+        if [ $mistRepo == 1 ]
+        then
+           wget http://repos.gsintlab.com/repos/mist/master/run.jar
+        elif [ $mistRepo == 2 ]
+        then
+           wget http://repos.gsintlab.com/repos/mist/integration/run.jar
+        else
+           wget http://repos.gsintlab.com/repos/mist/integration-features/run.jar
+        fi
 
         cd $platformDir/Gemini-poc-mgnt/
 	rm -rf Gemfile.lock
@@ -280,11 +298,12 @@ else
 	if docker ps -a |grep -a gemini-chef; then
 		docker run -t --name gemini-stack -e GEMINI_INT_REPO=$internalRepo -e CHEF_URL=https://$hostip:9443 -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_mist -e GEMINI_STACK_IPANEMA=1 -v $stackDir/Gemini-poc-stack:/home/gemini/gemini-stack --link db:db --link gemini-rmq:rmq -v /var/lib/gemini/sshKey_root:/root -v /var/log/gemini/stack:/var/log/gemini --volumes-from gemini-chef -d  gemini/gemini-stack
 		echo "platform run ..."
-		docker run -t --name gemini-platform -p 80:3000 -e MAX_POOL_SIZE=$max_app_processes -e CHEF_URL=https://$hostip:9443 -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName  -v $platformDir/Gemini-poc-mgnt:/home/gemini/gemini-platform --link db:db --link gemini-rmq:rmq --volumes-from gemini-chef -v /var/log/gemini/platform:/var/log/gemini -d gemini/gemini-platform
+		docker run -t --name gemini-platform -p 80:3000 -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes -e CHEF_URL=https://$hostip:9443 -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName  -v $platformDir/Gemini-poc-mgnt:/home/gemini/gemini-platform --link db:db --link gemini-rmq:rmq --volumes-from gemini-chef -v /var/log/gemini/platform:/var/log/gemini -d gemini/gemini-platform
 	else
 		docker run -t --name gemini-stack -p 8888:8888 -e GEMINI_INT_REPO=$internalRepo -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_mist -e GEMINI_STACK_IPANEMA=1 -v $stackDir/Gemini-poc-stack:/home/gemini/gemini-stack --link db:db --link gemini-rmq:rmq -v /var/lib/gemini/sshKey_root:/root -v /var/log/gemini/stack:/var/log/gemini -d  gemini/gemini-stack
 		echo "platform run ..."
-		docker run -t --name gemini-platform -p 80:3000 -e MAX_POOL_SIZE=$max_app_processes -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName -v $platformDir/Gemini-poc-mgnt:/home/gemini/gemini-platform --link db:db --link gemini-rmq:rmq -v /var/log/gemini/platform:/var/log/gemini -d gemini/gemini-platform
+		docker run -t --name gemini-platform -p 80:3000 -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName -v $platformDir/Gemini-poc-mgnt:/home/gemini/gemini-platform --link db:db --link gemini-rmq:rmq -v /var/log/gemini/platform:/var/log/gemini -d gemini/gemini-platform
+
 	fi
 	echo "end ...."
 fi
