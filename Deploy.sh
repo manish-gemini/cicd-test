@@ -282,7 +282,7 @@ else
 	read stackDir
 	echo "Enter platform dir : example : /opt/mydevDir/ :"
 	read platformDir
-        cd $stackDir/Gemini-poc-stack
+        cd $stackDir/Gemini-poc-stack/mist-cgp
 
    	echo "Enter the Mist Branch to pull jar file:"
 	echo "Master = 1"
