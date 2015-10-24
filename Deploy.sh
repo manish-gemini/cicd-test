@@ -216,7 +216,9 @@ fi
 
 echo "db run .."
 docker run --name db -e MYSQL_ROOT_PASSWORD=admin -e MYSQL_USER=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -v /var/dbstore:/var/lib/mysql -d mysql:5.6.24
-docker run -d --hostname rmq  --name gemini-rmq -d secure-registry.gsintlab.com/gemini/gemini-rmq
+# Setting rabbit mq menory to 2GB
+# Rabbit mq uses 40% of memory, so rabbit mq will use 800MB 
+docker run -m 2g -d --hostname rmq  --name gemini-rmq -d secure-registry.gsintlab.com/gemini/gemini-rmq
 sleep 60
 
 if [ $deployType -eq 2 ]
