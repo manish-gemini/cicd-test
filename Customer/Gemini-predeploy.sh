@@ -39,6 +39,15 @@ else
     exit;
 fi 
 
+rpm -q ntp
+if [ $? -ne 0 ]
+then
+yum install -y ntp
+fi
+echo "Time sync processing..."
+ntpdate -b -u time.nist.gov
+echo "...."
+
 echo "Flush Iptables"
 
 iptables -F

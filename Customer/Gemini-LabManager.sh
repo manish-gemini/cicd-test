@@ -105,24 +105,13 @@ if docker ps -a |grep -aq db; then
         docker rm -f db
 fi
 
-
-rpm -q ntp
-if [ $? -ne 0 ]
-then
-yum install -y ntp
-fi
-echo "Time sync processing..."
-ntpdate -b -u time.nist.gov
-echo "...."
-
-
 echo "Setting up iptables rules..."
 iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited
 iptables -D  FORWARD -j REJECT --reject-with icmp-host-prohibited
 
 if [ ! -f /etc/logrotate.d/geminiLogRotate ]
 then
-        echo "/var/log/gemini/platform/*log /var/log/gemini/stack/*log  /var/log/gemini/stack/mist/*log {
+        echo "/var/log/gemini/platform/*log /var/log/gemini/stack/*log {
           daily
           missingok
           size 50M
