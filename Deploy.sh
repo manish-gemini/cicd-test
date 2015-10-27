@@ -141,12 +141,42 @@ echo "Setting MAX PHUSION PROCESS:"$max_app_processes
 rpm -q ntp
 if [ $? -ne 0 ]
 then
-yum install -y ntp
+   yum install -y ntp
 fi
 
 echo "Time sync processing..."
 ntpdate -b -u time.nist.gov
-echo "...."
+
+echo "Setting sestatus to permissive"
+response="y"
+read -p "Do you want to continue ? [y]/n : " -r
+echo
+REPLY=${REPLY:-$response}
+if [[ $REPLY =~ ^[Yy] ]]
+then
+    setenforce 0
+    echo "successfully set sestatus to permissive";
+else
+    echo "sestatus must be set to permissive for deployment."
+    exit;
+fi
+
+echo "Setting up iptables rules..."
+iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited
+iptables -D  FORWARD -j REJECT --reject-with icmp-host-prohibited
+
+
+if [ ! -f /etc/logrotate.d/geminiLogRotate ]
+then
+        echo "/var/log/gemini/platform/*log /var/log/gemini/stack/*log {
+          daily
+          missingok
+          size 50M
+          rotate 20
+          compress
+          copytruncate
+        }" > /etc/logrotate.d/geminiLogRotate
+fi
 
 echo "continue to deploy..."
 echo "Removing if any existing docker process with same name to avoid conflicts"
@@ -173,45 +203,6 @@ fi
 if docker ps -a |grep -a gemini-rmq; then
    docker rm -f gemini-rmq
 fi
-
-
-echo "Setting up iptables rules..."
-iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited
-iptables -D  FORWARD -j REJECT --reject-with icmp-host-prohibited
-
-
-echo "Setting sestatus to permissive"
-response="y"
-read -p "Do you want to continue ? [y]/n : " -r
-echo
-REPLY=${REPLY:-$response}
-if [[ $REPLY =~ ^[Yy] ]]
-then
-    setenforce 0
-    echo "successfully set sestatus to permissive";
-else
-    echo "sestatus must be set to permissive for deployment."
-    exit;
-fi
-
-
-echo "Time sync processing..."
-yum install -y ntp
-ntpdate -b -u time.nist.gov
-echo "...."
-
-if [ ! -f /etc/logrotate.d/geminiLogRotate ]
-then
-	echo "/var/log/gemini/platform/*log /var/log/gemini/stack/*log  /var/log/gemini/stack/mist/*log {
-	  daily
-	  missingok
-	  size 50M
-	  rotate 20
-	  compress
-	  copytruncate
-	}" > /etc/logrotate.d/geminiLogRotate
-fi
-
 
 
 echo "db run .."
