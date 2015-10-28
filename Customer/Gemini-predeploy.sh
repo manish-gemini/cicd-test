@@ -44,7 +44,7 @@ then
 else 
         echo "Docker is not installed. Installing docker..."
 	yum -y update
-	yum -y install docker-1.7
+	yum -y install docker-1.7.1
 	systemctl enable docker.service
 	systemctl start docker.service
         if ! command_exists docker  
