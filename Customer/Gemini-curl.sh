@@ -32,6 +32,7 @@ do
 done
 chmod a+x /opt/gemini/bin/*.sh
 # Running predeploy script
-/opt/gemini/bin/Gemini-predeploy.sh <&0
-/opt/gemini/bin/Gemini-Deploy.sh <&0
+cd /opt/gemini/bin
+/opt/gemini/bin/Gemini-Deploy.sh 
 
+echo "Done."
