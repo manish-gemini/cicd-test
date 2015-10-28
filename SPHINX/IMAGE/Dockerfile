@@ -4,7 +4,7 @@ RUN yum install -y epel-release
 
 RUN yum install -y python python-pip make nginx 
 
-RUN /usr/bin/pip install sphinx sphinx-autobuild recommonmark
+RUN /usr/bin/pip install sphinx sphinx-autobuild recommonmark sphinx_rtd_theme
 
 ADD source /home/source
 ADD *.html /home/source/
