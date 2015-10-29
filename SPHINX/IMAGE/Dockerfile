@@ -18,5 +18,5 @@ RUN cd /home/source && sphinx-build -b html . _build/html
 
 EXPOSE 80
 
-CMD ["bash", "-l", "-c", "/home/source/entrypoint.sh"]
+CMD ["bash", "-l", "-c", "/usr/sbin/nginx -g \"daemon off;\""]
 
