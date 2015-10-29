@@ -6,5 +6,5 @@
 docker rm -f gemini-docs
 
 #Run the existing container
-docker run --name gemini-docs -p 3000:80 -d gemini/gemini-docs
+docker run --name gemini-docs -p 9080:80 -d gemini/gemini-docs
 
