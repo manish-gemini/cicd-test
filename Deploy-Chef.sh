@@ -29,12 +29,12 @@ if [ -f /usr/bin/firewall-cmd ]
 then
     echo "Adding port '$chef_port' to firewall..."
     firewall-cmd --permanent --add-port=$chef_port/tcp
-else
-    echo "Setting up iptables rules..."
-    iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited
-    iptables -D FORWARD -j REJECT --reject-with icmp-host-prohibited
-    /sbin/service iptables save 
 fi
+
+echo "Setting up iptables rules..."
+iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited
+iptables -D FORWARD -j REJECT --reject-with icmp-host-prohibited
+/sbin/service iptables save 
 
 echo "Deploy from Local image = 1"
 echo "Deploy from internal registry = 2"
