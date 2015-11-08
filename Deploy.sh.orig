@@ -216,6 +216,7 @@ sleep 60
 if [ $deployType -eq 2 ]
 then
         echo $pullId
+<<<<<<< 47eaf71c63b5ad15b9bb4d408d618a2b170f3c5c
 	echo "pull apporbit base..."
 	docker pull secure-registry.gsintlab.com/apporbit/apporbit-base
 	echo "pull apporbit services base..."
@@ -237,6 +238,31 @@ then
 		docker run -t --name apporbit-services --restart=always -e GEMINI_INT_REPO=$internalRepo -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist  -e GEMINI_STACK_IPANEMA=1 --link db:db --link apporbit-rmq:rmq -v /var/lib/apporbit/sshKey_root:/root -v /var/log/apporbit/services:/var/log/apporbit -d  secure-registry.gsintlab.com/apporbit/apporbit-services	
 		echo "controller run ..."
 		docker run -t --name apporbit-controller --restart=always -p 80:80 -p 443:443 -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName --link db:db --link apporbit-rmq:rmq -v /var/log/apporbit/controller:/var/log/apporbit -d secure-registry.gsintlab.com/apporbit/apporbit-controller
+=======
+	echo "pull gemini base..."
+	docker pull secure-registry.gsintlab.com/gemini/gemini-base
+	echo "pull gemini stack base..."
+	docker pull secure-registry.gsintlab.com/gemini/gemini-stack-base
+	echo "pull gemini stack ..."
+	docker pull secure-registry.gsintlab.com/gemini/gemini-stack:$pullId
+	echo "pull gemini platform base..."
+	docker pull secure-registry.gsintlab.com/gemini/gemini-platform-base
+	echo "pull gemini platform..."
+	docker pull secure-registry.gsintlab.com/gemini/gemini-platform:$pullId
+#	echo  "pull gemini-mist..."
+#	docker pull secure-registry.gsintlab.com/gemini/gemini-mist
+
+	echo "gemini stack run..."
+	if docker ps -a |grep -a gemini-chef; then
+		docker run -t --name gemini-stack --restart=always -e GEMINI_INT_REPO=$internalRepo -e CHEF_URL=https://$hostip:9443 -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_mist -e GEMINI_STACK_IPANEMA=1 --link db:db --link gemini-rmq:rmq -v /var/lib/gemini/sshKey_root:/root --volumes-from gemini-chef -v /var/log/gemini/stack:/var/log/gemini -d  secure-registry.gsintlab.com/gemini/gemini-stack	
+		echo "platform run ..."
+
+		docker run -t --name gemini-platform --restart=always -p 443:443 -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes  -e CHEF_URL=https://$hostip:9443 -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName --link db:db --link gemini-rmq:rmq --volumes-from gemini-chef -v /var/log/gemini/platform:/var/log/gemini -d secure-registry.gsintlab.com/gemini/gemini-platform
+	else
+		docker run -t --name gemini-stack --restart=always -e GEMINI_INT_REPO=$internalRepo -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_mist  -e GEMINI_STACK_IPANEMA=1 --link db:db --link gemini-rmq:rmq -v /var/lib/gemini/sshKey_root:/root -v /var/log/gemini/stack:/var/log/gemini -d  secure-registry.gsintlab.com/gemini/gemini-stack	
+		echo "platform run ..."
+		docker run -t --name gemini-platform --restart=always -p 443:443 -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName --link db:db --link gemini-rmq:rmq -v /var/log/gemini/platform:/var/log/gemini -d secure-registry.gsintlab.com/gemini/gemini-platform
+>>>>>>> Deploy script
 
 	fi
 
@@ -245,6 +271,7 @@ then
 elif [ $deployType -eq 1 ] || [ $deployType -eq 5 ]
 then
    
+<<<<<<< 47eaf71c63b5ad15b9bb4d408d618a2b170f3c5c
 	echo "apporbit services run..."
 	if docker ps -a |grep -a apporbit-chef; then
 		docker run -t --name apporbit-services --restart=always -e GEMINI_INT_REPO=$internalRepo -e CHEF_URL=https://$hostip:9443 -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist -e GEMINI_STACK_IPANEMA=1 --link db:db --link apporbit-rmq:rmq -v /var/lib/apporbit/sshKey_root:/root -v /var/log/apporbit/services:/var/log/apporbit --volumes-from apporbit-chef -d apporbit/apporbit-services  	
@@ -254,10 +281,22 @@ then
 		docker run -t --name apporbit-services --restart=always -e GEMINI_INT_REPO=$internalRepo -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist -e GEMINI_STACK_IPANEMA=1 --link db:db --link apporbit-rmq:rmq -v /var/log/apporbit/services:/var/log/apporbit  -v /var/lib/apporbit/sshKey_root:/root -d apporbit/apporbit-services    	
 		echo "controller run ..."
 		docker run -t --name apporbit-controller --restart=always -p 80:80 -p 443:443 -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName --link db:db --link apporbit-rmq:rmq -v /var/log/apporbit/controller:/var/log/apporbit -d apporbit/apporbit-controller
+=======
+	echo "gemini stack run..."
+	if docker ps -a |grep -a gemini-chef; then
+		docker run -t --name gemini-stack --restart=always -e GEMINI_INT_REPO=$internalRepo -e CHEF_URL=https://$hostip:9443 -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_mist -e GEMINI_STACK_IPANEMA=1 --link db:db --link gemini-rmq:rmq -v /var/lib/gemini/sshKey_root:/root -v /var/log/gemini/stack:/var/log/gemini --volumes-from gemini-chef -d gemini/gemini-stack    	
+		echo "platform run ..."
+		docker run -t --name gemini-platform --restart=always -p 443:443 -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes -e CHEF_URL=https://$hostip:9443 -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName  --link db:db --link gemini-rmq:rmq --volumes-from gemini-chef -v /var/log/gemini/platform:/var/log/gemini -d gemini/gemini-platform
+	else
+		docker run -t --name gemini-stack --restart=always -e GEMINI_INT_REPO=$internalRepo -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_mist -e GEMINI_STACK_IPANEMA=1 --link db:db --link gemini-rmq:rmq -v /var/log/gemini/stack:/var/log/gemini  -v /var/lib/gemini/sshKey_root:/root -d gemini/gemini-stack    	
+		echo "platform run ..."
+		docker run -t --name gemini-platform --restart=always -p 443:443 -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName --link db:db --link gemini-rmq:rmq -v /var/log/gemini/platform:/var/log/gemini -d gemini/gemini-platform
+>>>>>>> Deploy script
 	fi
 	echo "end ..."
 elif [ $deployType -eq 4 ]
 then
+<<<<<<< 47eaf71c63b5ad15b9bb4d408d618a2b170f3c5c
 	echo "apporbit services run..."
 	if docker ps -a |grep -a apporbit-chef; then
 		docker run -t --name apporbit-services --restart=always -e GEMINI_INT_REPO=$internalRepo -e CHEF_URL=https://$hostip:9443 -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist -e GEMINI_STACK_IPANEMA=1 --link db:db --link apporbit-rmq:rmq  -v /var/lib/apporbit/sshKey_root:/root -v /var/log/apporbit/services:/var/log/apporbit --volumes-from apporbit-chef -d $insecureRegistry/apporbit/apporbit-services
@@ -267,6 +306,17 @@ then
 		docker run -t --name apporbit-services --restart=always -e GEMINI_INT_REPO=$internalRepo -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist -e GEMINI_STACK_IPANEMA=1 --link db:db --link apporbit-rmq:rmq -v /var/lib/apporbit/sshKey_root:/root -v /var/log/apporbit/services:/var/log/apporbit -d $insecureRegistry/apporbit/apporbit-services
 		echo "controller run ..."
 		docker run -t --name apporbit-controller --restart=always -p 80:80 -p 443:443 -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName --link db:db  --link apporbit-rmq:rmq -v /var/log/apporbit/controller:/var/log/apporbit -d $insecureRegistry/apporbit/apporbit-controller
+=======
+	echo "gemini stack run..."
+	if docker ps -a |grep -a gemini-chef; then
+		docker run -t --name gemini-stack --restart=always -e GEMINI_INT_REPO=$internalRepo -e CHEF_URL=https://$hostip:9443 -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_mist -e GEMINI_STACK_IPANEMA=1 --link db:db --link gemini-rmq:rmq  -v /var/lib/gemini/sshKey_root:/root -v /var/log/gemini/stack:/var/log/gemini --volumes-from gemini-chef -d $insecureRegistry/gemini/gemini-stack
+		echo "platform run ..."
+		docker run -t --name gemini-platform --restart=always -p 443:443 -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes -e CHEF_URL=https://$hostip:9443 -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName  --link db:db --link gemini-rmq:rmq --volumes-from gemini-chef -v /var/log/gemini/platform:/var/log/gemini -d $insecureRegistry/gemini/gemini-platform
+	else
+		docker run -t --name gemini-stack --restart=always -e GEMINI_INT_REPO=$internalRepo -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_mist -e GEMINI_STACK_IPANEMA=1 --link db:db --link gemini-rmq:rmq -v /var/lib/gemini/sshKey_root:/root -v /var/log/gemini/stack:/var/log/gemini -d $insecureRegistry/gemini/gemini-stack
+		echo "platform run ..."
+		docker run -t --name gemini-platform --restart=always -p 443:443  -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName --link db:db  --link gemini-rmq:rmq -v /var/log/gemini/platform:/var/log/gemini -d $insecureRegistry/gemini/gemini-platform
+>>>>>>> Deploy script
 	fi
 	echo "end ..."
 else
@@ -300,6 +350,7 @@ else
 	rm -rf Gemfile.lock
         cp -f Gemfile-master Gemfile
 
+<<<<<<< 47eaf71c63b5ad15b9bb4d408d618a2b170f3c5c
 	echo "apporbit services DEV MODE run..."
 	if docker ps -a |grep -a apporbit-chef; then
 		docker run -t --name apporbit-services -e GEMINI_INT_REPO=$internalRepo -e CHEF_URL=https://$hostip:9443 -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist -e GEMINI_STACK_IPANEMA=1 -v $stackDir/Gemini-poc-stack:/home/apporbit/apporbit-services --link db:db --link apporbit-rmq:rmq -v /var/lib/apporbit/sshKey_root:/root -v /var/log/apporbit/services:/var/log/apporbit --volumes-from apporbit-chef -d  apporbit/apporbit-services
@@ -309,6 +360,18 @@ else
 		docker run -t --name apporbit-services -e GEMINI_INT_REPO=$internalRepo -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist -e GEMINI_STACK_IPANEMA=1 -v $stackDir/Gemini-poc-stack:/home/apporbit/apporbit-services --link db:db --link apporbit-rmq:rmq -v /var/lib/apporbit/sshKey_root:/root -v /var/log/apporbit/services:/var/log/apporbit -d  apporbit/apporbit-services
 		echo "controller run ..."
 		docker run -t --name apporbit-controller -p 80:80 -p 443:443 -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName -v $platformDir/Gemini-poc-mgnt:/home/apporbit/apporbit-controller --link db:db --link apporbit-rmq:rmq -v /var/log/apporbit/controller:/var/log/apporbit -d apporbit/apporbit-controller
+=======
+	echo "gemini stack DEV MODE run..."
+	if docker ps -a |grep -a gemini-chef; then
+		docker run -t --name gemini-stack -e GEMINI_INT_REPO=$internalRepo -e CHEF_URL=https://$hostip:9443 -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_mist -e GEMINI_STACK_IPANEMA=1 -v $stackDir/Gemini-poc-stack:/home/gemini/gemini-stack --link db:db --link gemini-rmq:rmq -v /var/lib/gemini/sshKey_root:/root -v /var/log/gemini/stack:/var/log/gemini --volumes-from gemini-chef -d  gemini/gemini-stack
+		echo "platform run ..."
+		docker run -t --name gemini-platform -p 443:443 -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes -e CHEF_URL=https://$hostip:9443 -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName  -v $platformDir/Gemini-poc-mgnt:/home/gemini/gemini-platform --link db:db --link gemini-rmq:rmq --volumes-from gemini-chef -v /var/log/gemini/platform:/var/log/gemini -d gemini/gemini-platform
+	else
+		docker run -t --name gemini-stack -e GEMINI_INT_REPO=$internalRepo -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_mist -e GEMINI_STACK_IPANEMA=1 -v $stackDir/Gemini-poc-stack:/home/gemini/gemini-stack --link db:db --link gemini-rmq:rmq -v /var/lib/gemini/sshKey_root:/root -v /var/log/gemini/stack:/var/log/gemini -d  gemini/gemini-stack
+		echo "platform run ..."
+		docker run -t --name gemini-platform -p 443:443  -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName -v $platformDir/Gemini-poc-mgnt:/home/gemini/gemini-platform --link db:db --link gemini-rmq:rmq -v /var/log/gemini/platform:/var/log/gemini -d gemini/gemini-platform
+
+>>>>>>> Deploy script
 	fi
 	echo "end ...."
 fi
