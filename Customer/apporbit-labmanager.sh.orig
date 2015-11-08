@@ -200,4 +200,8 @@ then
 	fi
 	echo "end ..."
 fi
+<<<<<<< 4e8f42f0d9ab19ad724c00822718a8161d82ebf8:Customer/apporbit-labmanager.sh
 echo "`date` Finishing apporbit-labmanager.sh" >>$LOGFILE
+=======
+
+>>>>>>> Customer script updated for port changes:Customer/Gemini-LabManager.sh
