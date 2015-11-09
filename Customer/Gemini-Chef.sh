@@ -6,7 +6,7 @@ echo    # (optional) move to a new line
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
   echo "Pull Chef Server from Registry..."
-  docker pull registry.gemini-systems.net/gemini/gemini-chef:0.9
+  docker pull registry.gemini-systems.net/gemini/gemini-chef:1.0
   echo "Continue to run chef ..."
   if docker ps -a |grep -aq gemini-chef; then
         docker rm -f gemini-chef
@@ -15,6 +15,7 @@ then
   printf "Enter the Host IP :"
   read -p "Default($ip):" hostip
   hostip=${hostip:-$ip}
-  docker run -it -p 443:443 --privileged -v /etc/chef-server/ --name gemini-chef -h $hostip -d registry.gemini-systems.net/gemini/gemini-chef:0.9
+  docker run -m 2g -it -p 9443:9443  -v /etc/chef-server/ --name gemini-chef -h $hostip -d registry.gemini-systems.net/gemini/gemini-chef:1.0
+  echo "Please change your chef password by logging into the UI."
 fi
 

@@ -21,11 +21,43 @@ if docker ps -a |grep -aq gemini-chef; then
    exit 1
   fi
 fi
+
+chef_port=9443
+
+# Enable the port used by Chef (permanent makes it persist after reboot)
+if [ -f /usr/bin/firewall-cmd ]
+then
+    echo "Adding port '$chef_port' to firewall..."
+    firewall-cmd --permanent --add-port=$chef_port/tcp
+fi
+
+echo "Setting up iptables rules..."
+iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited
+iptables -D FORWARD -j REJECT --reject-with icmp-host-prohibited
+/sbin/service iptables save 
+
+echo "Deploy from Local image = 1"
+echo "Deploy from internal registry = 2"
+read -p "Default(2):" deployType
+deployType=${deployType:-2}
+echo $deployType
+
+if [ $deployType -eq 1 ]
+then
+  echo "Continue to run chef ..."
+  ip=`curl -s http://whatismyip.akamai.com; echo`
+  hname=gemini-chef.gemini-domain
+  docker run -m 2g -it --restart=always -p $chef_port:$chef_port -v /etc/chef-server/ --name gemini-chef -h $ip -d gemini/gemini-chef
+else
   echo "Login to the Internal Registry"
   docker login https://secure-registry.gsintlab.com
   echo "Pull Chef Server from Internal Registry..."
-  docker pull secure-registry.gsintlab.com/gemini/gemini-chef:0.9
+  docker pull secure-registry.gsintlab.com/gemini/gemini-chef:1.0
+  echo "Please change your chef password by logging into the UI."
   echo "Continue to run chef ..."
   ip=`curl -s http://whatismyip.akamai.com; echo`
+  hname=gemini-chef.gemini-domain
   echo "Using ip address: $ip"
-  docker run -it -p 443:443 --privileged -v /etc/chef-server/ --name gemini-chef -h $ip -d secure-registry.gsintlab.com/gemini/gemini-chef:0.9
+  docker run -m 2g -it --restart=always -p $chef_port:$chef_port -v /etc/chef-server/ --name gemini-chef -h $ip -d secure-registry.gsintlab.com/gemini/gemini-chef:1.0
+  echo "Please change your chef password by logging into the UI."
+fi
