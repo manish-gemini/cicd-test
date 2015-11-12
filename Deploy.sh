@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 _LOG_LEVEL_="DEBUG"
 echo "Enter the deploy type:"
