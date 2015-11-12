@@ -145,22 +145,22 @@ read -p "Default(2):" repoType
 repoType=${repoType:-"2"}
 echo $repoType
 
-if docker images |grep -a gemini/gemini-stack; then
-	echo "gemini-stack exists.,"
+if docker images |grep -a apporbit/apporbit-services; then
+	echo "apporbit-services exists.,"
 	quickBuildStack=1
 
 else
-	echo "gemini-stack does not exist"
+	echo "apporbit-services does not exist"
 	quickBuildStack=2
 fi
 
-echo  "Enter 1 for Quick Build Gemini-stack & Gemini-platform or 2 for to build all "
+echo  "Enter 1 for Quick Build apporbit-services & apporbit-controller or 2 for to build all "
 read -p "Default($quickBuildStack):" quickBuild
 quickBuild=${quickBuild:-$quickBuildStack}
 echo $quickBuild
 
 echo "copying Executables.."
-#scp root@209.205.208.181:/var/lib/jenkins/jobs/dev-mist-cgp/lastSuccessful/archive/run/generated/distributions/executable/run.jar $dirToCheckOut/Gemini-poc-stack/mist-cgp/.
+
 cd $dirToCheckOut/Gemini-poc-stack/mist-cgp/
 if [ -f run.jar ]; then
 	rm -f run.jar
@@ -187,10 +187,10 @@ if [[ ( -z "$mistBuildType" ) || ( $mistBuildType -eq 2) ]]; then
       wget http://repos.gsintlab.com/repos/mist/integration-features/run.jar
    fi
 else
-   docker pull secure-registry.gsintlab.com/gemini/mist-builder
+   docker pull secure-registry.gsintlab.com/apporbit/mist-builder
    rm -rf /tmp/mist-cgp
    mkdir -p /tmp
-   docker run --rm -it -v /tmp:/tmp secure-registry.gsintlab.com/gemini/mist-builder
+   docker run --rm -it -v /tmp:/tmp secure-registry.gsintlab.com/apporbit/mist-builder
    cp /tmp/run.jar .
 fi
 
@@ -200,12 +200,12 @@ cd Gemini-poc-stack
 echo "
 [config]
 SECRET_KEY=$secretkey
-INIT_VECTOR=$initVector" > gemini.config.ini
+INIT_VECTOR=$initVector" > apporbit.config.ini
 
-#STEP 4a: Verify if gemini.config.ini exists - user should manually get this file
-if [ ! -f gemini.config.ini ]
+#STEP 4a: Verify if apporbit.config.ini exists - user should manually get this file
+if [ ! -f apporbit.config.ini ]
 then
-        echo "File gemini.config.ini does not exist! Please copy the file and re-try"
+        echo "File apporbit.config.ini does not exist! Please copy the file and re-try"
         exit 1
 fi
 
@@ -223,39 +223,39 @@ cp ../CentOS-Base.repo .
 if [ $repoType == 4 ]
 then
     echo "copying repoType Dev"
-    cp ../gemini-dev.repo .
-    cp ../gemini-test.repo .
-    cp ../gemini-master.repo .
+    cp ../apporbit-dev.repo .
+    cp ../apporbit-test.repo .
+    cp ../apporbit-master.repo .
 elif [ $repoType == 3 ]
 then
     echo "copying repoType Integration"
-    cp ../gemini-test.repo .
-    cp ../gemini-master.repo .
+    cp ../apporbit-test.repo .
+    cp ../apporbit-master.repo .
 elif [ $repoType == 2 ]
 then
     echo "copying repoType Master"
-    cp ../gemini-master.repo .
+    cp ../apporbit-master.repo .
 else
     echo "copying repoType RELEASE"
-    cp ../gemini-release.repo .
+    cp ../apporbit-release.repo .
 fi
 
 if [ $quickBuild != 1 ]
 then
   echo "Build Base Image..."
-  docker build -t gemini/gemini-base:$commitID -f GeminiBase .
+  docker build -t apporbit/apporbit-base:$commitID -f apporbitBase .
   echo "Build Stack Base Image..."
-  docker build -t gemini/gemini-stack-base:$commitID -f GeminiStackBase .
+  docker build -t apporbit/apporbit-services-base:$commitID -f apporbit-servicesBase .
 fi 
 
 cd ..
-echo "Build Tar file for GeminiStack ..."
-cp gemini.config.ini Dockerfiles/
-tar cf Dockerfiles/GeminiStack.tar -T Dockerfiles/GeminiStack.lst
+echo "Build Tar file for apporbit-services ..."
+cp apporbit.config.ini Dockerfiles/
+tar cf Dockerfiles/apporbit-services.tar -T Dockerfiles/apporbit-services.lst
 cd Dockerfiles
-echo "Build Stack Image..."
-docker build -t gemini/gemini-stack:$commitID -f GeminiStack .
-rm GeminiStack.tar gemini.config.ini gemini*.repo CentOS-Base.repo
+echo "Build apporbit services Image..."
+docker build -t apporbit/apporbit-services:$commitID -f apporbit-services .
+rm apporbit-services.tar apporbit.config.ini apporbit*.repo CentOS-Base.repo
 
 #PLATFORM CODE :
 
@@ -265,57 +265,51 @@ cd Dockerfiles
 if [ $repoType == 4 ]
 then
     echo "copying repoType Dev"
-    cp ../gemini-dev.repo .
-    cp ../gemini-test.repo .
-    cp ../gemini-master.repo .
+    cp ../apporbit-dev.repo .
+    cp ../apporbit-test.repo .
+    cp ../apporbit-master.repo .
     cp ../Gemfile-master Gemfile
 elif [ $repoType == 3 ]
 then
     echo "copying repoType Integration"
-    cp ../gemini-master.repo .
-    cp ../gemini-test.repo .
+    cp ../apporbit-master.repo .
+    cp ../apporbit-test.repo .
     cp ../Gemfile-master Gemfile
 elif [ $repoType == 2 ]
 then
     echo "copying repoType Master"
-    cp ../gemini-master.repo .
+    cp ../apporbit-master.repo .
     cp ../Gemfile-master Gemfile
 else
     echo "copying repoType RELEASE"
-    cp ../gemini-release.repo .
+    cp ../apporbit-release.repo .
     cp ../Gemfile-release Gemfile
 fi
 
 if [ $quickBuild != 1 ]
 then
-  # echo "Gemini Base Image..."
-  # docker build -t gemini/gemini-base:$commitID -f GeminiBase .
-  echo "Gemini Platform Base Image..."
-  docker build -t gemini/gemini-platform-base:$commitID -f GeminiPlatformBase .
+  # echo "apporbit Base Image..."
+  # docker build -t apporbit/apporbit-base:$commitID -f apporbitBase .
+  echo "apporbit Platform Base Image..."
+  docker build -t apporbit/apporbit-controller-base:$commitID -f apporbit-controller-Base .
 fi
-rm Gemfile gemini*.repo
+rm Gemfile apporbit*.repo
 cd ..
 
-#echo "pull gemini-stack image from the internal repo"
-#docker pull docker-internal.example.com/gemini/gemini-platform-base
-#echo "tag as gemini/gemini-stack..."
-#docker tag -f docker-internal.example.com/gemini/gemini-platform-base gemini/gemini-platform-base
-
-
-echo "Gemini Platform Image..."
-docker build -t gemini/gemini-platform:$commitID -f Dockerfiles/GeminiPlatformcpy .
+echo "apporbit controller Image..."
+docker build -t apporbit/apporbit-controller:$commitID -f Dockerfiles/apporbit-controller .
 
 if [ $buildType -eq 1 ] || [ $buildType -eq 3 ]
 then
 	mkdir -p $dirToCheckOut/$commitID
-	docker save gemini/gemini-platform:$commitID > $dirToCheckOut/$commitID/gemini-platform.tar
-	docker save gemini/gemini-stack:$commitID > $dirToCheckOut/$commitID/gemini-stack.tar
+	docker save apporbit/apporbit-controller:$commitID > $dirToCheckOut/$commitID/apporbit-controller.tar
+	docker save apporbit/apporbit-services:$commitID > $dirToCheckOut/$commitID/apporbit-services.tar
 fi
 
 if [ $buildType -eq 2 ] || [ $buildType -eq 3 ]
 then
-	docker tag -f gemini/gemini-stack:$commitID secure-registry.gsintlab.com/gemini/gemini-stack:$commitID
-	docker push secure-registry.gsintlab.com/gemini/gemini-stack:$commitID
-	docker tag -f gemini/gemini-platform:$commitID secure-registry.gsintlab.com/gemini-platform:$commitID
-	docker push secure-registry.gsintlab.com/gemini/gemini-platform:$commitID
+	docker tag -f apporbit/apporbit-services:$commitID secure-registry.gsintlab.com/apporbit/apporbit-services:$commitID
+	docker push secure-registry.gsintlab.com/apporbit/apporbit-services:$commitID
+	docker tag -f apporbit/apporbit-controller:$commitID secure-registry.gsintlab.com/apporbit/apporbit-controller:$commitID
+	docker push secure-registry.gsintlab.com/apporbit/apporbit-controller:$commitID
 fi
