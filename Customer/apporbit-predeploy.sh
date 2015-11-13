@@ -5,6 +5,8 @@ command_exists() {
 	command -v "$@" > /dev/null 2>&1
 }
 
+LOGFILE=apporbit-install.log
+echo "`date` Starting apporbit-predeploy.sh" >>$LOGFILE
 
 echo "Check for PreRequisite...."
 #CHECK FOR PREREQUISTE and LETS USER KNOW 
@@ -23,7 +25,7 @@ else
     exit;
 fi 
 
-if [ -f apporbit.repo ]
+if [ ! -f /etc/yum.repos.d/apporbit.repo ]
 then
    cp apporbit.repo /etc/yum.repos.d/
 fi
@@ -34,7 +36,7 @@ then
    yum install -y ntp
 fi
 echo "Time will be synchronized with time.nist.gov for this host"
-ntpdate -b -u time.nist.gov
+ntpdate -b -u time.nist.gov >>$LOGFILE
 echo "...."
 
 #Print the Number of VCPUs
@@ -47,10 +49,10 @@ then
 	echo "Docker exists:" `docker -v` "from" `rpm -qa docker`
 else 
         echo "Docker is not installed. Installing docker..."
-	yum -y update
-	yum -y install docker-1.7.1
-	systemctl enable docker.service
-	systemctl start docker.service
+	yum -y update >>$LOGFILE
+	yum -y install docker-1.7.1 >>$LOGFILE
+	systemctl enable docker.service >>$LOGFILE
+	systemctl start docker.service >>$LOGFILE
         if ! command_exists docker  
         then
            echo "Docker installation failed. Exiting."
@@ -66,3 +68,4 @@ docker login https://registry.gemini-systems.net/
 
 
 
+echo "`date` Finishing apporbit-predeploy.sh" >>$LOGFILE
