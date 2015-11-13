@@ -1,6 +1,7 @@
 #!/bin/bash
 _LOG_LEVEL_="DEBUG"
-echo "...."
+LOGFILE=apporbit-install.log
+echo "`date` Starting apporbit-labmanager.sh" >>$LOGFILE
 echo "Enter the deploy type:"
 echo "Deploy from Registry = 1"
 echo "Deploy from Tar file = 2"
@@ -57,8 +58,8 @@ mkdir -p "/var/dbstore"
 # clean up of ssh key required 
 mkdir -p /var/lib/gemini/sshKey_root
 
-chcon -Rt svirt_sandbox_file_t /var/dbstore
-chcon -Rt svirt_sandbox_file_t /var/lib/gemini/sshKey_root
+chcon -Rt svirt_sandbox_file_t /var/dbstore >>$LOGFILE
+chcon -Rt svirt_sandbox_file_t /var/lib/gemini/sshKey_root >>$LOGFILE
 
 printf "Mode of Operation: \n Type 1 for ON PREM MODE \n Type 2 for SAAS MODE :"
 read -p "Default(1):" onPremMode
@@ -103,8 +104,8 @@ echo "Setting MAX PHUSION PROCESS:"$max_app_processes
 
 
 echo "Setting up iptables rules..."
-iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited
-iptables -D  FORWARD -j REJECT --reject-with icmp-host-prohibited
+iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited >>$LOGFILE
+iptables -D  FORWARD -j REJECT --reject-with icmp-host-prohibited >>$LOGFILE
 
 if [ ! -f /etc/logrotate.d/geminiLogRotate ]
 then
@@ -134,37 +135,41 @@ echo "Removing if any existing docker process with same name to avoid conflicts"
 #fi
 
 if docker ps -a |grep -aq gemini-stack; then
-        docker rm -f gemini-stack
+        docker rm -f gemini-stack >>$LOGFILE
 fi
 
 if docker ps -a |grep -aq gemini-platform; then
-        docker rm -f gemini-platform
+        docker rm -f gemini-platform >>$LOGFILE
 fi
 
 if docker ps -a |grep -aq db; then
-        docker rm -f db
+        docker rm -f db >>$LOGFILE
 fi
 
+if docker ps -a |grep -aq gemini-rmq; then
+        docker rm -f gemini-rmq >>$LOGFILE
+fi
 
 echo "db run .."
-docker run --name db -e MYSQL_ROOT_PASSWORD=admin -e MYSQL_USER=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -v /var/dbstore:/var/lib/mysql -d mysql:5.6.24
+docker run --name db -e MYSQL_ROOT_PASSWORD=admin -e MYSQL_USER=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -v /var/dbstore:/var/lib/mysql -d mysql:5.6.24 >>$LOGFILE
 
-docker run -m 2g -d --hostname rmq  --name gemini-rmq -d registry.gemini-systems.net/gemini/gemini-rmq
+docker run -m 2g -d --hostname rmq  --name gemini-rmq -d registry.gemini-systems.net/gemini/gemini-rmq >>$LOGFILE
+echo "Sleeping for 60 seconds"
 sleep 60
 
 if [ $deployType -eq 1 ]
 then
 	#sleep 500
 	echo "pull gemini base..."
-	docker pull registry.gemini-systems.net/gemini/gemini-base
+	docker pull registry.gemini-systems.net/gemini/gemini-base >>$LOGFILE
 	echo "pull gemini stack base..."
-	docker pull registry.gemini-systems.net/gemini/gemini-stack-base
+	docker pull registry.gemini-systems.net/gemini/gemini-stack-base >>$LOGFILE
 	echo "pull gemini stack ..."
-	docker pull registry.gemini-systems.net/gemini/gemini-stack:$pullId
+	docker pull registry.gemini-systems.net/gemini/gemini-stack:$pullId >>$LOGFILE
 	echo "pull gemini platform base..."
-	docker pull registry.gemini-systems.net/gemini/gemini-platform-base
+	docker pull registry.gemini-systems.net/gemini/gemini-platform-base >>$LOGFILE
 	echo "pull gemini platform..."
-	docker pull registry.gemini-systems.net/gemini/gemini-platform:$pullId
+	docker pull registry.gemini-systems.net/gemini/gemini-platform:$pullId >>$LOGFILE
 #	echo  "pull gemini-mist..."
 #	docker pull registry.gemini-systems.net/gemini/gemini-mist
 	echo "gemini stack run..."
@@ -195,3 +200,4 @@ then
 	fi
 	echo "end ..."
 fi
+echo "`date` Finishing apporbit-labmanager.sh" >>$LOGFILE
