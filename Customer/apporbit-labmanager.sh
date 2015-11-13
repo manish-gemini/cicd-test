@@ -23,7 +23,7 @@ then
 	cd /tmp
 	tar -xvf $tarballLocation
 
-	cd /tmp/GeminiPackages/
+	cd /tmp/appOrbitPackages/
 
 	echo "Loading Platform ... "
 	docker load < gemini-platform.tar
