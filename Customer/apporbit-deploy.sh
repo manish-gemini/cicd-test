@@ -30,7 +30,7 @@ else
 fi
 
 echo "Deploy appOrbit Lab Manager"
-if ! bash apporbit-labmanager $theme
+if ! bash apporbit-labmanager.sh $theme
 then
         exit
 fi
