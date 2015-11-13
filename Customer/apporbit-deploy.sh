@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "Setting up env Variables!"
-if ! bash Gemini-predeploy.sh
+if ! bash apporbit-predeploy.sh
 then
 	exit
 fi
@@ -9,7 +9,7 @@ fi
 read -p "Do you want to execute Configuration manager in the same Machine ?Default(y):" yn
 yn=${yn:-'y'}
 case $yn in
-        [Yy]* ) bash Gemini-Chef.sh; break;;
+        [Yy]* ) bash apporbit-chef.sh; break;;
         [Nn]* ) break;;
         * ) echo "Please answer yes or no.";;
 esac
@@ -29,12 +29,9 @@ else
 	echo "theme is set to '$theme'";
 fi
 
-echo "Deploy GeminiLabManager...."
-if ! bash Gemini-LabManager.sh $theme
+echo "Deploy appOrbit Lab Manager"
+if ! bash apporbit-labmanager $theme
 then
         exit
 fi
-
-
-
 

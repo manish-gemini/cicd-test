@@ -9,7 +9,7 @@ command_exists() {
 echo "Check for PreRequisite...."
 #CHECK FOR PREREQUISTE and LETS USER KNOW 
 
-echo "Installing Gemini containers requires selinux to be turned off."
+echo "Installing appOrbit  containers requires selinux to be turned off."
 response="y"
 read -p "Do you want to continue ? [y]/n : " -r 
 echo
@@ -23,6 +23,10 @@ else
     exit;
 fi 
 
+if [ -f apporbit.repo ]
+then
+   cp apporbit.repo /etc/yum.repos.d/
+fi
 
 rpm -q ntp
 if [ $? -ne 0 ]
@@ -57,7 +61,7 @@ fi
 echo "Flush Iptables"
 iptables -F
 
-echo "Login to Gemini Docker Registry using crendentials obtained from your Gemini Systems contact:"
+echo "Login to appOrbit Docker Registry using crendentials obtained from your appOrbit business contact:"
 docker login https://registry.gemini-systems.net/
 
 
