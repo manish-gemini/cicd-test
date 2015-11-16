@@ -16,11 +16,11 @@ else
   cproxy=""
 fi
 
-FILES="Gemini-Chef.sh  Gemini-Deploy.sh  Gemini-LabManager.sh  Gemini-predeploy.sh  Gemini-supportbundle.sh"
+FILES="apporbit-chef.sh  apporbit-deploy.sh  apporbit-labmanager.sh  apporbit-predeploy.sh  apporbit-supportbundle.sh apporbit.repo"
 for i in $FILES
 do
-  mkdir -p /opt/gemini/bin
-  cd /opt/gemini/bin
+  mkdir -p /opt/apporbit/bin
+  cd /opt/apporbit/bin
   echo "Downloading $i"
   curl --silent -f $cproxy -O "${url}/$i"
   if [ $? -ne 0 ]
@@ -30,9 +30,9 @@ do
   fi
 
 done
-chmod a+x /opt/gemini/bin/*.sh
+chmod a+x /opt/apporbit/bin/*.sh
 # Running predeploy script
-cd /opt/gemini/bin
-/opt/gemini/bin/Gemini-Deploy.sh 
+cd /opt/apporbit/bin
+/opt/apporbit/bin/apporbit-deploy.sh 
 
 echo "Done."
