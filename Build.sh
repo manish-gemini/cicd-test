@@ -245,16 +245,16 @@ then
   echo "Build Base Image..."
   docker build -t apporbit/apporbit-base:$commitID -f apporbitBase .
   echo "Build Stack Base Image..."
-  docker build -t apporbit/apporbit-services-base:$commitID -f apporbit-servicesBase .
+  docker build -t apporbit/apporbit-services-base:$commitID -f apporbitservicesBase .
 fi 
 
 cd ..
 echo "Build Tar file for apporbit-services ..."
 cp apporbit.config.ini Dockerfiles/
-tar cf Dockerfiles/apporbit-services.tar -T Dockerfiles/apporbit-services.lst
+tar cf Dockerfiles/apporbit-services.tar -T Dockerfiles/apporbitservices.lst
 cd Dockerfiles
 echo "Build apporbit services Image..."
-docker build -t apporbit/apporbit-services:$commitID -f apporbit-services .
+docker build -t apporbit/apporbit-services:$commitID -f apporbitservices .
 rm apporbit-services.tar apporbit.config.ini apporbit*.repo CentOS-Base.repo
 
 #PLATFORM CODE :
