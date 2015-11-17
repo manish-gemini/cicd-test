@@ -9,7 +9,7 @@ RUN /usr/bin/pip install sphinx sphinx-autobuild recommonmark sphinx_rtd_theme
 ADD source /home/source
 ADD *.html /home/source/
 ADD nginx.conf /etc/nginx/
-ADD entrypoint.sh /home/source/
+#ADD entrypoint.sh /home/source/
 
 WORKDIR /home/source
 
