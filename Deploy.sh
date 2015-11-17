@@ -99,7 +99,7 @@ else
 fi
 echo $onPremMode
 
-theme="apporbit"
+theme="gemini"
 printf "Enter the Theme Name :"
 read -p "Default($theme):" themeName
 themeName=${themeName:-$theme}
@@ -204,7 +204,8 @@ echo "db run .."
 docker run --name db --restart=always -e MYSQL_ROOT_PASSWORD=admin -e MYSQL_USER=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller -v /var/dbstore:/var/lib/mysql -d mysql:5.6.24
 # Setting rabbit mq menory to 2GB
 # Rabbit mq uses 40% of memory, so rabbit mq will use 800MB 
-docker run -m 2g -d --hostname rmq --restart=always --name apporbit-rmq -d secure-registry.gsintlab.com/apporbit/apporbit-rmq
+docker run -m 2g -d --hostname rmq --restart=always --name apporbit-rmq -d secure-registry.gsintlab.com/gemini/gemini-rmq
+#apporbit/apporbit-rmq
 sleep 60
 
 if [ $deployType -eq 2 ]

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 #  Copyright 2015 Gemini Systems. All rights reserved
 
 #####AUTOMATE tar and upload.,
@@ -291,7 +291,7 @@ then
   # echo "apporbit Base Image..."
   # docker build -t apporbit/apporbit-base:$commitID -f apporbitBase .
   echo "apporbit Platform Base Image..."
-  docker build -t apporbit/apporbit-controller-base:$commitID -f apporbit-controller-Base .
+  docker build -t apporbit/apporbit-controller-base:$commitID -f apporbit-controller-base .
 fi
 rm Gemfile apporbit*.repo
 cd ..

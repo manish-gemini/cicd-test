@@ -27,9 +27,9 @@ then
 	cd /tmp/appOrbitPackages/
 
 	echo "Loading Platform ... "
-	docker load < gemini-platform.tar
+	docker load < apporbit-controller.tar
 	echo "Loading Stack ..."
-	docker load < gemini-stack.tar
+	docker load < apporbit-services.tar
 	echo "Loading Mysql ..."
 	docker load < mysql.tar
 fi
@@ -51,15 +51,15 @@ echo $cleanSetup
 if [ $cleanSetup -eq 1 ]
 then
 	rm -rf "/var/dbstore"
-	rm -rf "/var/lib/gemini/sshKey_root"
+	rm -rf "/var/lib/apporbit/sshKey_root"
 fi
 
 mkdir -p "/var/dbstore"
 # clean up of ssh key required 
-mkdir -p /var/lib/gemini/sshKey_root
+mkdir -p /var/lib/apporbit/sshKey_root
 
 chcon -Rt svirt_sandbox_file_t /var/dbstore >>$LOGFILE
-chcon -Rt svirt_sandbox_file_t /var/lib/gemini/sshKey_root >>$LOGFILE
+chcon -Rt svirt_sandbox_file_t /var/lib/apporbit/sshKey_root >>$LOGFILE
 
 printf "Mode of Operation: \n Type 1 for ON PREM MODE \n Type 2 for SAAS MODE :"
 read -p "Default(1):" onPremMode
@@ -75,7 +75,7 @@ echo $onPremMode
 
 if [ $# -eq 0 ]
   then
-    themeName="gemini"
+    themeName="apporbit"
 fi
 
 themeName=$1
@@ -107,16 +107,16 @@ echo "Setting up iptables rules..."
 iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited >>$LOGFILE
 iptables -D  FORWARD -j REJECT --reject-with icmp-host-prohibited >>$LOGFILE
 
-if [ ! -f /etc/logrotate.d/geminiLogRotate ]
+if [ ! -f /etc/logrotate.d/apporbitLogRotate ]
 then
-        echo "/var/log/gemini/platform/*log /var/log/gemini/stack/*log {
+        echo "/var/log/apporbit/controller/*log /var/log/apporbit/services/*log {
           daily
           missingok
           size 50M
           rotate 20
           compress
           copytruncate
-        }" > /etc/logrotate.d/geminiLogRotate
+        }" > /etc/logrotate.d/apporbitLogRotate
 fi
 
 
@@ -128,40 +128,40 @@ echo $hostip
 
 echo "continue to deploy..."
 echo "Removing if any existing docker process with same name to avoid conflicts"
-#docker rm -f gemini-stack gemini-platform db  
+#docker rm -f apporbit-services apporbit-controller db  
 
-#if docker ps -a |grep -a gemini-mist; then
-#	docker rm -f gemini-mist
+#if docker ps -a |grep -a apporbit-mist; then
+#	docker rm -f apporbit-mist
 #fi
 
-if docker ps -a |grep -aq gemini-stack; then
-        docker rm -f gemini-stack >>$LOGFILE
+if docker ps -a |grep -aq apporbit-services; then
+        docker rm -f apporbit-services >>$LOGFILE
 fi
 
-if docker ps -a |grep -aq gemini-platform; then
-        docker rm -f gemini-platform >>$LOGFILE
+if docker ps -a |grep -aq apporbit-controller; then
+        docker rm -f apporbit-controller >>$LOGFILE
 fi
 
 if docker ps -a |grep -aq db; then
         docker rm -f db >>$LOGFILE
 fi
 
-if docker ps -a |grep -aq gemini-rmq; then
-        docker rm -f gemini-rmq >>$LOGFILE
+if docker ps -a |grep -aq apporbit-rmq; then
+        docker rm -f apporbit-rmq >>$LOGFILE
 fi
 
 echo "db run .."
-docker run --name db -e MYSQL_ROOT_PASSWORD=admin -e MYSQL_USER=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=gemini_platform -v /var/dbstore:/var/lib/mysql -d mysql:5.6.24 >>$LOGFILE
+docker run --name db -e MYSQL_ROOT_PASSWORD=admin -e MYSQL_USER=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller -v /var/dbstore:/var/lib/mysql -d mysql:5.6.24 >>$LOGFILE
 
-docker run -m 2g -d --hostname rmq  --name gemini-rmq -d registry.gemini-systems.net/gemini/gemini-rmq >>$LOGFILE
+docker run -m 2g -d --hostname rmq  --name apporbit-rmq -d registry.gemini-systems.net/gemini/gemini-rmq >>$LOGFILE
 echo "Sleeping for 60 seconds"
 sleep 60
 
 if [ $deployType -eq 1 ]
 then
 	#sleep 500
-	echo "pull gemini base..."
-	docker pull registry.gemini-systems.net/gemini/gemini-base >>$LOGFILE
+	echo "pull apporbit base..."
+	docker pull registry.gemini-systems.net/apporbit/apporbit-base >>$LOGFILE
 	echo "pull gemini stack base..."
 	docker pull registry.gemini-systems.net/gemini/gemini-stack-base >>$LOGFILE
 	echo "pull gemini stack ..."
