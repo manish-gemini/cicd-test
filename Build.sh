@@ -1,5 +1,5 @@
 #!/bin/bash -x
-#  Copyright 2015 Gemini Systems. All rights reserved
+#  Copyright 2015 appOrbit. All rights reserved
 
 #####AUTOMATE tar and upload.,
 

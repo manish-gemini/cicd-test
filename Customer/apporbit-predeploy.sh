@@ -64,7 +64,7 @@ echo "Flush Iptables"
 iptables -F
 
 echo "Login to appOrbit Docker Registry using crendentials obtained from your appOrbit business contact:"
-docker login https://registry.gemini-systems.net/
+docker login https://registry.apporbit.io/
 
 
 

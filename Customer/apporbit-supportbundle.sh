@@ -4,9 +4,9 @@
 # $1 - message
 function write_header(){
 	local h="$@"
-	echo "---------------------------------------------------------------" >> /var/log/gemini/host/sysinfo.log
-	echo "     ${h}" >> /var/log/gemini/host/sysinfo.log
-	echo "---------------------------------------------------------------" >> /var/log/gemini/host/sysinfo.log
+	echo "---------------------------------------------------------------" >> /var/log/apporbit/host/sysinfo.log
+	echo "     ${h}" >> /var/log/apporbit/host/sysinfo.log
+	echo "---------------------------------------------------------------" >> /var/log/apporbit/host/sysinfo.log
 }
  
 # Purpose - Get info about your operating system
@@ -69,7 +69,7 @@ function mem_info(){
     echo "*********************************" 
 	echo "*** Virtual memory statistics ***"
     echo "*********************************"
-	vmstat 2 5 >> /var/log/gemini/host/sysinfo.log
+	vmstat 2 5 >> /var/log/apporbit/host/sysinfo.log
     echo "***********************************" 
 	echo "*** Top 5 memory eating process ***" 
     echo "***********************************"	
@@ -115,59 +115,59 @@ function dockerRun_info() {
 
 #main logic
 echo "appOrbit logs ... "
-echo "Log Location : /var/log/gemini/host/sysinfo.log"
-mkdir -p /var/log/gemini/host
-date > /var/log/gemini/host/sysinfo.log
+echo "Log Location : /var/log/apporbit/host/sysinfo.log"
+mkdir -p /var/log/apporbit/host
+date > /var/log/apporbit/host/sysinfo.log
 
-os_info >> /var/log/gemini/host/sysinfo.log
+os_info >> /var/log/apporbit/host/sysinfo.log
 
-cpu_info >> /var/log/gemini/host/sysinfo.log
+cpu_info >> /var/log/apporbit/host/sysinfo.log
 
-mem_info  >> /var/log/gemini/host/sysinfo.log
+mem_info  >> /var/log/apporbit/host/sysinfo.log
 
-hardDisk_info  >> /var/log/gemini/host/sysinfo.log
+hardDisk_info  >> /var/log/apporbit/host/sysinfo.log
 
-host_info >> /var/log/gemini/host/sysinfo.log
+host_info >> /var/log/apporbit/host/sysinfo.log
 
-net_info >> /var/log/gemini/host/sysinfo.log
+net_info >> /var/log/apporbit/host/sysinfo.log
 
-user_info "who" >> /var/log/gemini/host/sysinfo.log
+user_info "who" >> /var/log/apporbit/host/sysinfo.log
 
-user_info "last" >> /var/log/gemini/host/sysinfo.log
+user_info "last" >> /var/log/apporbit/host/sysinfo.log
 
 
 write_header "Software Requirments "
 
-docker_info >> /var/log/gemini/host/sysinfo.log
+docker_info >> /var/log/apporbit/host/sysinfo.log
 
-selinux_info >> /var/log/gemini/host/sysinfo.log
+selinux_info >> /var/log/apporbit/host/sysinfo.log
 
-iptables_info >> /var/log/gemini/host/sysinfo.log
+iptables_info >> /var/log/apporbit/host/sysinfo.log
 
-dockerRun_info >> /var/log/gemini/host/sysinfo.log
+dockerRun_info >> /var/log/apporbit/host/sysinfo.log
 
-write_header "Read Platform container log from /var/log/gemini/host/platform.log"
+write_header "Read Platform container log from /var/log/apporbit/host/platform.log"
 
-docker logs gemini-platform >>  /var/log/gemini/host/platform.log
+docker logs apporbit-controller >>  /var/log/apporbit/host/platform.log
 
-write_header "Read Stack container log from /var/log/gemini/host/stack.log"
+write_header "Read Stack container log from /var/log/apporbit/host/stack.log"
 
-docker logs gemini-stack >>  /var/log/gemini/host/stack.log
+docker logs apporbit-services >>  /var/log/apporbit/host/stack.log
 
-write_header "Read Mysql DB container log from /var/log/gemini/host/db.log"
+write_header "Read Mysql DB container log from /var/log/apporbit/host/db.log"
 
-docker logs db >>  /var/log/gemini/host/db.log
+docker logs db >>  /var/log/apporbit/host/db.log
 
-write_header "Read Chef container log from /var/log/gemini/host/chef.log"
+write_header "Read Chef container log from /var/log/apporbit/host/chef.log"
 
-docker logs gemini-chef >>  /var/log/gemini/host/chef.log
+docker logs apporbit-chef >>  /var/log/apporbit/host/chef.log
 
-docker exec -it gemini-stack bash -l -c "/home/gemini/gemini-stack/utils/logmodule/master.sh"
+docker exec -it apporbit-services bash -l -c "/home/apporbit/apporbit-services/utils/logmodule/master.sh"
 
-echo "END OF GEMINI SYS LOGS" >> /var/log/gemini/host/sysinfo.log
+echo "END OF APPORBTI SYS LOGS" >> /var/log/apporbit/host/sysinfo.log
 
 mkdir -p /opt
 NOW=$(date +"%H-%M-%m-%d-%Y")
-echo "Find LOG Bundle at /opt/var_log_gemini$NOW.tar.gz"
-tar -cvzf /opt/var_log_gemini$NOW.tar.gz /var/log/gemini > /dev/Null
+echo "Find LOG Bundle at /opt/var_log_apporbit$NOW.tar.gz"
+tar -cvzf /opt/var_log_apporbit$NOW.tar.gz /var/log/apporbit > /dev/Null
  

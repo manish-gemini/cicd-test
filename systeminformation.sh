@@ -7,9 +7,9 @@ LSB=/usr/bin/lsb_release
 # $1 - message
 function write_header(){
 	local h="$@"
-	echo "---------------------------------------------------------------" >> /var/log/gemini/sysinfo.log
-	echo "     ${h}" >> /var/log/gemini/sysinfo.log
-	echo "---------------------------------------------------------------" >> /var/log/gemini/sysinfo.log
+	echo "---------------------------------------------------------------" >> /var/log/apporbit/sysinfo.log
+	echo "     ${h}" >> /var/log/apporbit/sysinfo.log
+	echo "---------------------------------------------------------------" >> /var/log/apporbit/sysinfo.log
 }
  
 # Purpose - Get info about your operating system
@@ -37,7 +37,7 @@ function net_info(){
 	echo "Total network interfaces found : $(wc -w <<<${devices})" 
  
 	echo "*** IP Addresses Information ***"
-	ip -4 address show >> /var/log/gemini/sysinfo.log
+	ip -4 address show >> /var/log/apporbit/sysinfo.log
  
 	echo "***********************"
 	echo "*** Network routing ***"
@@ -69,7 +69,7 @@ function mem_info(){
     echo "*********************************" 
 	echo "*** Virtual memory statistics ***"
     echo "*********************************"
-	vmstat >> /var/log/gemini/sysinfo.log
+	vmstat >> /var/log/apporbit/sysinfo.log
     echo "***********************************" 
 	echo "*** Top 5 memory eating process ***" 
     echo "***********************************"	
@@ -112,55 +112,55 @@ function dockerRun_info() {
 
 
 #main logic
-echo "Gemini Sys logs ... "
-echo "Log Location : /var/log/gemini/sysinfo.log"
-date > /var/log/gemini/sysinfo.log
+echo "apporbit Sys logs ... "
+echo "Log Location : /var/log/apporbit/sysinfo.log"
+date > /var/log/apporbit/sysinfo.log
 
-os_info >> /var/log/gemini/sysinfo.log
+os_info >> /var/log/apporbit/sysinfo.log
 
-cpu_info >> /var/log/gemini/sysinfo.log
+cpu_info >> /var/log/apporbit/sysinfo.log
 
-mem_info  >> /var/log/gemini/sysinfo.log
+mem_info  >> /var/log/apporbit/sysinfo.log
 
-hardDisk_info  >> /var/log/gemini/sysinfo.log
+hardDisk_info  >> /var/log/apporbit/sysinfo.log
 
-host_info >> /var/log/gemini/sysinfo.log
+host_info >> /var/log/apporbit/sysinfo.log
 
-net_info >> /var/log/gemini/sysinfo.log
+net_info >> /var/log/apporbit/sysinfo.log
 
-user_info "who" >> /var/log/gemini/sysinfo.log
+user_info "who" >> /var/log/apporbit/sysinfo.log
 
-user_info "last" >> /var/log/gemini/sysinfo.log
+user_info "last" >> /var/log/apporbit/sysinfo.log
 
 
 write_header "Software Requirments "
 
-docker_info >> /var/log/gemini/sysinfo.log
+docker_info >> /var/log/apporbit/sysinfo.log
 
-selinux_info >> /var/log/gemini/sysinfo.log
+selinux_info >> /var/log/apporbit/sysinfo.log
 
-iptables_info >> /var/log/gemini/sysinfo.log
+iptables_info >> /var/log/apporbit/sysinfo.log
 
-dockerRun_info >> /var/log/gemini/sysinfo.log
+dockerRun_info >> /var/log/apporbit/sysinfo.log
 
-write_header "Read Platform container log from /var/log/gemini/platform.log"
+write_header "Read controller container log from /var/log/apporbit/controller.log"
 
-docker logs gemini-platform >>  /var/log/gemini/platform.log
+docker logs apporbit-controller >>  /var/log/apporbit/controller.log
 
-write_header "Read Stack container log from /var/log/gemini/stack.log"
+write_header "Read services container log from /var/log/apporbit/services.log"
 
-docker logs gemini-stack >>  /var/log/gemini/stack.log
+docker logs apporbit-services >>  /var/log/apporbit/services.log
 
-write_header "Read Mysql DB container log from /var/log/gemini/db.log"
+write_header "Read Mysql DB container log from /var/log/apporbit/db.log"
 
-docker logs db >>  /var/log/gemini/db.log
+docker logs db >>  /var/log/apporbit/db.log
 
-write_header "Read Chef container log from /var/log/gemini/chef.log"
+write_header "Read Chef container log from /var/log/apporbit/chef.log"
 
-docker logs gemini-chef >>  /var/log/gemini/chef.log
+docker logs apporbit-chef >>  /var/log/apporbit/chef.log
 
-docker exec -it gemini-stack bash -l -c "/home/gemini/gemini-stack/utils/logmodule/master.sh"
+docker exec -it apporbit-services bash -l -c "/home/apporbit/apporbit-services/utils/logmodule/master.sh"
 
-echo "END OF GEMINI SYS LOGS" >> /var/log/gemini/sysinfo.log
+echo "END OF apporbit SYS LOGS" >> /var/log/apporbit/sysinfo.log
 
  
