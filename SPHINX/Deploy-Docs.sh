@@ -1,10 +1,10 @@
 #!/bin/bash
 # Deploy Docs 
 
-#Remove running gemini-docs
+#Remove running apporbit-docs
 
-docker rm -f gemini-docs
+docker rm -f apporbit-docs
 
 #Run the existing container
-docker run --name gemini-docs -p 9080:80 -d gemini/gemini-docs
+docker run --name apporbit-docs -p 9080:80 -d apporbit/apporbit-docs
 

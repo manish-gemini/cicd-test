@@ -1,5 +1,5 @@
 FROM centos:centos7.0.1406
-MAINTAINER SPHINX doc builder  <sajith@gemini-systems.net> - sajith
+MAINTAINER SPHINX doc builder  <sajith@apporbit.io> - sajith
 RUN yum install -y epel-release
 
 RUN yum install -y python python-pip make nginx 
@@ -9,7 +9,7 @@ RUN /usr/bin/pip install sphinx sphinx-autobuild recommonmark sphinx_rtd_theme
 ADD source /home/source
 ADD *.html /home/source/
 ADD nginx.conf /etc/nginx/
-ADD entrypoint.sh /home/source/
+#ADD entrypoint.sh /home/source/
 
 WORKDIR /home/source
 

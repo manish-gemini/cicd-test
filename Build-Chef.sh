@@ -1,6 +1,6 @@
 #!/bin/bash
-echo "Starting to build gemini-chef"
+echo "Starting to build apporbit-chef"
 cd  ChefContainer
-docker build -t gemini/gemini-chef .
+docker build -t apporbit/apporbit-chef .
 echo "Build Completed!"
 
