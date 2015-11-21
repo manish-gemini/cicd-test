@@ -274,7 +274,7 @@ else
 	read servicesDir
 	echo "Enter controller dir : example : /opt/mydevDir/ :"
 	read controllerDir
-        cd $servicesDir/apporbit-poc-services/mist-cgp
+        cd $servicesDir/Gemini-poc-stack/mist-cgp
 
    	echo "Enter the Mist Branch to pull jar file:"
 	echo "Master = 1"
@@ -302,13 +302,13 @@ else
 
 	echo "apporbit services DEV MODE run..."
 	if docker ps -a |grep -a apporbit-chef; then
-		docker run -t --name apporbit-services -e GEMINI_INT_REPO=$internalRepo -e CHEF_URL=https://$hostip:9443 -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist -e GEMINI_STACK_IPANEMA=1 -v $stackDir/Gemini-poc-stack:/home/apporbit/apporbit-services --link db:db --link apporbit-rmq:rmq -v /var/lib/apporbit/sshKey_root:/root -v /var/log/apporbit/services:/var/log/apporbit --volumes-from apporbit-chef -d  apporbit/apporbit-services
+		docker run -t --name apporbit-services -e GEMINI_INT_REPO=$internalRepo -e CHEF_URL=https://$hostip:9443 -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist -e GEMINI_STACK_IPANEMA=1 -v $servicesDir/Gemini-poc-stack:/home/apporbit/apporbit-services --link db:db --link apporbit-rmq:rmq -v /var/lib/apporbit/sshKey_root:/root -v /var/log/apporbit/services:/var/log/apporbit --volumes-from apporbit-chef -d  apporbit/apporbit-services
 		echo "controller run ..."
-		docker run -t --name apporbit-controller -p 80:80 -p 443:443 -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes -e CHEF_URL=https://$hostip:9443 -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName  -v $platformDir/Gemini-poc-mgnt:/home/apporbit/apporbit-controller --link db:db --link apporbit-rmq:rmq --volumes-from apporbit-chef -v /var/log/apporbit/controller:/var/log/apporbit -d apporbit/apporbit-controller
+		docker run -t --name apporbit-controller -p 80:80 -p 443:443 -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes -e CHEF_URL=https://$hostip:9443 -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName  -v $controllerDir/Gemini-poc-mgnt:/home/apporbit/apporbit-controller --link db:db --link apporbit-rmq:rmq --volumes-from apporbit-chef -v /var/log/apporbit/controller:/var/log/apporbit -d apporbit/apporbit-controller
 	else
-		docker run -t --name apporbit-services -e GEMINI_INT_REPO=$internalRepo -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist -e GEMINI_STACK_IPANEMA=1 -v $stackDir/Gemini-poc-stack:/home/apporbit/apporbit-services --link db:db --link apporbit-rmq:rmq -v /var/lib/apporbit/sshKey_root:/root -v /var/log/apporbit/services:/var/log/apporbit -d  apporbit/apporbit-services
+		docker run -t --name apporbit-services -e GEMINI_INT_REPO=$internalRepo -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist -e GEMINI_STACK_IPANEMA=1 -v $servicesDir/Gemini-poc-stack:/home/apporbit/apporbit-services --link db:db --link apporbit-rmq:rmq -v /var/lib/apporbit/sshKey_root:/root -v /var/log/apporbit/services:/var/log/apporbit -d  apporbit/apporbit-services
 		echo "controller run ..."
-		docker run -t --name apporbit-controller -p 80:80 -p 443:443 -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName -v $platformDir/Gemini-poc-mgnt:/home/apporbit/apporbit-controller --link db:db --link apporbit-rmq:rmq -v /var/log/apporbit/controller:/var/log/apporbit -d apporbit/apporbit-controller
+		docker run -t --name apporbit-controller -p 80:80 -p 443:443 -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName -v $controllerDir/Gemini-poc-mgnt:/home/apporbit/apporbit-controller --link db:db --link apporbit-rmq:rmq -v /var/log/apporbit/controller:/var/log/apporbit -d apporbit/apporbit-controller
 	fi
 	echo "end ...."
 fi
