@@ -5,59 +5,17 @@ echo "Enter the deploy type:"
 echo "Deploy from Local image = 1"
 echo "Deploy from internal registry = 2"
 echo "Dev Mode with Volume Mount Option = 3"
-echo "Deploy from a insecure registry = 4"
-echo "Deploy from tar file = 5"
 
 read -p "Default(1):" deployType
 deployType=${deployType:-1}
 echo $deployType
 
-if [ $deployType -eq 5 ]
-then
-	echo "Enter the Full location of the Tar File :"
-	read tarballLocation
-	echo $tarballLocation
-
-	echo "Check for File Existence."
-
-	echo "untar the package..."
-
-	mkdir -p /tmp
-	cd /tmp
-	tar -xvf $tarballLocation
-
-	cd /tmp/apporbit-packages/
-
-	echo "Loading controller ... "
-	docker load < apporbit-controller.tar
-	echo "Loading services ..."
-	docker load < apporbit-services.tar
-	echo "Loading Mysql ..."
-	docker load < mysql.tar
-fi
-
 if [ $deployType -eq 2 ]
 then
-#Docker LOGIN
-## DOCKER LOGIN:::
 docker login https://secure-registry.gsintlab.com
 read -p  "Enter the Build ID [Default: latest]:" pullId
 fi
 
-if [ $deployType -eq 4 ]
-then
- echo "Enter the Insecure Registry Access URL : \n Example : 209.205.208.111:5000"
- read insecureRegistry
- echo $insecureRegistry
-
- if [ -z $insecureRegistry ]
- then
-	echo "Specify a valid Insecure Registry ! Exiting..."
-	exit
- fi
- echo "[Warning] Ensure that you have started the docker service in the host machine with --insecure-registry option , else deploy will fail"
-
-fi
 intrepo="http://repos.gsintlab.com/repos/"
 echo "Enter the Internal Package Repo :[http://repos.gsintlab.com/repos]:"
 read -p "Default($intrepo):" internalRepo
@@ -138,15 +96,6 @@ fi
 
 echo "Setting MAX PHUSION PROCESS:"$max_app_processes
 
-rpm -q ntp
-if [ $? -ne 0 ]
-then
-   yum install -y ntp
-fi
-
-echo "Time sync processing..."
-ntpdate -b -u time.nist.gov
-
 echo "Setting sestatus to permissive"
 response="y"
 read -p "Do you want to continue ? [y]/n : " -r
@@ -160,6 +109,15 @@ else
     echo "sestatus must be set to permissive for deployment."
     exit;
 fi
+
+rpm -q ntp
+if [ $? -ne 0 ]
+then
+   yum install -y ntp
+fi
+
+echo "Time sync processing..."
+ntpdate -b -u time.nist.gov
 
 if [ ! -f /etc/logrotate.d/apporbitLogRotate ]
 then
@@ -242,7 +200,7 @@ then
 
 	echo "end ..."
 
-elif [ $deployType -eq 1 ] || [ $deployType -eq 5 ]
+elif [ $deployType -eq 1 ]
 then
    
 	echo "apporbit services run..."
@@ -254,19 +212,6 @@ then
 		docker run -t --name apporbit-services --restart=always -e GEMINI_INT_REPO=$internalRepo -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist -e GEMINI_STACK_IPANEMA=1 --link db:db --link apporbit-rmq:rmq -v /var/log/apporbit/services:/var/log/apporbit  -v /var/lib/apporbit/sshKey_root:/root -d apporbit/apporbit-services    	
 		echo "controller run ..."
 		docker run -t --name apporbit-controller --restart=always -p 80:80 -p 443:443 -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName --link db:db --link apporbit-rmq:rmq -v /var/log/apporbit/controller:/var/log/apporbit -d apporbit/apporbit-controller
-	fi
-	echo "end ..."
-elif [ $deployType -eq 4 ]
-then
-	echo "apporbit services run..."
-	if docker ps -a |grep -a apporbit-chef; then
-		docker run -t --name apporbit-services --restart=always -e GEMINI_INT_REPO=$internalRepo -e CHEF_URL=https://$hostip:9443 -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist -e GEMINI_STACK_IPANEMA=1 --link db:db --link apporbit-rmq:rmq  -v /var/lib/apporbit/sshKey_root:/root -v /var/log/apporbit/services:/var/log/apporbit --volumes-from apporbit-chef -d $insecureRegistry/apporbit/apporbit-services
-		echo "controller run ..."
-		docker run -t --name apporbit-controller --restart=always -p 80:80 -p 443:443 -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes -e CHEF_URL=https://$hostip:9443 -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName  --link db:db --link apporbit-rmq:rmq --volumes-from apporbit-chef -v /var/log/apporbit/controller:/var/log/apporbit -d $insecureRegistry/apporbit/apporbit-controller
-	else
-		docker run -t --name apporbit-services --restart=always -e GEMINI_INT_REPO=$internalRepo -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist -e GEMINI_STACK_IPANEMA=1 --link db:db --link apporbit-rmq:rmq -v /var/lib/apporbit/sshKey_root:/root -v /var/log/apporbit/services:/var/log/apporbit -d $insecureRegistry/apporbit/apporbit-services
-		echo "controller run ..."
-		docker run -t --name apporbit-controller --restart=always -p 80:80 -p 443:443 -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName --link db:db  --link apporbit-rmq:rmq -v /var/log/apporbit/controller:/var/log/apporbit -d $insecureRegistry/apporbit/apporbit-controller
 	fi
 	echo "end ..."
 else
