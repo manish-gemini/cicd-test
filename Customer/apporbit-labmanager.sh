@@ -110,11 +110,6 @@ fi
 
 echo "Setting MAX PHUSION PROCESS:"$max_app_processes
 
-
-echo "Setting up iptables rules..."
-iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited >>$LOGFILE
-iptables -D  FORWARD -j REJECT --reject-with icmp-host-prohibited >>$LOGFILE
-
 if [ ! -f /etc/logrotate.d/apporbitLogRotate ]
 then
         echo "/var/log/apporbit/controller/*log /var/log/apporbit/services/*log {
@@ -161,7 +156,7 @@ if docker ps -a | grep -a apporbit-docs; then
 fi
 
 echo "db run .."
-docker run --name db -e MYSQL_ROOT_PASSWORD=admin -e MYSQL_USER=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller -v /var/dbstore:/var/lib/mysql -d mysql:5.6.24 >>$LOGFILE
+docker run --name db --restart=always -e MYSQL_ROOT_PASSWORD=admin -e MYSQL_USER=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller -v /var/dbstore:/var/lib/mysql -d mysql:5.6.24 >>$LOGFILE
 
 echo "Sleeping for 60 seconds"
 sleep 60
@@ -184,26 +179,26 @@ then
 	echo "pull apporbit Docs"
 	docker pull registry.apporbit.com/apporbit/apporbit-docs >> $LOGFILE
 	
-	docker run -m 2g -d --hostname rmq  --name apporbit-rmq -d registry.apporbit.com/apporbit/apporbit-rmq >>$LOGFILE
-	docker run --name apporbit-docs -p 9080:80 -d registry.apporbit.com/apporbit/apporbit-docs >>$LOGFILE
+	docker run -m 2g -d --hostname rmq --name apporbit-rmq --restart=always -d registry.apporbit.com/apporbit/apporbit-rmq >>$LOGFILE
+	docker run --name apporbit-docs --restart=always -p 9080:80 -d registry.apporbit.com/apporbit/apporbit-docs >>$LOGFILE
 
 	echo "apporbit services run..."
-	if docker ps -a |grep -aq apporbit-chef; then
-		docker run -t --name apporbit-services -e GEMINI_INT_REPO=$internalRepo -e CHEF_URL=https://$hostip:9443 -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist -e GEMINI_STACK_IPANEMA=1 --link db:db --link apporbit-rmq:rmq -v /var/lib/apporbit/sshKey_root:/root --volumes-from apporbit-chef -v /var/log/apporbit/services:/var/log/apporbit -d registry.apporbit.com/apporbit/apporbit-services:$pullId
+	if docker ps |grep -aq apporbit-chef; then
+		docker run -t --name apporbit-services --restart=always -e GEMINI_INT_REPO=$internalRepo -e CHEF_URL=https://$hostip:9443 -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist -e GEMINI_STACK_IPANEMA=1 --link db:db --link apporbit-rmq:rmq -v /var/lib/apporbit/sshKey_root:/root --volumes-from apporbit-chef -v /var/log/apporbit/services:/var/log/apporbit -d registry.apporbit.com/apporbit/apporbit-services:$pullId
 		echo "controller run ..."
-		docker run -t --name apporbit-controller -p 80:80 -p 443:443  -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes  -e CHEF_URL=https://$hostip:9443 -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName --link db:db --link apporbit-rmq:rmq --volumes-from apporbit-chef -v /var/log/apporbit/controller:/var/log/apporbit -d registry.apporbit.com/apporbit/apporbit-controller:$pullId
+		docker run -t --name apporbit-controller --restart=always -p 80:80 -p 443:443  -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes  -e CHEF_URL=https://$hostip:9443 -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName --link db:db --link apporbit-rmq:rmq --volumes-from apporbit-chef -v /var/log/apporbit/controller:/var/log/apporbit -d registry.apporbit.com/apporbit/apporbit-controller:$pullId
 	else
-		docker run -t --name apporbit-services -e GEMINI_INT_REPO=$internalRepo -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist  -e GEMINI_STACK_IPANEMA=1 --link db:db --link apporbit-rmq:rmq -v /var/lib/apporbit/sshKey_root:/root -v /var/log/apporbit/services:/var/log/apporbit -d  registry.apporbit.com/apporbit/apporbit-services:$pullId	
+		docker run -t --name apporbit-services --restart=always -e GEMINI_INT_REPO=$internalRepo -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist  -e GEMINI_STACK_IPANEMA=1 --link db:db --link apporbit-rmq:rmq -v /var/lib/apporbit/sshKey_root:/root -v /var/log/apporbit/services:/var/log/apporbit -d  registry.apporbit.com/apporbit/apporbit-services:$pullId	
 		echo "controller run ..."
-		docker run -t --name apporbit-controller -p 80:80 -p 443:443  -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName --link db:db --link apporbit-rmq:rmq -v /var/log/apporbit/controller:/var/log/apporbit -d registry.apporbit.com/apporbit/apporbit-controller:$pullId
+		docker run -t --name apporbit-controller --restart=always -p 80:80 -p 443:443  -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName --link db:db --link apporbit-rmq:rmq -v /var/log/apporbit/controller:/var/log/apporbit -d registry.apporbit.com/apporbit/apporbit-controller:$pullId
 
 	fi
 	echo "end ..."
 
 elif [ $deployType -eq 2 ]
 then
-    docker run -m 2g -d --hostname rmq  --name apporbit-rmq -d apporbit/apporbit-rmq >>$LOGFILE
-	docker run --name apporbit-docs -p 9080:80 -d apporbit/apporbit-docs >>$LOGFILE
+    docker run -m 2g -d --hostname rmq  --name apporbit-rmq --restart=always -d apporbit/apporbit-rmq >>$LOGFILE
+	docker run --name apporbit-docs --restart=always -p 9080:80 -d apporbit/apporbit-docs >>$LOGFILE
 	echo "apporbit services run..."
 	if docker ps -a |grep -aq apporbit-chef; then
 		docker run -t --name apporbit-services -e GEMINI_INT_REPO=$internalRepo -e CHEF_URL=https://$hostip:9443 -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist -e GEMINI_STACK_IPANEMA=1 --link db:db --link apporbit-rmq:rmq -v /var/lib/apporbit/sshKey_root:/root -v /var/log/apporbit/services:/var/log/apporbit --volumes-from apporbit-chef -d apporbit/apporbit-services

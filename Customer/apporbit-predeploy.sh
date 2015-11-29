@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 command_exists() {
 	command -v "$@" > /dev/null 2>&1
 }
@@ -10,6 +9,10 @@ echo "`date` Starting apporbit-predeploy.sh" >>$LOGFILE
 
 echo "Check for PreRequisite...."
 #CHECK FOR PREREQUISTE and LETS USER KNOW 
+
+echo "Setting up iptables rules..."
+iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited >>$LOGFILE
+iptables -D  FORWARD -j REJECT --reject-with icmp-host-prohibited >>$LOGFILE
 
 echo "Installing appOrbit  containers requires selinux to be turned off."
 response="y"
@@ -65,7 +68,5 @@ iptables -F
 
 echo "Login to appOrbit Docker Registry using crendentials obtained from your appOrbit business contact:"
 docker login https://registry.apporbit.com/
-
-
 
 echo "`date` Finishing apporbit-predeploy.sh" >>$LOGFILE
