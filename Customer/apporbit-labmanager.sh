@@ -32,6 +32,10 @@ then
 	docker load < apporbit-services.tar
 	echo "Loading Mysql ..."
 	docker load < mysql.tar
+	echo "Loading Rmq ..."
+	docker load < apporbit-rmq.tar
+	echo "Loading Docs ..."
+	docker load < apporbit-docs.tar
 fi
 
 if [ $deployType -eq 1 ]
@@ -52,14 +56,18 @@ if [ $cleanSetup -eq 1 ]
 then
 	rm -rf "/var/dbstore"
 	rm -rf "/var/lib/apporbit/sshKey_root"
+	rm -rf "/var/log/apporbit/"
 fi
 
 mkdir -p "/var/dbstore"
-# clean up of ssh key required 
-mkdir -p /var/lib/apporbit/sshKey_root
+mkdir -p "/var/log/apporbit/controller"
+mkdir -p "/var/log/apporbit/services" 
+mkdir -p "/var/lib/apporbit/sshKey_root" 
 
 chcon -Rt svirt_sandbox_file_t /var/dbstore >>$LOGFILE
 chcon -Rt svirt_sandbox_file_t /var/lib/apporbit/sshKey_root >>$LOGFILE
+chcon -Rt svirt_sandbox_file_t /var/log/apporbit/services >>$LOGFILE
+chcon -Rt svirt_sandbox_file_t /var/log/apporbit/controller >>$LOGFILE
 
 printf "Mode of Operation: \n Type 1 for ON PREM MODE \n Type 2 for SAAS MODE :"
 read -p "Default(1):" onPremMode
@@ -74,7 +82,7 @@ fi
 echo $onPremMode
 
 if [ $# -eq 0 ]
-  then
+then
     themeName="apporbit"
 fi
 
@@ -128,32 +136,33 @@ echo $hostip
 
 echo "continue to deploy..."
 echo "Removing if any existing docker process with same name to avoid conflicts"
-#docker rm -f apporbit-services apporbit-controller db  
 
-#if docker ps -a |grep -a apporbit-mist; then
-#	docker rm -f apporbit-mist
-#fi
-
-if docker ps -a |grep -aq apporbit-services; then
-        docker rm -f apporbit-services >>$LOGFILE
+if docker ps -a |grep -aq apporbit-services;
+then
+   docker rm -f apporbit-services
 fi
 
-if docker ps -a |grep -aq apporbit-controller; then
-        docker rm -f apporbit-controller >>$LOGFILE
+if docker ps -a |grep -aq apporbit-controller;
+then
+   docker rm -f apporbit-controller
 fi
 
-if docker ps -a |grep -aq db; then
-        docker rm -f db >>$LOGFILE
+if docker ps -a |grep -aq db;
+then
+   docker rm -f db
 fi
 
-if docker ps -a |grep -aq apporbit-rmq; then
-        docker rm -f apporbit-rmq >>$LOGFILE
+if docker ps -a |grep -a apporbit-rmq; then
+   docker rm -f apporbit-rmq
+fi
+
+if docker ps -a | grep -a apporbit-docs; then
+   docker rm -f apporbit-docs
 fi
 
 echo "db run .."
 docker run --name db -e MYSQL_ROOT_PASSWORD=admin -e MYSQL_USER=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller -v /var/dbstore:/var/lib/mysql -d mysql:5.6.24 >>$LOGFILE
 
-docker run -m 2g -d --hostname rmq  --name apporbit-rmq -d registry.apporbit.com/apporbit/apporbit-rmq >>$LOGFILE
 echo "Sleeping for 60 seconds"
 sleep 60
 
@@ -170,10 +179,17 @@ then
 	docker pull registry.apporbit.com/apporbit/apporbit-controller-base >>$LOGFILE
 	echo "pull apporbit controller..."
 	docker pull registry.apporbit.com/apporbit/apporbit-controller:$pullId >>$LOGFILE
+	echo "pull apporbit Rabbit Mq"
+	docker pull registry.apporbit.com/apporbit/apporbit-rmq >> $LOGFILE
+	echo "pull apporbit Docs"
+	docker pull registry.apporbit.com/apporbit/apporbit-docs >> $LOGFILE
+	
+	docker run -m 2g -d --hostname rmq  --name apporbit-rmq -d registry.apporbit.com/apporbit/apporbit-rmq >>$LOGFILE
+	docker run --name apporbit-docs -p 9080:80 -d registry.apporbit.com/apporbit/apporbit-docs >>$LOGFILE
 
 	echo "apporbit services run..."
 	if docker ps -a |grep -aq apporbit-chef; then
-		docker run -t --name apporbit-services -e GEMINI_INT_REPO=$internalRepo -e CHEF_URL=https://$hostip:9443 -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist -e GEMINI_STACK_IPANEMA=1 --link db:db --link apporbit-rmq:rmq -v /var/lib/apporbit/sshKey_root:/root --volumes-from apporbit-chef -v /var/log/apporbit/services:/var/log/apporbit -d registry.apporbit.com/apporbit/apporbit-services:$pullId	
+		docker run -t --name apporbit-services -e GEMINI_INT_REPO=$internalRepo -e CHEF_URL=https://$hostip:9443 -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist -e GEMINI_STACK_IPANEMA=1 --link db:db --link apporbit-rmq:rmq -v /var/lib/apporbit/sshKey_root:/root --volumes-from apporbit-chef -v /var/log/apporbit/services:/var/log/apporbit -d registry.apporbit.com/apporbit/apporbit-services:$pullId
 		echo "controller run ..."
 		docker run -t --name apporbit-controller -p 80:80 -p 443:443  -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes  -e CHEF_URL=https://$hostip:9443 -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName --link db:db --link apporbit-rmq:rmq --volumes-from apporbit-chef -v /var/log/apporbit/controller:/var/log/apporbit -d registry.apporbit.com/apporbit/apporbit-controller:$pullId
 	else
@@ -186,10 +202,11 @@ then
 
 elif [ $deployType -eq 2 ]
 then
-   
+    docker run -m 2g -d --hostname rmq  --name apporbit-rmq -d apporbit/apporbit-rmq >>$LOGFILE
+	docker run --name apporbit-docs -p 9080:80 -d apporbit/apporbit-docs >>$LOGFILE
 	echo "apporbit services run..."
 	if docker ps -a |grep -aq apporbit-chef; then
-		docker run -t --name apporbit-services -e GEMINI_INT_REPO=$internalRepo -e CHEF_URL=https://$hostip:9443 -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist -e GEMINI_STACK_IPANEMA=1 --link db:db --link apporbit-rmq:rmq -v /var/lib/apporbit/sshKey_root:/root -v /var/log/apporbit/services:/var/log/apporbit --volumes-from apporbit-chef -d apporbit/apporbit-services    	
+		docker run -t --name apporbit-services -e GEMINI_INT_REPO=$internalRepo -e CHEF_URL=https://$hostip:9443 -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist -e GEMINI_STACK_IPANEMA=1 --link db:db --link apporbit-rmq:rmq -v /var/lib/apporbit/sshKey_root:/root -v /var/log/apporbit/services:/var/log/apporbit --volumes-from apporbit-chef -d apporbit/apporbit-services
 		echo "controller run ..."
 		docker run -t --name apporbit-controller -p 80:80 -p 443:443  -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes -e CHEF_URL=https://$hostip:9443 -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName  --link db:db --link apporbit-rmq:rmq --volumes-from apporbit-chef -v /var/log/apporbit/controller:/var/log/apporbit -d apporbit/apporbit-controller
 	else
