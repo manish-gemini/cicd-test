@@ -204,7 +204,7 @@ if docker ps -a | grep -a apporbit-docs; then
 fi
 
 #docs container
-docker run --name apporbit-docs -p 9080:80 -d secure-registry.gsintlab.com/apporbit/apporbit-docs
+docker run --name apporbit-docs --restart=always -p 9080:80 -d secure-registry.gsintlab.com/apporbit/apporbit-docs
 echo "db run .."
 docker run --name db --restart=always -e MYSQL_ROOT_PASSWORD=admin -e MYSQL_USER=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller -v /var/dbstore:/var/lib/mysql -d mysql:5.6.24
 # Setting rabbit mq menory to 2GB
