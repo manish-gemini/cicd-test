@@ -1,7 +1,7 @@
 #!/bin/bash
 
 _LOG_LEVEL_="DEBUG"
-EMAILID="user@mycompany.com"
+
 echo "Enter the deploy type:"
 echo "Deploy from Local image = 1"
 echo "Deploy from internal registry = 2"
@@ -46,8 +46,8 @@ chcon -Rt svirt_sandbox_file_t /var/dbstore
 chcon -Rt svirt_sandbox_file_t /var/lib/apporbit/sshKey_root
 chcon -Rt svirt_sandbox_file_t /var/log/apporbit/services
 chcon -Rt svirt_sandbox_file_t /var/log/apporbit/controller
-chcon -Rt svirt_sandbox_file_t /var/lib/apporbit/sslkeystore
-
+email_id="admin@apporbit.com"
+EMAILID=$email_id
 printf "Mode of Operation: \n Type 1 for ON PREM MODE \n Type 2 for SAAS MODE :"
 read -p "Default(1):" onPremMode
 onPremMode=${onPremMode:-1}
@@ -55,6 +55,8 @@ echo $onPremMode
 if [ $onPremMode -eq 1 ]
 then
 	onPremMode=true
+	read -p "Enter the User Email id for On Prem Deployment. Default($email_id):" emailID
+	EMAILID=${emailID:-$email_id}
 else
 	onPremMode=false
 fi
@@ -65,6 +67,7 @@ printf "Enter the Theme Name :"
 read -p "Default($theme):" themeName
 themeName=${themeName:-$theme}
 echo $themeName
+
 
 ip=`curl -s http://whatismyip.akamai.com ; echo`
 printf "Enter the Host IP :"
