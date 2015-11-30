@@ -10,6 +10,15 @@ echo "`date` Starting apporbit-predeploy.sh" >>$LOGFILE
 echo "Check for PreRequisite...."
 #CHECK FOR PREREQUISTE and LETS USER KNOW 
 
+echo "Checking connectivity to the repository ..." >>$LOGFILE
+
+if curl -Is "http://repos.gsintlab.com" | head -1 | grep 200; then
+  echo "Verified connection with the repos... OK" >>$LOGFILE
+else
+  echo "Unable to connect repositories. Check Network settings and Enable connection to  http://repos.gsintlab.com " >>$LOGFILE
+  exit
+fi
+
 echo "Installing appOrbit  containers requires selinux to be turned off."
 response="y"
 read -p "Do you want to continue ? [y]/n : " -r 
