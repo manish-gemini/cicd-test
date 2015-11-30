@@ -17,8 +17,8 @@
    Configuring appOrbit Platform
    Using a Cloud
    Using a Cluster
-   Using a Data Catalog
-   Using a Data Template
+   Using a DataCatalog
+   Using a DataTemplate
    Using an Application Blueprint
    Deploying the Application
    Using a Snapshot
@@ -27,12 +27,7 @@
    Updating a Blueprint
    Setting up Users
    BluePrints Reference
-   .YML Template Example 
-   .YML Template Keys
    Command Line Interface
-   Downloading the Command Line Tool
-   Command Line Format
-   API Reference Guide
    Release Notes
    Terminology
    Supportability
