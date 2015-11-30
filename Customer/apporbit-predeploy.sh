@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 command_exists() {
 	command -v "$@" > /dev/null 2>&1
 }
@@ -60,12 +59,11 @@ else
         fi
 fi
 
-echo "Flush Iptables"
-iptables -F
+echo "Setting up iptables rules..."
+iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited >>$LOGFILE
+iptables -D  FORWARD -j REJECT --reject-with icmp-host-prohibited >>$LOGFILE
 
 echo "Login to appOrbit Docker Registry using crendentials obtained from your appOrbit business contact:"
-docker login https://registry.apporbit.io/
-
-
+docker login https://registry.apporbit.com/
 
 echo "`date` Finishing apporbit-predeploy.sh" >>$LOGFILE
