@@ -297,3 +297,4 @@ else
 	echo "end ...."
 fi
 
+echo "Please change your default password 'admin1234' by logging into the User Management Console in the UI at https://${hostip}/users"
