@@ -69,6 +69,8 @@ chcon -Rt svirt_sandbox_file_t /var/lib/apporbit/sshKey_root >>$LOGFILE
 chcon -Rt svirt_sandbox_file_t /var/log/apporbit/services >>$LOGFILE
 chcon -Rt svirt_sandbox_file_t /var/log/apporbit/controller >>$LOGFILE
 
+email_id="admin@apporbit.com"
+EMAILID=$email_id
 printf "Mode of Operation: \n Type 1 for ON PREM MODE \n Type 2 for SAAS MODE :"
 read -p "Default(1):" onPremMode
 onPremMode=${onPremMode:-1}
@@ -76,6 +78,8 @@ echo $onPremMode
 if [ $onPremMode -eq 1 ]
 then
 	onPremMode=true
+	read -p "Enter the User Email id for On Prem Deployment. Default($email_id):" emailID
+	EMAILID=${emailID:-$email_id}
 else
 	onPremMode=false
 fi
