@@ -61,6 +61,7 @@ chcon -Rt svirt_sandbox_file_t /var/lib/apporbit/sshKey_root
 chcon -Rt svirt_sandbox_file_t /var/lib/apporbit/sslkeystore
 chcon -Rt svirt_sandbox_file_t /var/log/apporbit/services
 chcon -Rt svirt_sandbox_file_t /var/log/apporbit/controller
+chcon -Rt svirt_sandbox_file_t /var/lib/apporbit/sslkeystore
 
 email_id="admin@apporbit.com"
 EMAILID=$email_id
@@ -207,6 +208,39 @@ fi
 
 if docker ps -a | grep -a apporbit-docs; then
    docker rm -f apporbit-docs
+fi
+
+
+echo "1) use existing certificate"
+echo "2) Create a self signed certificate"
+read -p "Enter the type of ssl certificate [Default:2]:" ssltype
+ssltype=${ssltype:-2}
+if [ $ssltype -eq 2 ]
+then
+	#Generate SSL Certiticate for https and put it in a volume mount controller location.
+	openssl genrsa -des3 -out /var/lib/apporbit/sslkeystore/apporbitserver.key 1024
+	openssl req -new -key /var/lib/apporbit/sslkeystore/apporbitserver.key  -out /var/lib/apporbit/sslkeystore/apporbitserver.csr
+        cp /var/lib/apporbit/sslkeystore/apporbitserver.key /var/lib/apporbit/sslkeystore/apporbitserver.key.org
+        openssl rsa -in /var/lib/apporbit/sslkeystore/apporbitserver.key.org -out /var/lib/apporbit/sslkeystore/apporbitserver.key
+ 	openssl x509 -req -days 365 -in /var/lib/apporbit/sslkeystore/apporbitserver.csr -signkey /var/lib/apporbit/sslkeystore/apporbitserver.key -out /var/lib/apporbit/sslkeystore/apporbitserver.crt
+else
+	echo "Rename your certificate files as apporbitserver.crt and key as apporbitserver.key"
+	read -p "Enter the location where your certificate and key file exist:" sslKeyDir
+	if [ ! -d $sslKeyDir ]
+	then
+		echo "Dir does not exist, Exiting..."
+		exit
+	fi
+	cd $sslKeyDir
+	if [ ! -f apporbitserver.key ] || [ ! -f apporbitserver.crt ]
+	then
+		echo "key and certificate files are missing."
+		echo "Note that key and crt file name should be apporbitserver.key and apporbitserver.crt. Rename your files accordingly and retry."
+		exit
+	fi
+	cp -f apporbitserver.key /var/lib/apporbit/sslkeystore/apporbitserver.key
+	cp -f apporbitserver.crt /var/lib/apporbit/sslkeystore/apporbitserver.crt
+
 fi
 
 #docs container
