@@ -1,0 +1,25 @@
+@import url("theme.css");
+
+.wy-nav-side{
+	background: #E9E9E9;
+}
+.wy-side-nav-search{
+	background-color: #253452;
+}
+.wy-menu-vertical a:hover {
+	background-color: #d2d1d1;
+}
+.wy-menu-vertical a:active {
+	background-color: #d2d1d1;
+	cursor: pointer;
+	color: #fff;
+}
+.wy-menu-vertical a{
+	color: #253452;
+}
+a{
+	color: #253452;
+}
+.wy-side-nav-search > div.version{
+	color:white;
+}
