@@ -24,7 +24,7 @@ done
 
 if [ -z "$theme" ];
 then
-	theme="gemini" 
+	theme="apporbit" 
 else 
 	echo "theme is set to '$theme'";
 fi
