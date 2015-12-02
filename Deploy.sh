@@ -167,35 +167,35 @@ if docker ps -a | grep -a apporbit-docs; then
    docker rm -f apporbit-docs
 fi
 
-
-echo "1) use existing certificate"
-echo "2) Create a self signed certificate"
-read -p "Enter the type of ssl certificate [Default:2]:" ssltype
-ssltype=${ssltype:-2}
-if [ $ssltype -eq 2 ]
+if [ ! -f /var/lib/apporbit/sslkeystore/apporbitserver.key ] || [ ! -f /var/lib/apporbit/sslkeystore/apporbitserver.crt ]
 then
-	#Generate SSL Certiticate for https and put it in a volume mount controller location.
-	openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -subj "/C=US/ST=NY/L=appOrbit/O=Dis/CN=www.apporbit.com" -keyout /var/lib/apporbit/sslkeystore/apporbitserver.key -out /var/lib/apporbit/sslkeystore/apporbitserver.crt
-else
-	echo "Rename your certificate files as apporbitserver.crt and key as apporbitserver.key"
-	read -p "Enter the location where your certificate and key file exist:" sslKeyDir
-	if [ ! -d $sslKeyDir ]
+	echo "1) use existing certificate"
+	echo "2) Create a self signed certificate"
+	read -p "Enter the type of ssl certificate [Default:2]:" ssltype
+	ssltype=${ssltype:-2}
+	if [ $ssltype -eq 2 ]
 	then
-		echo "Dir does not exist, Exiting..."
-		exit
+		#Generate SSL Certiticate for https and put it in a volume mount controller location.
+		openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -subj "/C=US/ST=NY/L=appOrbit/O=Dis/CN=www.apporbit.com" -keyout /var/lib/apporbit/sslkeystore/apporbitserver.key -out /var/lib/apporbit/sslkeystore/apporbitserver.crt
+	else
+		echo "Rename your certificate files as apporbitserver.crt and key as apporbitserver.key"
+		read -p "Enter the location where your certificate and key file exist:" sslKeyDir
+		if [ ! -d $sslKeyDir ]
+		then
+			echo "Dir does not exist, Exiting..."
+			exit
+		fi
+		cd $sslKeyDir
+		if [ ! -f apporbitserver.key ] || [ ! -f apporbitserver.crt ]
+		then
+			echo "key and certificate files are missing."
+			echo "Note that key and crt file name should be apporbitserver.key and apporbitserver.crt. Rename your files accordingly and retry."
+			exit
+		fi
+		cp -f apporbitserver.key /var/lib/apporbit/sslkeystore/apporbitserver.key
+		cp -f apporbitserver.crt /var/lib/apporbit/sslkeystore/apporbitserver.crt
 	fi
-	cd $sslKeyDir
-	if [ ! -f apporbitserver.key ] || [ ! -f apporbitserver.crt ]
-	then
-		echo "key and certificate files are missing."
-		echo "Note that key and crt file name should be apporbitserver.key and apporbitserver.crt. Rename your files accordingly and retry."
-		exit
-	fi
-	cp -f apporbitserver.key /var/lib/apporbit/sslkeystore/apporbitserver.key
-	cp -f apporbitserver.crt /var/lib/apporbit/sslkeystore/apporbitserver.crt
-
 fi
-
 #docs container
 docker run --name apporbit-docs --restart=always -p 9080:80 -d secure-registry.gsintlab.com/apporbit/apporbit-docs
 echo "db run .."
