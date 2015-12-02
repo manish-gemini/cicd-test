@@ -2,6 +2,20 @@
 
 _LOG_LEVEL_="DEBUG"
 
+echo "Setting sestatus to permissive"
+response="y"
+read -p "Do you want to continue ? [y]/n : " -r
+echo
+REPLY=${REPLY:-$response}
+if [[ $REPLY =~ ^[Yy] ]]
+then
+    setenforce 0
+    echo "successfully set sestatus to permissive";
+else
+    echo "sestatus must be set to permissive for deployment."
+    exit;
+fi
+
 echo "Enter the deploy type:"
 echo "Deploy from Local image = 1"
 echo "Deploy from internal registry = 2"
@@ -44,10 +58,13 @@ mkdir -p "/var/lib/apporbit/sslkeystore"
 
 chcon -Rt svirt_sandbox_file_t /var/dbstore
 chcon -Rt svirt_sandbox_file_t /var/lib/apporbit/sshKey_root
+chcon -Rt svirt_sandbox_file_t /var/lib/apporbit/sslkeystore
 chcon -Rt svirt_sandbox_file_t /var/log/apporbit/services
 chcon -Rt svirt_sandbox_file_t /var/log/apporbit/controller
+
 email_id="admin@apporbit.com"
 EMAILID=$email_id
+
 printf "Mode of Operation: \n Type 1 for ON PREM MODE \n Type 2 for SAAS MODE :"
 read -p "Default(1):" onPremMode
 onPremMode=${onPremMode:-1}
@@ -102,19 +119,39 @@ fi
 
 echo "Setting MAX PHUSION PROCESS:"$max_app_processes
 
-echo "Setting sestatus to permissive"
-response="y"
-read -p "Do you want to continue ? [y]/n : " -r
-echo
-REPLY=${REPLY:-$response}
-if [[ $REPLY =~ ^[Yy] ]]
+
+
+if [ ! -f /var/lib/apporbit/sslkeystore/apporbitserver.key ] || [ ! -f /var/lib/apporbit/sslkeystore/apporbitserver.crt ]
 then
-    setenforce 0
-    echo "successfully set sestatus to permissive";
-else
-    echo "sestatus must be set to permissive for deployment."
-    exit;
+	echo "1) use existing certificate"
+	echo "2) Create a self signed certificate"
+	read -p "Enter the type of ssl certificate [Default:2]:" ssltype
+	ssltype=${ssltype:-2}
+	if [ $ssltype -eq 2 ]
+	then
+		#Generate SSL Certiticate for https and put it in a volume mount controller location.
+		openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -subj "/C=US/ST=NY/L=appOrbit/O=Dis/CN=www.apporbit.com" -keyout /var/lib/apporbit/sslkeystore/apporbitserver.key -out /var/lib/apporbit/sslkeystore/apporbitserver.crt
+	else
+		echo "Rename your certificate files as apporbitserver.crt and key as apporbitserver.key"
+		read -p "Enter the location where your certificate and key file exist:" sslKeyDir
+		if [ ! -d $sslKeyDir ]
+		then
+			echo "Dir does not exist, Exiting..."
+			exit
+		fi
+		cd $sslKeyDir
+		if [ ! -f apporbitserver.key ] || [ ! -f apporbitserver.crt ]
+		then
+			echo "key and certificate files are missing."
+			echo "Note that key and crt file name should be apporbitserver.key and apporbitserver.crt. Rename your files accordingly and retry."
+			exit
+		fi
+		cp -f apporbitserver.key /var/lib/apporbit/sslkeystore/apporbitserver.key
+		cp -f apporbitserver.crt /var/lib/apporbit/sslkeystore/apporbitserver.crt
+	fi
 fi
+
+
 
 rpm -q ntp
 if [ $? -ne 0 ]
@@ -167,35 +204,6 @@ if docker ps -a | grep -a apporbit-docs; then
    docker rm -f apporbit-docs
 fi
 
-if [ ! -f /var/lib/apporbit/sslkeystore/apporbitserver.key ] || [ ! -f /var/lib/apporbit/sslkeystore/apporbitserver.crt ]
-then
-	echo "1) use existing certificate"
-	echo "2) Create a self signed certificate"
-	read -p "Enter the type of ssl certificate [Default:2]:" ssltype
-	ssltype=${ssltype:-2}
-	if [ $ssltype -eq 2 ]
-	then
-		#Generate SSL Certiticate for https and put it in a volume mount controller location.
-		openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -subj "/C=US/ST=NY/L=appOrbit/O=Dis/CN=www.apporbit.com" -keyout /var/lib/apporbit/sslkeystore/apporbitserver.key -out /var/lib/apporbit/sslkeystore/apporbitserver.crt
-	else
-		echo "Rename your certificate files as apporbitserver.crt and key as apporbitserver.key"
-		read -p "Enter the location where your certificate and key file exist:" sslKeyDir
-		if [ ! -d $sslKeyDir ]
-		then
-			echo "Dir does not exist, Exiting..."
-			exit
-		fi
-		cd $sslKeyDir
-		if [ ! -f apporbitserver.key ] || [ ! -f apporbitserver.crt ]
-		then
-			echo "key and certificate files are missing."
-			echo "Note that key and crt file name should be apporbitserver.key and apporbitserver.crt. Rename your files accordingly and retry."
-			exit
-		fi
-		cp -f apporbitserver.key /var/lib/apporbit/sslkeystore/apporbitserver.key
-		cp -f apporbitserver.crt /var/lib/apporbit/sslkeystore/apporbitserver.crt
-	fi
-fi
 #docs container
 docker run --name apporbit-docs --restart=always -p 9080:80 -d secure-registry.gsintlab.com/apporbit/apporbit-docs
 echo "db run .."
