@@ -1,11 +1,12 @@
 **Using a Cloud**
 -----------------
 
-Use the appOrbit Platform Cloud feature to register and connect to
-generic collections related to each cloud provider you want to use with
-specific user credentials, or to register a private cloud.
+The appOrbit Platform Cloud feature is used to register and connect to
+generic collections related to each cloud provider with specific user
+credentials, or to register a private cloud.
 
-appOrbit Platform supports the following cloud providers:
+The appOrbit Platform supports the following public and private cloud
+providers:
 
 -   Amazon Web Services
 
@@ -17,15 +18,14 @@ appOrbit Platform supports the following cloud providers:
     > Cinder and Glance with Keystone v2 or v3 modules are used in any
     > OpenStack deployment.
 
-The appOrbit Platform also allows you to register custom cloud to
-register a private cloud using the access credentials of the physical
-hosts.
+The appOrbit Platform also allows you to register a private cloud using
+the access credentials of the physical hosts.
 
 The appOrbit Platform cloud feature allows you to:
 
--   Register each type of public cloud provider that you want to use.
+-   Register a cloud provider.
 
--   Register a custom cloud when you are using a private cloud.
+-   Register a custom cloud.
 
 -   View cloud details.
 
@@ -44,38 +44,32 @@ Each of these procedures is described in a separate topic.
 2.  Click **Add Cloud** to register one or more clouds by the
     > cloud type.
 
-**Note**: You can create multiple clouds of the same type as needed,
-such as to support different environments. In this case, each cloud
-needs to be registered with a unique name.
+> **Note**: You can add multiple clouds of the same type as needed. For
+> example, you can register a number of AWS clouds to support different
+> environments, such as the development, testing, staging and production
+> environments. In this case, you need to register each cloud with a
+> unique name.
 
-![](media/image22.jpg)
-
-1.  On the initial Add Cloud popup, select the Cloud Type that you want
+3.  On the initial Add Cloud popup, select the Cloud Type that you want
     > to register.
 
-2.  Click **OK**.
+4.  Click **OK**.
 
-3.  **Note**: Both the OpenStack and the Custom Cloud types can be used
-    > to create a private cloud.
+> **Note**: Both the OpenStack and the Custom Cloud types can be used to
+> create a private cloud.
 
-4.  ![](media/image25.png)
-
-<!-- -->
-
-1.  On the next Add Cloud popup, enter the details for the Cloud Type
+5.  On the next Add Cloud popup, enter the details for the Cloud Type
     > you selected.
 
-2.  Click **OK**. Once each cloud is setup, it is displayed on the
+6.  Click **OK**. Once each cloud is setup, it is displayed on the
     > Clouds page.
 
-3.  The cloud details shown depend on the type of cloud you select, as
-    > described below.
-
-4.  **For AWS (Amazon Web Services)**
-
-![](media/image06.jpg)
-
-The cloud details include:
+> The cloud details shown depend on the type of cloud you select, as
+> described below.
+>
+> **For AWS (Amazon Web Services)**
+>
+> The cloud details include:
 
 -   **Cloud Type**: Displays AWS.
 
@@ -87,14 +81,12 @@ The cloud details include:
 
 -   **Secret Key**: Type the reference credentials for the AWS cloud.
 
--   **appOrbit Appliance IP**: Type the IP address that allows appOrbit
-    > Platform to connect to the cloud.
+-   **appOrbit Appliance IP**: Type the IP address that allows the
+    > appOrbit Platform to connect to the cloud.
 
-**For Microsoft Azure**
-
-![](media/image27.jpg)
-
-The cloud details include:
+> **For Microsoft Azure**
+>
+> The cloud details include:
 
 -   **Cloud Type**: Displays Azure.
 
@@ -115,11 +107,9 @@ The cloud details include:
 -   **appOrbit Appliance IP**: Type the IP address that allows the
     > appOrbit Platform to connect to the cloud.
 
-**For OpenStack**
-
-![](media/image19.jpg)
-
-The cloud details include:
+> **For OpenStack**
+>
+> The cloud details include:
 
 -   **Cloud Type**: Displays OpenStack.
 
@@ -138,11 +128,9 @@ The cloud details include:
 
 -   **Project Name**: Type the project name.
 
-**For Rackspace**
-
-![](media/image20.jpg)
-
-The cloud details include:
+> **For Rackspace**
+>
+> The cloud details include:
 
 -   **Cloud Type**: Displays Rackspace.
 
@@ -156,7 +144,7 @@ The cloud details include:
 -   **appOrbit Appliance IP**: Type the IP address that allows the
     > appOrbit Platform to connect to the cloud.
 
-1.  Click **Next** to register the cloud. A progress bar is shown while
+1.  Click **OK** to register the cloud. A progress bar is shown while
     > the cloud configuration is being completed.
 
 ### **To register a custom cloud**
@@ -165,117 +153,112 @@ The cloud details include:
 
 <!-- -->
 
-1.  Click **Add Cloud**. On the initial Add Cloud popup, click
-    > **Custom**.
+2.  Click **Add Cloud**.
 
-2.  **Note**: The Custom Cloud type can be used to register a
-    > private cloud.
+3.  On the initial Add Cloud popup, click **Custom**.
 
-3.  Click **OK**.
+> **Note**: The Custom Cloud type is used to register a private cloud.
 
-4.  
+2.  Click **OK**.
 
-![](media/image18.jpg)
+3.  On the Add Cloud popup for a custom cloud, the cloud details
+    > include:
 
-1.  On the Add Cloud popup for a custom cloud, type the **Cloud Name**
-    > you want to use to identify the custom cloud. Click **Add Cloud**.
-    > The custom cloud you registered is shown on the Clouds page.
+-   **Cloud Type**: Displays Custom.
 
-![](media/image21.jpg)
+-   **Cloud Name**: Type the name you want to use to identify the
+    > custom cloud.
+
+2.  Click **Add Cloud**. The custom cloud you registered is shown on the
+    > Clouds page.
 
 ### **To view registered clouds**
 
 1.  Click **CLOUDS**. The Clouds page displays a high level status of
     > each of the registered clouds.
 
-<!-- -->
+2.  Once each cloud is set up, it is displayed on the Clouds page.
 
-1.  Once each cloud is set up, it is displayed on the Clouds page.
-
-2.  **Note**: When you initially set up a cloud, the Cluster field
-    > is blank.
-
-![](media/image23.jpg)
-
-The cloud details include:
+> **Note**: When you initially set up a cloud, the Cluster field is
+> blank.
+>
+> The cloud details include:
 
 -   **Type**: Displays the type of cloud.
 
 -   **Name**: Displays the identity of the cloud. You can click the
     > cloud name to view the details of the clusters in each cloud. For
-    > more information, go to “Creating Clusters”.
+    > more information, go to “Using a Cluster”.
 
 -   **Clusters**: Displays the number of clusters in the cloud.
 
 -   **Actions**: Displays the actions you can perform based on
-    > your permissions. For more information, go to “To set
-    > up permissions”.
+    > your permissions. For more information, go to “To set up
+    > cloud permissions”.
 
--   You can use Actions to:
+> You can use Actions to:
 
--   Click pencil icon to edit the cloud details, including updating the
-    > cloud credentials.
+-   Click ![](media/image08.png) to edit the cloud details, including
+    > updating the cloud credentials.
 
--   Click trash icon to permanently remove a registered cloud.
+-   Click ![](media/image03.png) to permanently remove a
+    > registered cloud.
 
--   Each of these procedures is described in a separate topic.
+> Each of these procedures is described in a separate topic.
 
-### **\[JJ1\] To edit cloud details**
+### **To edit cloud details**
 
 1.  Click **CLOUDS**. The Clouds page displays a high level status of
     > each of the registered clouds.
 
-![](media/image05.jpg)
+<!-- -->
 
-1.  Under Actions, click pencil icon next to the cloud you want to edit.
-    > You can edit the cloud details and update the cloud credentials.
+2.  Under Actions, click ![](media/image06.png) next to the cloud you
+    > want to edit. You can edit the cloud details and update the
+    > cloud credentials.
 
--   **Actions**: Allows you to select the pencil icon and trash icon
-    > actions based on your permissions. For more information, go to “To
-    > set up cloud permissions”.
+-   **Actions**: Allows you to select ![](media/image09.png) and
+    > ![](media/image05.png) based on your permissions. For more
+    > information, go to “To set up cloud permissions”.
 
-1.  On Edit Cloud page, you can update the cloud credentials for the
+2.  On Edit Cloud page, you can update the cloud credentials for the
     > selected Cloud Type when these settings have changed, such as the
     > API Key and Secret Key in the sample below.
 
-2.  **Note**: The entries for the cloud details vary depending on the
-    > type of cloud selected. For more information, go to “To register
-    > a cloud”.
+> **Note**: The entries for the cloud details vary depending on the type
+> of cloud selected. For more information, go to “To register a cloud
+> provider”.
 
-3.  Click **Next**.
+2.  Click **Next**.
 
-![](media/image07.jpg)
-
-A progress bar is shown while the cloud configuration is being
-completed.
+> A progress bar is shown while the cloud configuration is being
+> completed.
 
 ### **To remove a cloud**
 
 1.  Click **CLOUDS**. The Clouds page displays a high level status of
     > each of the registered clouds.
 
-2.  Under Actions, click trash icon next to the registered cloud you
-    > want to remove.
+2.  Under Actions, click ![](media/image02.png) next to the registered
+    > cloud you want to remove.
 
--   **Actions**: Allows you to select the pencil icon and trash icon
-    > actions based on your permissions. For more information, go to “To
-    > set up cloud permissions”.
+-   **Actions**: Allows you to select ![](media/image07.png) and
+    > ![](media/image04.png) based on your permissions. For more
+    > information, go to “To set up cloud permissions”.
 
-**IMPORTANT**: Before you can remove a registered cloud, you need to
-delete all of the clusters that are associated with the selected cloud.
+> **IMPORTANT**: Before you can remove a registered cloud, you need to
+> delete all of the clusters that are associated with the selected
+> cloud.
 
-1.  Click **Next**. A confirmation message is displayed.
+1.  Click **Next**. A confirmation message displays.
 
-2.  **IMPORTANT**: Remove a cluster only when it is entirely necessary.
-    > When you delete a cloud, it is permanently removed
-    > and unrecoverable.
-
-![](media/image28.jpg)
+> **IMPORTANT**: Remove a cluster only when it is entirely necessary.
+> When you delete a cloud, it is permanently removed and unrecoverable.
 
 1.  Click **OK** to remove the cloud.
 
-2.  A progress bar is shown while the deletion is being completed. When
-    > you delete a cloud, it is permanently removed and unrecoverable.
+> A progress bar is shown while the deletion is being completed. When
+> you delete a cloud, it is permanently removed and unrecoverable.
 
 ### **To set up cloud permissions**
 
@@ -283,23 +266,19 @@ delete all of the clusters that are associated with the selected cloud.
 
 2.  On the Clouds page, select the Name of the cloud you want to use.
 
-3.  **Note**: Before you can set up cloud permissions, the cloud needs
-    > to contain one or more clusters.
-
-![](media/image08.jpg)
+> **Note**: Before you can set up cloud permissions, the cloud needs to
+> contain one or more clusters.
 
 1.  On the CLUSTERS tab, click **PERMISSIONS**.
 
-![](media/image17.png)
-
-1.  On the PERMISSIONS tab, click the appropriate checkbox to grant
-    > access to view, edit, delete and scan information for the
+2.  On the PERMISSIONS tab, click the appropriate checkbox to grant
+    > access to view, edit and delete information for the
     > selected cloud.
 
-2.  You can select all of the permission levels to grant the user full
-    > admin access.
-
-3.  The administrator permissions levels include these roles:
+> You can select all of the permission levels to grant the user full
+> administrator access.
+>
+> The administrator permissions levels include these roles:
 
 -   **Administrator**: Allows the admin permission to perform both the
     > Application Developer and Applications Admin roles.
@@ -309,7 +288,5 @@ delete all of the clusters that are associated with the selected cloud.
 
 -   **Operations Admin**: Allows the admin permission to edit, create
     > and update clouds, clusters and data catalogs.
-
-![](media/image29.jpg)
 
 1.  Click **Save** to return to the appOrbit Platform dashboard.

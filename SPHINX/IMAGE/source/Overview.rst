@@ -1,10 +1,11 @@
-**Overview**
-============
+**Overview **
+=============
 
-NEEDS MORE INFORMATION.
-
-The appOrbit Platform provides efficiency and velocity for application
-and infrastructure.
+The appOrbit Platform provides efficiency and velocity for applications
+and infrastructure. The appOrbit Platform encapsulates and manages both
+legacy and new micro-services based applications with data and
+configurations using containers and virtual machines in a private or
+public cloud or using a mixed mode deployment.
 
 The appOrbit Platform allows you to:
 
@@ -14,8 +15,8 @@ The appOrbit Platform allows you to:
 
 -   **Define and deploy applications**. Define your application tiers,
     > services and resources, and expose the service endpoints using
-    > the blueprint. Deploy the application on any clusters with
-    > any cloud.
+    > application blueprints. Deploy the application on a clusters with
+    > any type of cloud.
 
 -   **Enable application Dev-Test collaboration**. Snapshot an entire
     > application environment including persistent tiers, such as
