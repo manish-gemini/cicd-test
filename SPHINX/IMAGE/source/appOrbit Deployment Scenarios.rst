@@ -14,7 +14,7 @@ use the same installation procedure.
 
 Each of the deployment scenarios are described below.
 
-**All in Public Network **
+All in Public Network 
 --------------------------
 
 For the All in Public Network scenario (the default), all of the virtual
@@ -25,14 +25,14 @@ appOrbit Chef in the same host machine as the appOrbit Platform.
 <span id="h.35nkun2" class="anchor"></span>**Figure x. All in Public
 Network - hosted appOrbit Chef**
 
-> ![](media/image07.png)
+..image:: media/image07.png
 
 <span id="h.1ksv4uv" class="anchor"></span>**Figure x. All in Public
 Network - appOrbit Chef in the appOrbit Platform host**
 
-> ![](media/image06.png)
+..image:: media/image06.png
 
-**All in Private Network**
+All in Private Network
 --------------------------
 
 For the All in Private Network scenario, all of the virtual machines you
@@ -41,9 +41,10 @@ appOrbit Chef in the same host machine as the appOrbit Platform.
 
 **Figure x. All in Private Network**
 
-> ![](media/image04.png)
+..image:: media/image04.png
 
-**Mixed Mode Deployment**
+
+Mixed Mode Deployment
 -------------------------
 
 For a Mixed Mode Deployment scenario, the appOrbit Platform is installed
@@ -52,4 +53,5 @@ in the public network.
 
 **Figure x. Mixed Mode Deployment**
 
-> ![](media/image02.png)
+..image:: media/image02.png
+

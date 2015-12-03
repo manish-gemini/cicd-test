@@ -1,5 +1,5 @@
-**Overview **
-=============
+Overview 
+========
 
 The appOrbit Platform provides efficiency and velocity for applications
 and infrastructure. The appOrbit Platform encapsulates and manages both

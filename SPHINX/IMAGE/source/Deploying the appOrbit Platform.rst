@@ -216,7 +216,7 @@ prompt:
 
 The output from this command is illustrated below.
 
-![](media/image05.png)
+..image:: media/image05.png
 
 **IMPORTANT**: When an error is encountered, and the appOrbit Platform
 installation script is not completed correctly, you are required to
@@ -234,7 +234,7 @@ assistance.
     > appOrbit Chef Management user interface to change your
     > default password.
 
-> ![](media/image01.png)
+.. image:: media/image01.png
 
 1.  On the Home page, type your credentials (provided by your appOrbit
     > Sales or Business representative):
@@ -249,7 +249,7 @@ assistance.
 
 4.  Click **login**.
 
-> ![](media/image04.png)
+.. image:: media/image04.png
 
 4.  On the Edit user: admin page (Edit tab), type a new, secure
     > **Password** and type a **Password confirmation** for your
