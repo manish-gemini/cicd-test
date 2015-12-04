@@ -19,7 +19,7 @@ Each of these procedures is described in a separate topic.
 > accept the certificate to proceed to the Welcome page for the appOrbit
 > Platform.
 >
-> ![](media/image05.png)
+.. image:: media/logon.png
 
 1.  On the Welcome to appOrbit page, type your credentials (provided by
     > your appOrbit Sales or Business representative):
@@ -34,7 +34,7 @@ Each of these procedures is described in a separate topic.
 
 5.  Click **Logon**.
 
-> ![](media/image03.png)
+.. image:: media/appOrbitDashBoard.png
 >
 > The appOrbit Platform dashboard displays. The dashboard shows a quick
 > view of the process steps needed to get a working application deployed
@@ -52,7 +52,7 @@ Each of these procedures is described in a separate topic.
 -   **USERS**: Allows you to view and change users, roles
     > and permissions.
 
--   ![](media/image04.png) : Allows you to view and change appOrbit
+-   .. image:: media/settings.png : Allows you to view and change appOrbit
     > Platform configuration settings.
 
 -   **admin**: Allows you to log out of the appOrbit Platform.

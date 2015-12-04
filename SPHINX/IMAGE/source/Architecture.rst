@@ -18,7 +18,7 @@ storage that is provisioned to applications on demand.
 The appOrbit Platform architecture consists of the User Interface Server
 and a representational state transfer (REST) API packet.
 
-.. image:: media/image01.png
+.. image:: media/Architecture.png
 
 The key components of the appOrbit Platform architecture include:
 

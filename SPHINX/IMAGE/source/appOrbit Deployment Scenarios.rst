@@ -25,12 +25,12 @@ appOrbit Chef in the same host machine as the appOrbit Platform.
 <span id="h.35nkun2" class="anchor"></span>**Figure x. All in Public
 Network - hosted appOrbit Chef**
 
-..image:: media/image07.png
+..image:: media/AllinPublic.png
 
 <span id="h.1ksv4uv" class="anchor"></span>**Figure x. All in Public
 Network - appOrbit Chef in the appOrbit Platform host**
 
-..image:: media/image06.png
+..image:: media/AllinPublic1.png
 
 All in Private Network
 --------------------------
@@ -41,7 +41,7 @@ appOrbit Chef in the same host machine as the appOrbit Platform.
 
 **Figure x. All in Private Network**
 
-..image:: media/image04.png
+..image:: media/AllinPrivate.png
 
 
 Mixed Mode Deployment
@@ -53,5 +53,5 @@ in the public network.
 
 **Figure x. Mixed Mode Deployment**
 
-..image:: media/image02.png
+..image:: media/MixedModeDeployment.png
 
