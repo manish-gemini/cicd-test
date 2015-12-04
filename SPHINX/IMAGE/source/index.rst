@@ -13,4 +13,7 @@
    Configuring the appOrbit Platform
    Using a Cloud
    Using a Cluster
+   Using a DataCatalog
+   Using a DataTemplate
+   Using an Application Blueprint
   
