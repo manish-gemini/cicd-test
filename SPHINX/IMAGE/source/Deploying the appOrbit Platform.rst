@@ -216,7 +216,7 @@ prompt:
 
 The output from this command is illustrated below.
 
-..image:: media/dockerPS.png
+.. image:: media/dockerPS.png
 
 **IMPORTANT**: When an error is encountered, and the appOrbit Platform
 installation script is not completed correctly, you are required to
