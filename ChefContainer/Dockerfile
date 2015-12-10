@@ -1,5 +1,5 @@
 FROM centos:centos6.7
-MAINTAINER  apporbit-CHEF <sajith@apporbit.io> -Sajith
+MAINTAINER  apporbit-CHEF <support@apporbit.com> -support
 
 RUN mkdir -p /opt/apporbitchef /etc/init
 WORKDIR /opt/apporbitchef

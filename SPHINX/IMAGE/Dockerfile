@@ -1,5 +1,5 @@
 FROM centos:centos7.0.1406
-MAINTAINER SPHINX doc builder  <sajith@apporbit.io> - sajith
+MAINTAINER SPHINX doc builder  <support@apporbit.com> - support
 RUN yum install -y epel-release
 
 RUN yum install -y python python-pip make nginx 
