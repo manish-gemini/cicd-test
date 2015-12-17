@@ -61,6 +61,7 @@ chcon -Rt svirt_sandbox_file_t /var/lib/apporbit/sshKey_root
 chcon -Rt svirt_sandbox_file_t /var/lib/apporbit/sslkeystore
 chcon -Rt svirt_sandbox_file_t /var/log/apporbit/services
 chcon -Rt svirt_sandbox_file_t /var/log/apporbit/controller
+chcon -Rt svirt_sandbox_file_t /var/lib/apporbit/sslkeystore
 
 email_id="admin@apporbit.com"
 EMAILID=$email_id
@@ -79,12 +80,17 @@ else
 fi
 echo $onPremMode
 
-theme="apporbit"
+theme="apporbit-v2"
 printf "Enter the Theme Name :"
 read -p "Default($theme):" themeName
 themeName=${themeName:-$theme}
 echo $themeName
 
+api_version="v2"
+printf "Enter the API Version :"
+read -p "Default($api_version):" versionName
+versionName=${versionName:-$api_version}
+echo $versionName
 
 ip=`curl -s http://whatismyip.akamai.com ; echo`
 printf "Enter the Host IP :"
@@ -204,6 +210,7 @@ if docker ps -a | grep -a apporbit-docs; then
    docker rm -f apporbit-docs
 fi
 
+
 #docs container
 docker run --name apporbit-docs --restart=always -p 9080:80 -d secure-registry.gsintlab.com/apporbit/apporbit-docs
 echo "db run .."
@@ -233,11 +240,11 @@ then
 		docker run -t --name apporbit-services --restart=always -e GEMINI_INT_REPO=$internalRepo -e CHEF_URL=https://$hostip:9443 -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist -e GEMINI_STACK_IPANEMA=1 --link db:db --link apporbit-rmq:rmq -v /var/lib/apporbit/sshKey_root:/root --volumes-from apporbit-chef -v /var/log/apporbit/services:/var/log/apporbit -d  secure-registry.gsintlab.com/apporbit/apporbit-services
 
 		echo "controller run ..."
-		docker run -t --name apporbit-controller --restart=always -p 80:80 -p 443:443 -e ONPREM_EMAIL_ID=$EMAILID -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes  -e CHEF_URL=https://$hostip:9443 -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName --link db:db --link apporbit-rmq:rmq --volumes-from apporbit-chef -v /var/log/apporbit/controller:/var/log/apporbit -v /var/lib/apporbit/sslkeystore/:/home/apporbit/apporbit-controller/sslkeystore -d secure-registry.gsintlab.com/apporbit/apporbit-controller
+		docker run -t --name apporbit-controller --restart=always -p 80:80 -p 443:443 -e ONPREM_EMAIL_ID=$EMAILID -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes  -e CHEF_URL=https://$hostip:9443 -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName -e CURRENT_API_VERSION=$versionName --link db:db --link apporbit-rmq:rmq --volumes-from apporbit-chef -v /var/log/apporbit/controller:/var/log/apporbit -v /var/lib/apporbit/sslkeystore/:/home/apporbit/apporbit-controller/sslkeystore -d secure-registry.gsintlab.com/apporbit/apporbit-controller
 	else
 		docker run -t --name apporbit-services --restart=always -e GEMINI_INT_REPO=$internalRepo -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist  -e GEMINI_STACK_IPANEMA=1 --link db:db --link apporbit-rmq:rmq -v /var/lib/apporbit/sshKey_root:/root -v /var/log/apporbit/services:/var/log/apporbit -d  secure-registry.gsintlab.com/apporbit/apporbit-services	
 		echo "controller run ..."
-		docker run -t --name apporbit-controller --restart=always -p 80:80 -p 443:443 -e ONPREM_EMAIL_ID=$EMAILID -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName --link db:db --link apporbit-rmq:rmq -v /var/log/apporbit/controller:/var/log/apporbit -v /var/lib/apporbit/sslkeystore/:/home/apporbit/apporbit-controller/sslkeystore -d secure-registry.gsintlab.com/apporbit/apporbit-controller
+		docker run -t --name apporbit-controller --restart=always -p 80:80 -p 443:443 -e ONPREM_EMAIL_ID=$EMAILID -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName -e CURRENT_API_VERSION=$versionName --link db:db --link apporbit-rmq:rmq -v /var/log/apporbit/controller:/var/log/apporbit -v /var/lib/apporbit/sslkeystore/:/home/apporbit/apporbit-controller/sslkeystore -d secure-registry.gsintlab.com/apporbit/apporbit-controller
 
 	fi
 
@@ -250,11 +257,11 @@ then
 	if docker ps -a |grep -a apporbit-chef; then
 		docker run -t --name apporbit-services --restart=always -e GEMINI_INT_REPO=$internalRepo -e CHEF_URL=https://$hostip:9443 -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist -e GEMINI_STACK_IPANEMA=1 --link db:db --link apporbit-rmq:rmq -v /var/lib/apporbit/sshKey_root:/root -v /var/log/apporbit/services:/var/log/apporbit --volumes-from apporbit-chef -d apporbit/apporbit-services  	
 		echo "controller run ..."
-		docker run -t --name apporbit-controller --restart=always -p 80:80 -p 443:443 -e ONPREM_EMAIL_ID=$EMAILID -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes -e CHEF_URL=https://$hostip:9443 -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit-controller -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName  --link db:db --link apporbit-rmq:rmq --volumes-from apporbit-chef -v /var/log/apporbit/controller:/var/log/apporbit -v /var/lib/apporbit/sslkeystore/:/home/apporbit/apporbit-controller/sslkeystore -d apporbit/apporbit-controller
+		docker run -t --name apporbit-controller --restart=always -p 80:80 -p 443:443 -e ONPREM_EMAIL_ID=$EMAILID -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes -e CHEF_URL=https://$hostip:9443 -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit-controller -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName -e CURRENT_API_VERSION=$versionName  --link db:db --link apporbit-rmq:rmq --volumes-from apporbit-chef -v /var/log/apporbit/controller:/var/log/apporbit -v /var/lib/apporbit/sslkeystore/:/home/apporbit/apporbit-controller/sslkeystore -d apporbit/apporbit-controller
 	else
 		docker run -t --name apporbit-services --restart=always -e GEMINI_INT_REPO=$internalRepo -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist -e GEMINI_STACK_IPANEMA=1 --link db:db --link apporbit-rmq:rmq -v /var/log/apporbit/services:/var/log/apporbit  -v /var/lib/apporbit/sshKey_root:/root -d apporbit/apporbit-services    	
 		echo "controller run ..."
-		docker run -t --name apporbit-controller --restart=always -p 80:80 -p 443:443 -e ONPREM_EMAIL_ID=$EMAILID -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName --link db:db --link apporbit-rmq:rmq -v /var/log/apporbit/controller:/var/log/apporbit -v /var/lib/apporbit/sslkeystore/:/home/apporbit/apporbit-controller/sslkeystore -d apporbit/apporbit-controller
+		docker run -t --name apporbit-controller --restart=always -p 80:80 -p 443:443 -e ONPREM_EMAIL_ID=$EMAILID -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName -e CURRENT_API_VERSION=$versionName --link db:db --link apporbit-rmq:rmq -v /var/log/apporbit/controller:/var/log/apporbit -v /var/lib/apporbit/sslkeystore/:/home/apporbit/apporbit-controller/sslkeystore -d apporbit/apporbit-controller
 	fi
 	echo "end ..."
 else
@@ -292,11 +299,11 @@ else
 	if docker ps -a |grep -a apporbit-chef; then
 		docker run -t --name apporbit-services -e GEMINI_INT_REPO=$internalRepo -e CHEF_URL=https://$hostip:9443 -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist -e GEMINI_STACK_IPANEMA=1 -v $servicesDir/Gemini-poc-stack:/home/apporbit/apporbit-services --link db:db --link apporbit-rmq:rmq -v /var/lib/apporbit/sshKey_root:/root -v /var/log/apporbit/services:/var/log/apporbit --volumes-from apporbit-chef -d  apporbit/apporbit-services
 		echo "controller run ..."
-		docker run -t --name apporbit-controller -p 80:80 -p 443:443 -e ONPREM_EMAIL_ID=$EMAILID -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes -e CHEF_URL=https://$hostip:9443 -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName  -v $controllerDir/Gemini-poc-mgnt:/home/apporbit/apporbit-controller --link db:db --link apporbit-rmq:rmq --volumes-from apporbit-chef -v /var/log/apporbit/controller:/var/log/apporbit -v /var/lib/apporbit/sslkeystore/:/home/apporbit/apporbit-controller/sslkeystore -d apporbit/apporbit-controller
+		docker run -t --name apporbit-controller -p 80:80 -p 443:443 -e ONPREM_EMAIL_ID=$EMAILID -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes -e CHEF_URL=https://$hostip:9443 -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName -e CURRENT_API_VERSION=$versionName  -v $controllerDir/Gemini-poc-mgnt:/home/apporbit/apporbit-controller --link db:db --link apporbit-rmq:rmq --volumes-from apporbit-chef -v /var/log/apporbit/controller:/var/log/apporbit -v /var/lib/apporbit/sslkeystore/:/home/apporbit/apporbit-controller/sslkeystore -d apporbit/apporbit-controller
 	else
 		docker run -t --name apporbit-services -e GEMINI_INT_REPO=$internalRepo -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist -e GEMINI_STACK_IPANEMA=1 -v $servicesDir/Gemini-poc-stack:/home/apporbit/apporbit-services --link db:db --link apporbit-rmq:rmq -v /var/lib/apporbit/sshKey_root:/root -v /var/log/apporbit/services:/var/log/apporbit -d  apporbit/apporbit-services
 		echo "controller run ..."
-		docker run -t --name apporbit-controller -p 80:80 -p 443:443 -e ONPREM_EMAIL_ID=$EMAILID -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName -v $controllerDir/Gemini-poc-mgnt:/home/apporbit/apporbit-controller --link db:db --link apporbit-rmq:rmq -v /var/log/apporbit/controller:/var/log/apporbit -v /var/lib/apporbit/sslkeystore/:/home/apporbit/apporbit-controller/sslkeystore -d apporbit/apporbit-controller
+		docker run -t --name apporbit-controller -p 80:80 -p 443:443 -e ONPREM_EMAIL_ID=$EMAILID -e LOG_LEVEL=$_LOG_LEVEL_ -e MAX_POOL_SIZE=$max_app_processes -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName -e CURRENT_API_VERSION=$versionName -v $controllerDir/Gemini-poc-mgnt:/home/apporbit/apporbit-controller --link db:db --link apporbit-rmq:rmq -v /var/log/apporbit/controller:/var/log/apporbit -v /var/lib/apporbit/sslkeystore/:/home/apporbit/apporbit-controller/sslkeystore -d apporbit/apporbit-controller
 	fi
 	echo "end ...."
 fi
