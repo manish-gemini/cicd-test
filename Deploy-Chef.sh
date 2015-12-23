@@ -24,6 +24,12 @@ fi
 
 chef_port=9443
 
+ip=`curl -s http://whatismyip.akamai.com; echo`
+printf "Enter the Host IP or Host Name (public resolvable) :"
+read -p "Default($ip):" hostip
+hostip=${hostip:-$ip}
+
+
 # Enable the port used by Chef (permanent makes it persist after reboot)
 if [ -f /usr/bin/firewall-cmd ]
 then
@@ -38,7 +44,7 @@ iptables -D FORWARD -j REJECT --reject-with icmp-host-prohibited
 
 mkdir -p /opt/apporbit/chef-serverkey/
 
-if [ ! -f /opt/apporbit/chef-serverkey/apporbit-chef.key ] || [ ! -f /opt/apporbit/chef-serverkey/apporbit-chef.crt ]
+if [ ! -f /opt/apporbit/chef-serverkey/${hostip}.key ] || [ ! -f /opt/apporbit/chef-serverkey/${hostip}.crt ]
 then
         echo "1) use existing certificate"
         echo "2) Create a self signed certificate"
@@ -47,9 +53,9 @@ then
         if [ $ssltype -eq 2 ]
         then
                 #Generate SSL Certiticate for https and put it in a volume mount controller location.
-                openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -subj "/C=US/ST=NY/L=appOrbit/O=Dis/CN=apporbit-chef" -keyout /opt/apporbit/chef-serverkey/apporbit-chef.key -out /opt/apporbit/chef-serverkey/apporbit-chef.crt
+                openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -subj "/C=US/ST=NY/L=appOrbit/O=Dis/CN=${hostip}" -keyout /opt/apporbit/chef-serverkey/${hostip}.key -out /opt/apporbit/chef-serverkey/${hostip}.crt
         else
-                echo "Rename your certificate files as apporbitserver.crt and key as apporbitserver.key"
+                echo "Rename your certificate files as ${hostip}.crt and key as ${hostip}.key"
                 read -p "Enter the location where your certificate and key file exist:" sslKeyDir
                 if [ ! -d $sslKeyDir ]
                 then
@@ -57,14 +63,14 @@ then
                         exit
                 fi
                 cd $sslKeyDir
-                if [ ! -f apporbit-chef.key ] || [ ! -f apporbit-chef.crt ]
+                if [ ! -f ${hostip}.key ] || [ ! -f ${hostip}.crt ]
                 then
                         echo "key and certificate files are missing."
-                        echo "Note that key and crt file name should be apporbitserver.key and apporbitserver.crt. Rename your files accordingly and retry."
+                        echo "Note that key and crt file name should be ${hostip}.key and ${hostip}.crt. Rename your files accordingly and retry."
                         exit
                 fi
-                cp -f apporbit-chef.key /opt/apporbit/chef-serverkey/apporbit-chef.key
-                cp -f apporbit-chef.crt /opt/apporbit/chef-serverkey/apporbit-chef.crt
+                cp -f ${hostip}.key /opt/apporbit/chef-serverkey/${hostip}.key
+                cp -f ${hostip}.crt /opt/apporbit/chef-serverkey/${hostip}.crt
         fi
 fi
 
@@ -74,22 +80,18 @@ read -p "Default(2):" deployType
 deployType=${deployType:-2}
 echo $deployType
 
+echo "Continue to run chef ..."
+
 if [ $deployType -eq 1 ]
 then
-  echo "Continue to run chef ..."
-  ip=`curl -s http://whatismyip.akamai.com; echo`
-  hname=apporbit-chef.apporbit-domain
-  docker run -m 2g -it --restart=always -p $chef_port:$chef_port -v /opt/apporbit/chef-serverkey/:/var/opt/chef-server/nginx/ca/  -v /etc/chef-server/ --name apporbit-chef -h $ip -d apporbit/apporbit-chef
+  docker run -m 2g -it --restart=always -p $chef_port:$chef_port -v /opt/apporbit/chef-serverkey/:/var/opt/chef-server/nginx/ca/  -v /etc/chef-server/ --name apporbit-chef -h ${hostip} -d apporbit/apporbit-chef
 else
   echo "Login to the Internal Registry"
   docker login https://secure-registry.gsintlab.com
   echo "Pull Chef Server from Internal Registry..."
   docker pull secure-registry.gsintlab.com/apporbit/apporbit-chef:1.0
   echo "Please change your chef password by logging into the UI."
-  echo "Continue to run chef ..."
-  ip=`curl -s http://whatismyip.akamai.com; echo`
-  hname=apporbit-chef.apporbit-domain
-  echo "Using ip address: $ip"
-  docker run -m 2g -it --restart=always -p $chef_port:$chef_port -v /opt/apporbit/chef-serverkey/:/var/opt/chef-server/nginx/ca/ -v /etc/chef-server/ --name apporbit-chef -h $ip -d secure-registry.gsintlab.com/apporbit/apporbit-chef:1.0
+  echo "Using hostname: ${hostip}"
+  docker run -m 2g -it --restart=always -p $chef_port:$chef_port -v /opt/apporbit/chef-serverkey/:/var/opt/chef-server/nginx/ca/ -v /etc/chef-server/ --name apporbit-chef -h ${hostip} -d secure-registry.gsintlab.com/apporbit/apporbit-chef:1.0
   echo "Please change your chef password by logging into the UI."
 fi
