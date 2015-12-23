@@ -136,7 +136,7 @@ then
 	if [ $ssltype -eq 2 ]
 	then
 		#Generate SSL Certiticate for https and put it in a volume mount controller location.
-		openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -subj "/C=US/ST=NY/L=appOrbit/O=Dis/CN=www.apporbit.com" -keyout /var/lib/apporbit/sslkeystore/apporbitserver.key -out /var/lib/apporbit/sslkeystore/apporbitserver.crt
+		openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -subj "/C=US/ST=NY/L=appOrbit/O=Dis/CN=apporbit.org" -keyout /var/lib/apporbit/sslkeystore/apporbitserver.key -out /var/lib/apporbit/sslkeystore/apporbitserver.crt
 	else
 		echo "Rename your certificate files as apporbitserver.crt and key as apporbitserver.key"
 		read -p "Enter the location where your certificate and key file exist:" sslKeyDir

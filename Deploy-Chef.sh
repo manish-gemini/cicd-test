@@ -36,6 +36,36 @@ iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited
 iptables -D FORWARD -j REJECT --reject-with icmp-host-prohibited
 /sbin/service iptables save 
 
+if [ ! -f /var/lib/apporbit/sslkeystore/apporbitserver.key ] || [ ! -f /var/lib/apporbit/sslkeystore/apporbitserver.crt ]
+then
+        echo "1) use existing certificate"
+        echo "2) Create a self signed certificate"
+        read -p "Enter the type of ssl certificate [Default:2]:" ssltype
+        ssltype=${ssltype:-2}
+        if [ $ssltype -eq 2 ]
+        then
+                #Generate SSL Certiticate for https and put it in a volume mount controller location.
+                openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -subj "/C=US/ST=NY/L=appOrbit/O=Dis/CN=apporbit.org" -keyout /var/opt/chef-server/nginx/ca/apporbitserver.key -out /var/opt/chef-server/nginx/ca/apporbitserver.crt
+        else
+                echo "Rename your certificate files as apporbitserver.crt and key as apporbitserver.key"
+                read -p "Enter the location where your certificate and key file exist:" sslKeyDir
+                if [ ! -d $sslKeyDir ]
+                then
+                        echo "Dir does not exist, Exiting..."
+                        exit
+                fi
+                cd $sslKeyDir
+                if [ ! -f apporbitserver.key ] || [ ! -f apporbitserver.crt ]
+                then
+                        echo "key and certificate files are missing."
+                        echo "Note that key and crt file name should be apporbitserver.key and apporbitserver.crt. Rename your files accordingly and retry."
+                        exit
+                fi
+                cp -f apporbitserver.key /var/opt/chef-server/nginx/ca/apporbitserver.key
+                cp -f apporbitserver.crt /var/opt/chef-server/nginx/ca/apporbitserver.crt
+        fi
+fi
+
 echo "Deploy from Local image = 1"
 echo "Deploy from internal registry = 2"
 read -p "Default(2):" deployType
