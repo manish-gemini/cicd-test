@@ -1,0 +1,16 @@
+FROM centos:centos7.0.1406
+MAINTAINER appOrbit Support <support@apporbit.com>
+RUN yum install -y yum-utils createrepo httpd rubygems && \
+    yum-config-manager disable extras && \
+    gem update --system --no-doc && \
+    gem install geminabox rubygems-mirror json_pure --no-doc && \
+    mkdir -p /root/.gem
+ADD mirrorrc /root/.gem/.mirrorrc
+ADD config.ru /root/config.ru
+ADD *.repo /etc/yum.repos.d/
+ADD offline-yum-httpd.conf /etc/httpd/conf.d/
+ADD entrypoint.sh /root/
+WORKDIR /root/
+RUN chmod +x entrypoint.sh
+EXPOSE 9291 9292
+CMD ["bash", "-l", "-c", "/root/entrypoint.sh"]
