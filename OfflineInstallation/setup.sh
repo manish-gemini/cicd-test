@@ -109,6 +109,8 @@ function download_images {
 
     echo "Downloading CentOS..."
     docker pull centos:centos7.0.1406
+    echo "Downloading MySQL..."
+    docker pull mysql:5.6.24
     echo "Downloading services..."
     docker pull registry.apporbit.com/apporbit/apporbit-services
     echo "Downloading controller..."
@@ -136,6 +138,8 @@ function save_images {
     docker save registry.apporbit.com/apporbit/apporbit-docs > apporbit-docs.tar
     echo "Saving image CM..."
     docker save registry.apporbit.com/apporbit/apporbit-chef:1.0 > apporbit-chef.tar
+    echo "Saving image MySQL..."
+    docker save mysql:5.6.24 > mysql.tar
     cd ..
 
 }
@@ -177,9 +181,10 @@ function generate_rpm_packages {
     cd appOrbitRPMs
     cp ../reposync.conf .
     cp ../offline-pkglist.conf .
+    cp ../updates-pkglist.conf .
     reposync -c reposync.conf
     wget -c https://opscode-omnibus-packages.s3.amazonaws.com/el/7/x86_64/chef-12.6.0-1.el7.x86_64.rpm
-    rm -f reposync.conf offline-pkglist.conf
+    rm -f reposync.conf offline-pkglist.conf updates-pkglist.conf
     createrepo .
     cd ..
     tar -cvzf appOrbitRPMs.tar.gz appOrbitRPMs

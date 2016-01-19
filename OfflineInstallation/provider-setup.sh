@@ -69,6 +69,7 @@ function uncompress_resources {
 
     cd $CWD
 }
+
 function setup_local_apporbit_repo {
     if [ ! -f /etc/yum.repos.d/apporbit-local.repo ]
     then
@@ -84,12 +85,7 @@ EOF
 
 
 function install_docker {
-    if [ ! -f /etc/yum.repos.d/apporbit.repo ]
-    then
-        cp apporbit-local.repo /etc/yum.repos.d/
-    fi
-
-    echo "Check for Docker Version "
+    echo "Checking Docker Version "
     if exists docker
     then
         echo "Docker exists:" `docker -v` "from" `rpm -qa docker`
