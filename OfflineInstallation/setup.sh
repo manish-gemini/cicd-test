@@ -150,7 +150,7 @@ function generate_images_tar {
 
 function install_packaging_utils {
     echo "Installing yum-utils, createrepo"
-    yum install -y yum-utils createrepo
+    yum install -y yum-utils createrepo wget
 }
 
 function download_general_packages {
@@ -160,11 +160,13 @@ function download_general_packages {
     cd appOrbitRPMs/noarch/
     wget -c http://repos.gsintlab.com/repos/noarch/nginx-1.6.3.tar.gz
     wget -c http://repos.gsintlab.com/repos/noarch/passenger-5.0.10.tar.gz
+    cd "$CWD"
 
     echo "Downloading Passenger agent"
     mkdir -p appOrbitRPMs/noarch/5.0.7/
     cd appOrbitRPMs/noarch/5.0.7/
     wget -c http://repos.gsintlab.com/repos/noarch/5.0.7/agent-x86_64-linux.tar.gz
+    cd "$CWD"
 
     echo "Downloading mist jar"
     mkdir -p appOrbitRPMs/mist/master
