@@ -287,6 +287,10 @@ function main {
     echo -n "Saving Offline Container Image"
     save_offline_container
     echo "...[OK]"
+
+    echo -n "Generating archives to transfer"
+    create_cargo_to_ship
+    echo "...[OK]"
 }
 
 main
