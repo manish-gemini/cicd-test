@@ -1,7 +1,5 @@
 #!/bin/bash
 
-AO_RESOURCE_PATH=/opt/apporbit/resources
-AO_DOWNLOADS_PATH=/tmp/appOrbitResources.tar
 ############
 # This section has some helper functions to make life easier.
 #
@@ -91,7 +89,7 @@ function install_docker {
         echo "Docker exists:" `docker -v` "from" `rpm -qa docker`
     else
         echo "Docker is not installed. Installing docker..."
-        #yum -y update
+        yum -y update
         yum -y --disablerepo="*" --enablerepo="apporbit-local" install docker-1.7.1
         systemctl enable docker.service
         systemctl start docker.service
@@ -163,5 +161,14 @@ function main {
 
     run_offline_container
 }
+
+read -p "Enter path of downloaded archive: " AO_DOWNLOADS_PATH
+export AO_DOWNLOADS_PATH=$AO_DOWNLOADS_PATH
+read -p "Enter directory path for extracting resources: " AO_RESOURCE_PATH
+export AO_RESOURCE_PATH=$AO_RESOURCE_PATH
+if [ ! -f  $AO_DOWNLOADS_PATH ]; then
+    echo "File not found or unreadable. Exiting.."
+    exit 1
+fi
 
 main
