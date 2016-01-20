@@ -166,6 +166,7 @@ function download_general_packages {
     mkdir -p appOrbitRPMs/noarch/5.0.7/
     cd appOrbitRPMs/noarch/5.0.7/
     wget -c http://repos.gsintlab.com/repos/noarch/5.0.7/agent-x86_64-linux.tar.gz
+    wget -c https://s3.amazonaws.com/phusion-passenger/binaries/passenger/by_release/5.0.7/nginx-1.6.3-x86_64-linux.tar.gz
     cd "$CWD"
 
     echo "Downloading mist jar"
