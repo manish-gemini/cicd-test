@@ -184,7 +184,7 @@ function deploy_chef {
                 exit 0
             fi
         fi
-        read -r -p "Enter internal ip of this host: " -n 1 -r internal_ip
+        read -r -p "Enter internal ip of this host: " -r internal_ip
         echo "Starting Chef service.."
         docker run -m 2g -it --restart=always -p $chef_port:$chef_port -v /etc/chef-server/ --name apporbit-chef -h $internal_ip -d registry.apporbit.com/apporbit/apporbit-chef:1.0
     fi
