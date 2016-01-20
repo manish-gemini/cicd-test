@@ -181,7 +181,7 @@ function deploy_chef {
                 docker rm -f apporbit-chef
             else
                 echo "Exiting without installing Chef Server"
-                exit 0
+                return 0
             fi
         fi
         read -r -p "Enter internal ip of this host: " -r internal_ip
