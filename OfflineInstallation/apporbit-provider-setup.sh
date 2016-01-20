@@ -110,22 +110,22 @@ function load_offline_container {
 
 function run_offline_container {
 
-    if docker ps -a |grep -aq apporbit-chef; then
+    if docker ps -a |grep -aq apporbit-offline; then
         echo "appOrbit Offline Container is already runnning. The container will removed first."
-        read -r -p "Do you want to continue?[y/n]" -n 1 -r installChef
+        read -r -p "Do you want to continue?[y/n]" -n 1 -r installOffline
         echo    # (optional) move to a new line
-        if [[ $installChef =~ ^[Yy]$ ]]
+        if [[ $installOffline =~ ^[Yy]$ ]]
         then
             echo "Removing existing Offline container"
-            docker rm -f apporbit-chef
+            docker rm -f apporbit-offline
         else
             echo "Exiting without installing Offline Server"
-            exit 1
+            return 1
         fi
     fi
 
     echo -n "Starting apporbit-offline service..."
-    docker run --name approbit-offline --restart=always -p 9291:9291 -p 9292:9292 -v $AO_RESOURCE_PATH/appOrbitGems:/opt/rubygems -v $AO_RESOURCE_PATH/appOrbitRPMs:/opt/repos -d apporbit/apporbit-offline
+    docker run --name apporbit-offline --restart=always -p 9291:9291 -p 9292:9292 -v $AO_RESOURCE_PATH/appOrbitGems:/opt/rubygems -v $AO_RESOURCE_PATH/appOrbitRPMs:/opt/repos -d apporbit/apporbit-offline
     echo "...[OK]"
 }
 function set_selinux {
