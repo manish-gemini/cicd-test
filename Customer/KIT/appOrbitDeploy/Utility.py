@@ -21,32 +21,51 @@ class Utility:
         return
 
 
-
+    # Check for System Information if it satisfy all Pre Deploy Requirements
+    # If not fixable errors found exit the process and log the errors.
     def verifySystemInfo(self):
+        logging.info("Hardware Requirement Check   -STARTED")
+        print "Hardware Requirement Check  - STARTED"
         if not self.verifyHardwareRequirement():
             logging.error("Hardware requirements are not satisfied !")
             print ("ERROR : Hardware requirement check failed! \
             Check log for details.")
             exit()
+        logging.info("Hardware Requirement Check   -COMPLETED")
+        print "Hardware Requirement Check  - COMPLETED"
 
+        print "Software Requirement Check  - STARTED"
+        logging.info("Software Requirement Check   -STARTED")
         if not self.verifySoftwareRequirement():
             logging.error("Software requirements are not satisfied !")
             print ("ERROR : Software requirement check failed! \
             Check log for details.")
             exit()
+        logging.info("Software Requirement Check   -COMPLETED")
+        print "Software Requirement Check  - COMPLETED"
 
+        print "Security Requirement Check  - STARTED"
+        logging.info("Security Requirement Check   -STARTED")
         if not self.verifySecuirtyIssues():
             logging.error('security requirements not satisfied')
             print "ERROR: Security Requirements not satified."
             exit()
+        logging.info("Security Requirement Check   -COMPLETED")
+        print "Security Requirement Check  - COMPLETED"
 
+        print "Repo Connectivity Requirement Check  - STARTED"
+        logging.info("Repo Connectivity Requirement Check   -STARTED")
         if not self.verifyRepoConnection():
             logging.error("Network requirement not satisfied !")
             print " ERROR: Network requirement not satisfied !"
             exit()
+        logging.info("Repo Connectivity Requirement Check   -COMPLETED")
+        print "Repo Connectivity Requirement Check  - COMPLETED"
 
+        return
 
-
+    # Check for cpu count
+    # Check for RAM Size
     def verifyHardwareRequirement(self):
         logging.info("No of cpu is %d", multiprocessing.cpu_count())
         if multiprocessing.cpu_count() < 2:
@@ -56,7 +75,7 @@ class Utility:
             return False
         else:
             logging.info("verify cpu count success!")
-            # return True
+
 
         meminfo = open('/proc/meminfo').read() 
         matched = re.search(r'^MemTotal:\s+(\d+)', meminfo) 
@@ -65,13 +84,15 @@ class Utility:
         if ram_size < 3000000: #4194304:
             logging.info("RAM size is less than expected 4 GB.\
                          Upgrade your system and proceed with installation.")
+            print "ERROR: System Memory is expected to be alteast 4GB"
             return False
 
         logging.info("Hardware requirement verified successfully")
         return True
 
 
-
+    # Check - apporbit.repo file
+    # Check - docker, ntp, wget
     def verifySoftwareRequirement(self):
         logging.info("started verifying software requirements")
         if os.path.isfile('apporbit.repo'):
@@ -81,7 +102,7 @@ class Utility:
             logging.error('apporbit.repo file is missing in the package.\
                           check with appOrbit Business contact.')
             print ("ERROR: package files missing! check with your appOrbit Business contact.")
-            exit()
+            return False
 
         logging.info ("Verifying docker installation")
 
@@ -93,16 +114,16 @@ class Utility:
             out, err =  process.communicate()
 
             if process.returncode == 0:
-                print out
-                pass
+                # print out
+                logging.info("docker is already installed. %s", out)
+
             else:
-                print err
+                # print err
+                logging.warning("docker needs to be installed. %s", err)
                 self.do_dockerinstall = 1
-                pass
 
         except Exception as exp:
             logging.error("Docker is not installed.")
-            print ("ERROR : Docker is not installed!")
             self.do_dockerinstall = 1
 
         logging.info ("Verify NTP Installation!")
@@ -114,15 +135,12 @@ class Utility:
             out, err =  process.communicate()
 
             if process.returncode == 0:
-                print out
-                pass
+                logging.info("ntp is already installed. %s", out)
             else:
-                print err
+                logging.warning("ntp needs to be installed. %s", err)
                 self.do_ntpinstall = 1
-                pass
-
         except Exception as exp:
-            logging.error("ntpdate needs to be installed! %d : %s", exp.errno, exp.strerror)
+            logging.error("ntp needs to be installed! %d : %s", exp.errno, exp.strerror)
             self.do_ntpinstall = 1
 
         logging.info("Verify wget installation")
@@ -134,19 +152,18 @@ class Utility:
             out, err =  process.communicate()
 
             if process.returncode == 0:
-                print out
-                pass
+                logging.info("wget is already installed. %s", out)
             else:
-                print err
+                logging.info("wget needs to be installed. %s", err)
                 self.do_wgetinstall = 1
-                pass
 
         except OSError as e:
             logging.error("wget needs to be installed! %d : %s", e.errno, e.strerror)
             self.do_wgetinstall = 1
+
         return True
 
-
+    # Verify Sestatus
     def verifySecuirtyIssues(self):
         securitysettings = True
         selinux_status = os.popen("getenforce").read()
@@ -154,20 +171,21 @@ class Utility:
         logging.info ("selinux status is %s", selinux_status)
         permissive_str = 'permissive'
         disabled_str = 'disabled'
-        enfocing_str = 'enforcing'
+        enforcing_str = 'enforcing'
         if selinux_status == permissive_str:
             securitysettings = True
         elif selinux_status == disabled_str:
             securitysettings = True
-        elif selinux_status == enfocing_str:
+        elif selinux_status == enforcing_str:
             securitysettings = False
             self.do_sesettings = 1
         else:
             logging.warning("Not able to get selinux status")
+            # print ("Not able to get selinux status. ")
 
-        return securitysettings
+        return True
 
-
+    # Verify RepoConnection
     def verifyRepoConnection(self):
         host = "repos.gsintlab.com"
         path = "/"
@@ -190,6 +208,7 @@ class Utility:
             return False
 
 
+
     def fixSysRequirements(self):
         if self.do_wgetinstall:
             cmd_wgetInstall = "yum install -y wget"
@@ -200,11 +219,10 @@ class Utility:
             out, err =  process.communicate()
 
             if process.returncode == 0:
-                print out
-                pass
+                # print out
+                logging.info("Install wget success. %s", out)
             else:
-                print err
-                pass
+                logging.warning("Install wget failed. %s", err)
 
         if self.do_ntpinstall:
             cmd_ntpInstall = "yum install -y ntp"
@@ -215,11 +233,12 @@ class Utility:
             out, err =  process.communicate()
 
             if process.returncode == 0:
-                print out
-                pass
+                logging.info("Install ntp success. %s", out)
             else:
-                print err
-                pass
+                logging.warning("Install ntp failed. %s", err)
+                print ("NTP Install - FAILED")
+                return False
+
 
         if self.do_dockerinstall:
             cmd_dockerInstall = "yum install -y docker-1.7.1"
@@ -230,11 +249,11 @@ class Utility:
             out, err =  process.communicate()
 
             if process.returncode == 0:
-                print out
-                pass
+                logging.info("Install docker success. %s", out)
             else:
-                print err
-                pass
+                logging.error("Install docker failed. %s", err)
+                print ("docker Install - Failed")
+                return False
 
         if self.do_sesettings:
             cmd_sesettings = "setenforce 0"
@@ -245,11 +264,10 @@ class Utility:
             out, err =  process.communicate()
 
             if process.returncode == 0:
-                print out
-                pass
+                logging.info("setting sestatus success. %s", out)
             else:
-                print err
-                pass
+                logging.warning("setting sestatus Failed. %s", out)
+                return False
 
         # Enable Docker Service
         cmd_dockerservice = "systemctl enable docker.service"
@@ -257,9 +275,10 @@ class Utility:
         stderr=subprocess.PIPE)
         out_doc, err_doc =  process_doc.communicate()
         if process_doc.returncode == 0:
-            print out_doc
+            logging.info("service docker enabled on startup  -success. %s", out_doc)
         else:
-            print err_doc
+            logging.warning("service docker enabled on startup - Failed. %s", err_doc)
+
 
         #Enable Docker service on restart
         cmd_dockerservice = "systemctl start docker.service"
@@ -268,9 +287,10 @@ class Utility:
 
         out_doc, err_doc =  process_doc.communicate()
         if process_doc.returncode == 0:
-            print out_doc
+            logging.info("service docker start  -success. %s", out_doc)
         else:
-            print err_doc
+            logging.error("service docker start  -Failed. %s", err_doc)
+            return False
 
         # Sync Network Time
         cmd_ntpupdate = "ntpdate -b -u time.nist.gov"
@@ -281,11 +301,10 @@ class Utility:
         out, err =  process.communicate()
 
         if process.returncode == 0:
-            print out
-            pass
+            logging.info("ntp update  -success. %s", out_doc)
         else:
-            print err
-            pass
+            logging.info("ntp update  -Failed. %s", err_doc)
+
 
         #Setup IPTableRules
         cmd_iptablerule1 = "iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited "
@@ -297,11 +316,10 @@ class Utility:
         out, err =  process.communicate()
 
         if process.returncode == 0:
-            print out
-            pass
+            logging.info("iptable rule1 - success %s", out)
         else:
-            print err
-            pass
+            logging.warning("iptable rule1 - Failed %s", err)
+
 
         process = subprocess.Popen(cmd_iptablerule2, shell=True, stdout=subprocess.PIPE, \
                                    stderr=subprocess.PIPE)
@@ -309,14 +327,28 @@ class Utility:
         out, err =  process.communicate()
 
         if process.returncode == 0:
-            print out
-            pass
+            logging.info("iptable rule2 - success. %s", out)
         else:
-            print err
-            pass
+            logging.warning("iptable rule2 - Failed. %s", err)
+
+        #Generate SSL Certificate
+        cmd_sslcert = 'openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 \
+        -subj "/C=US/ST=NY/L=appOrbit/O=Dis/CN=www.apporbit.com" \
+        -keyout /var/lib/apporbit/sslkeystore/apporbitserver.key \
+        -out /var/lib/apporbit/sslkeystore/apporbitserver.crt'
+
+        process = subprocess.Popen(cmd_sslcert, shell=True, stdout=subprocess.PIPE, \
+                                   stderr=subprocess.PIPE)
+
+        out, err =  process.communicate()
+
+        if process.returncode == 0:
+            logging.info("SSL Certificate Create - SUCCESS. %s", out)
+        else:
+            logging.warning("SSL Certificate Create - Failed. %s", err)
 
 
-        return
+        return True
 
 
     def deployFromFile(self, fname = 'local.conf'):
@@ -356,10 +388,6 @@ class Utility:
         if not repo_str:
             if not fname == 'local.conf':
                 repo_str = "registry.apporbit.com"
-
-        if repo_str:
-            self.loginDockerRegistry(uname, passwd, repo_str)
-            self.pullImagesformRepos(repo_str)
 
 
         if fname == 'local.conf':
@@ -423,6 +451,11 @@ class Utility:
             self.clearOldEntries()
 
         self.setupDirectoriesForVolumeMount()
+
+        if repo_str:
+            self.loginDockerRegistry(uname, passwd, repo_str)
+            self.pullImagesformRepos(repo_str)
+
         self.deployAppOrbit(deploy_mode, email_id, theme_name, host_ip, repo_str, cfg_mgr)
 
         return
@@ -441,15 +474,20 @@ class Utility:
             out, err =  process.communicate()
 
             if process.returncode == 0:
-                print out
-                pass
+                logging.info(out)
+                print "Deploy Chef - SUCCESS"
+                print "Deploy in progress ..."
+                time.sleep(180)
             else:
-                print err
-                pass
+                logging.error(err)
+                print "Deploy Chef - FAILED"
+                exit()
 
         else:
-            #TODO LOG
-            pass
+            # TODO HANDLE
+            logging.error("Chef not chosen for deploy. exit")
+            print "CHEF NOT CHOSEN FOR DEPLOY."
+            exit()
 
 
         cmd_deploy_db = "docker run --name db --restart=always -e MYSQL_ROOT_PASSWORD=admin \
@@ -462,13 +500,14 @@ class Utility:
         out, err =  process.communicate()
 
         if process.returncode == 0:
-            print out
-            pass
+            logging.info(out)
+            print "Deploy db  -SUCCESS"
+            print "Deploy in progress ..."
+            time.sleep(60)
         else:
-            print err
-            pass
-
-
+            logging.error(err)
+            print "Deploy db - FAILED"
+            exit()
 
 
         cmd_deploy_rmq = "docker run -m 2g -d --hostname rmq --restart=always \
@@ -480,11 +519,14 @@ class Utility:
         out, err =  process.communicate()
 
         if process.returncode == 0:
-            print out
-            pass
+            logging.info(out)
+            print "Deploy rmq - SUCCESS"
+            print "Deploy in progress ..."
+            time.sleep(20)
         else:
-            print err
-            pass
+            logging.warning(err)
+            print "Deploy rmq - FAILED"
+            exit()
 
         internal_repo = "http://repos.gsintlab.com/repos/"
         cmd_deploy_services = "docker run -t --name apporbit-services --restart=always \
@@ -502,17 +544,21 @@ class Utility:
         out, err =  process.communicate()
 
         if process.returncode == 0:
-            print out
-            pass
+            logging.info(out)
+            print "Deploy services - SUCCESS"
+            print "Deploy in progress ..."
+            time.sleep(20)
         else:
-            print err
-            pass
+            logging.error(err)
+            print "Deploy services - FAILED"
+            exit()
 
         log_level = 'DEBUG'
         max_app_processes =1
         deploy_mode=1
         onpremmode = 'true'
         apiversion = 'v2'
+
         cmd_deploy_controller = "docker run -t --name apporbit-controller --restart=always \
         -p 80:80 -p 443:443 -e ONPREM_EMAIL_ID="+ email_id + " \
         -e LOG_LEVEL="+log_level + " -e MAX_POOL_SIZE=1 -e CHEF_URL=https://"+ host_ip +":9443 \
@@ -523,20 +569,22 @@ class Utility:
         -v /var/lib/apporbit/sslkeystore/:/home/apporbit/apporbit-controller/sslkeystore \
         -d " + repo_str + "/apporbit/apporbit-controller"
 
-        print cmd_deploy_controller
+        # print cmd_deploy_controller
         process = subprocess.Popen(cmd_deploy_controller, shell=True, stdout=subprocess.PIPE, \
                                    stderr=subprocess.PIPE)
 
         out, err =  process.communicate()
 
         if process.returncode == 0:
-            print out
-            pass
+            logging.info(out)
+            print "Deploy Controller - SUCCESS"
         else:
-            print err
-            pass
+            logging.error(err)
+            print "Deploy Controller - FAILED"
+            exit()
 
-        return
+        print "Apporbit Deploy completed - SUCCESS!"
+        return True
 
     def removeRunningContainers(self):
         process = subprocess.Popen("docker ps -a ", shell=True, stdout=subprocess.PIPE, \
@@ -544,7 +592,7 @@ class Utility:
         out, err =  process.communicate()
         if process.returncode == 0:
             if "apporbit-chef" in out:
-                print "apporbit-chef exist remove it"
+                logging.info( "apporbit-chef exist remove it")
                 rmvprocess = subprocess.Popen("docker rm -f apporbit-chef", shell=True,\
                                               stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 rmvout, rmverr = rmvprocess.communicate()
@@ -554,7 +602,7 @@ class Utility:
                     logging.warning(rmverr)
 
             if "apporbit-controller" in out:
-                print "apporbit-controller exist remove it"
+                logging.info("apporbit-controller exist remove it")
                 rmvprocess = subprocess.Popen("docker rm -f apporbit-controller", shell=True,\
                                               stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 rmvout, rmverr = rmvprocess.communicate()
@@ -564,7 +612,7 @@ class Utility:
                     logging.warning(rmverr)
 
             if "apporbit-services" in out:
-                print "apporapporbit-rmqbit-services exist remove it"
+                logging.info( "apporapporbit-rmqbit-services exist remove it")
                 rmvprocess = subprocess.Popen("docker rm -f apporbit-services", shell=True,\
                                               stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 rmvout, rmverr = rmvprocess.communicate()
@@ -574,7 +622,7 @@ class Utility:
                     logging.warning(rmverr)
 
             if  "db" in out:
-                print "db container exist remove it"
+                logging.info( "db container exist remove it")
                 rmvprocess = subprocess.Popen("docker rm -f db", shell=True,\
                                               stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 rmvout, rmverr = rmvprocess.communicate()
@@ -583,7 +631,7 @@ class Utility:
                 else:
                     logging.warning(rmverr)
             if "apporbit-rmq" in out:
-                print "rmq container exist remove it"
+                logging.info( "rmq container exist remove it")
                 rmvprocess = subprocess.Popen("docker rm -f apporbit-rmq", shell=True,\
                                               stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 rmvout, rmverr = rmvprocess.communicate()
@@ -599,8 +647,6 @@ class Utility:
                     logging.info("Successfully removed apporbit-docs")
                 else:
                     logging.warning(rmverr)
-
-                print "apporbit-docs container exist remove it.".tri
 
         return
 
@@ -643,52 +689,42 @@ class Utility:
         out, err = process.communicate()
         if(process.returncode==0):
             # print out
-            print ("SUCCESS cntrl image pull!")
+            logging.info( out)
         else:
-            print err
-            print ("Login Failed!")
-            exit()
+            logging.error(err)
 
         process = subprocess.Popen(cmd_sshkey, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = process.communicate()
         if(process.returncode==0):
             # print out
-            print ("SUCCESS cntrl image pull!")
+            logging.info(out)
         else:
-            print err
-            print ("Login Failed!")
-            exit()
+            logging.error(err)
 
         process = subprocess.Popen(cmd_sslkey, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = process.communicate()
         if(process.returncode==0):
             # print out
-            print ("SUCCESS cntrl image pull!")
+            logging.info(out)
         else:
-            print err
-            print ("Login Failed!")
-            exit()
+            logging.error(err)
 
 
         process = subprocess.Popen(cmd_services, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = process.communicate()
         if(process.returncode==0):
             # print out
-            print ("SUCCESS cntrl image pull!")
+            logging.info(out)
         else:
-            print err
-            print ("Login Failed!")
-            exit()
+            logging.error(err)
 
         process = subprocess.Popen(cmd_controller, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = process.communicate()
         if(process.returncode==0):
             # print out
-            print ("SUCCESS cntrl image pull!")
+            logging.info(out)
         else:
-            print err
-            print ("Login Failed!")
-            exit()
+            logging.error(err)
 
 
     def loginDockerRegistry(self, uname, passwd, repo_str = "secure-registry.gsintlab.com" ):
@@ -724,48 +760,53 @@ class Utility:
         out, err = process.communicate()
         if(process.returncode==0):
             # print out
-            print ("SUCCESS cntrl image pull!")
+            logging.info(out)
+
         else:
-            print err
-            print ("Login Failed!")
+            logging.warning(err)
+            print ("Getting Image Failed. Check log for details")
             exit()
 
         process = subprocess.Popen(cmd_srvc_image, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = process.communicate()
         if(process.returncode==0):
             # print out
-            print ("SUCCESS cntrl image pull!")
+            logging.info(out)
+
         else:
-            print err
-            print ("Login Failed!")
+            logging.warning(err)
+            print ("Getting Image Failed. Check log for details")
             exit()
 
         process = subprocess.Popen(cmd_msgq_image, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = process.communicate()
         if(process.returncode==0):
             # print out
-            print ("SUCCESS cntrl image pull!")
+            logging.info(out)
+
         else:
-            print err
-            print ("Login Failed!")
+            logging.warning(err)
+            print ("Getting Image Failed. Check log for details")
             exit()
 
         process = subprocess.Popen(cmd_docs_image, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = process.communicate()
         if(process.returncode==0):
             # print out
-            print ("SUCCESS cntrl image pull!")
+            logging.info(out)
+
         else:
-            print err
-            print ("Login Failed!")
+            logging.warning(err)
+            print ("Getting Image Failed. Check log for details")
             exit()
 
         process = subprocess.Popen(cmd_dbs_image, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = process.communicate()
         if(process.returncode==0):
             # print out
-            print ("SUCCESS cntrl image pull!")
+            logging.info(out)
+
         else:
-            print err
-            print ("Login Failed!")
+            logging.warning(err)
+            print ("Getting Image Failed. Check log for details")
             exit()
