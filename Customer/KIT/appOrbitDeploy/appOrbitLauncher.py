@@ -1,9 +1,13 @@
-
 #!/usr/bin/python
+
+
+import os
+import logging
+# Project Modules
 import UserInteract
 import Utility
-import logging
-import os
+import Config
+import Action
 
 def main():
     logging.basicConfig(filename='appOrbitInstall.log', level=logging.DEBUG,
@@ -12,8 +16,10 @@ def main():
     logging.info("Starting appOrbit Installation")
     logging.info("Verifying for pre-existing installation")
 
+    config_obj = Config.Config()
     userinteractObj = UserInteract.UserInteract()
     utilityObj = Utility.Utility()
+    actionObj = Action.Action()
 
     # Will check all the System Requirements
     # Fail and exit if Not fixable Requirements like
@@ -38,15 +44,16 @@ def main():
     # In Regular customer Deployment case we will not provide any config file.
     if os.path.isfile('local.conf'):
         logging.info('Using local.conf file for deployment')
-        userinteractObj.showConfigInfo('local.conf')
-        utilityObj.deployFromFile('local.conf')
-
+        config_obj.loadConfig('local.conf')
+        actionObj.deployAppOrbit(config_obj)
+        # utilityObj.deployFromFile('local.conf')
         logging.info("END OF DEPLOYMENT")
     else:
         logging.info("Starting to get user configuration.")
         # Get User Configuration for Customer Deployment
         # and write to a config file apporit_deploy.conf
-        userinteractObj.getUserConfigInfo()
+        userinteractObj.getUserConfigInfo(config_obj)
+        config_obj.loadConfig('appobit_deploy.conf')
         logging.info("user configuration is recived SUCCESS.")
 
         # The User config file is read and processed, if not avilable exit
@@ -54,7 +61,8 @@ def main():
             logging.error("ERROR: Deployment Configuration file not found!")
             print "Config file is missing! check log for more details."
             exit()
-        utilityObj.deployFromFile('appobit_deploy.conf')
+        actionObj.deployAppOrbit(config_obj)
+        # utilityObj.deployFromFile('appobit_deploy.conf')
 
         logging.info("END OF DEPLOYMENT")
 

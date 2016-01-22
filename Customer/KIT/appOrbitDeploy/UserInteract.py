@@ -4,84 +4,76 @@ import getpass
 import ConfigParser
 import logging
 
+import Config
+
 class UserInteract:
 
     def __init__(self):
-        self.reg_user_name = ""
-        self.reg_password = ""
-        self.build_id = ""
-        self.clean_setup = ""
-        self.is_install_cfgmgr = ""
-        self.deploy_mode = ""
-        self.on_prem_emailid = ""
-        self.themeName = ""
-        self.hostIp = ""
         return
 
 
-    def getUserConfigInfo(self):
+    def getUserConfigInfo(self, config_obj):
+        # Used Variables Decalred
+        reg_user_name = ""
+        reg_password = ""
+        build_id = ""
+        clean_setup = ""
+        is_install_cfgmgr = ""
+        deploy_mode = ""
+        on_prem_emailid = ""
+        hostIp = ""
+
         logging.info("Starting to get user config info")
         print "DEPLOYMENT CONFIGURATIONS:"
         print "************************** \n "
         print "  Login to appOrbit Docker Registry using the credentials obtained from appOrbit Business contact. "
-        self.reg_user_name = raw_input("\n Enter the User Name : ")
-        self.reg_password = getpass.getpass()
-        self.build_id = raw_input("\n Enter the Build ID [Default:latest] : ") or "latest"
-        self.is_install_cfgmgr = raw_input("\n Do you want to deploy config Manager in the same machine? [Y/n] : ") or 'y'
+        reg_user_name = raw_input("\n Enter the User Name : ")
+        reg_password = getpass.getpass()
+        build_id = raw_input("\n Enter the Build ID [Default:latest] : ") or "latest"
+        # is_install_cfgmgr = raw_input("\n Do you want to deploy config Manager in the same machine? [Y/n] : ") or 'y'
+
+        print '\n Enter Config Manager Deploy Mode :'
+        print '  1. Deploy on the same host '
+        print '  2. Do not deploy, will configure it later'
+        is_install_cfgmgr = raw_input("  Choose the setup type from the above [Default : 1] :") or '1'
+        logging.info ("Chef Mode of deployment : %s", is_install_cfgmgr)
 
         print "\n Retain old entries or clean it "
         print "  1. Clean the setup "
         print "  2. Retain the old entries "
-        self.clean_setup = raw_input("  Choose the setup type from the above [Default : 1] :") or '1'
+        clean_setup = raw_input("  Choose the setup type from the above [Default : 1] :") or '1'
 
-        logging.info("Clean Setup : %s", self.clean_setup)
+        logging.info("Clean Setup : %s", clean_setup)
+
+        print '\n Enter the type of SSL Certificate Type:'
+        print '  1. Create a new ssl Certificate'
+        print '  2. Use Existing Certificate'
+        self_signed_crt = raw_input ("  Choose the type of ssl Certificate [Default 1]:") or '1'
+        logging.info ("  Mode of deployment : %s", self_signed_crt)
+
 
         print "\n Enter the Mode of Deployment "
         print "  1. On Prem Mode "
         print "  2. SASS Mode "
-        self.deploy_mode = raw_input("  Choose the type of deployment [Default: 1 ]: ") or '1'
+        deploy_mode = raw_input("  Choose the type of deployment [Default: 1 ]: ") or '1'
 
-        logging.info ("  Mode of deployment : %s", self.deploy_mode)
-        if self.deploy_mode == 1:
-            self.on_prem_emailid = raw_input("\n Enter the user email id for On-Prem-Mode Deployment \
+        logging.info ("  Mode of deployment : %s", deploy_mode)
+        if deploy_mode == '1':
+            on_prem_emailid = raw_input("\n Enter the user email id for On-Prem-Mode Deployment \
             [Default:admin@apporbit.com] : ") or "admin@apporbit.com"
-            logging.info ("Email ID : %s", self.on_prem_emailid )
+            logging.info ("Email ID : %s", on_prem_emailid )
 
-        self.themeName = raw_input("\n Enter the theme Name [Default: apporbit-v2] :") or "apporbit-v2"
-
-        logging.info ("Theme name: %s ", self.themeName )
         ip = urllib2.urlopen("http://whatismyip.akamai.com").read()
-        self.hostIp = raw_input("\n Enter hostname or host ip [Default:%s] :" %ip) or ip
-        logging.info("Host Ip : %s", self.hostIp)
+        hostIp = raw_input("\n Enter hostname or host ip [Default:%s] :" %ip) or ip
+        logging.info("Host Ip : %s", hostIp)
 
         logging.info("Creating config file...")
-        self.createConfigFile()
+        config_obj.createConfigFile(reg_user_name, reg_password,\
+                                     build_id, is_install_cfgmgr,\
+                                     self_signed_crt, clean_setup,\
+                                        deploy_mode, hostIp, on_prem_emailid)
+        # self.createConfigFile()
         logging.info("completed collecting user config info")
-        return
-
-
-    def createConfigFile(self):
-        logging.info("Create Config file")
-        config = ConfigParser.ConfigParser()
-        cfg_file = open('appobit_deploy.conf','w')
-        config.add_section('Docker Login')
-        config.set('Docker Login' , 'username', self.reg_user_name)
-        config.set('Docker Login', 'password', self.reg_password)
-        config.add_section('User Config')
-        config.set('User Config', 'build_id', self.build_id )
-        config.set('User Config', 'clean_setup', self.clean_setup)
-        config.set('User Config', 'cfg_mgr', self.is_install_cfgmgr)
-        config.set('User Config', 'deploy_mode', self.deploy_mode)
-        config.set('User Config', 'on_prem_emailid', self.on_prem_emailid)
-        config.set('User Config', 'themeName', self.themeName)
-        config.set('User Config', 'hostIP', self.hostIp)
-
-        config.write(cfg_file)
-
-        cfg_file.close()
-
-        logging.info("Create config file success!")
-        self.showConfigInfo('appobit_deploy.conf')
         return
 
 
@@ -105,7 +97,7 @@ class UserInteract:
             print "On Prem Email ID : " + config.get('User Config', 'on_prem_emailid')
             print "Theme Name : " + config.get('User Config', 'themeName')
             print "Host IP : " + config.get('User Config', 'hostIP')
-        except NoSectionError, NoOptionError:
+        except ConfigParser.NoSectionError, ConfigParser.NoOptionError:
             logging.warning("warning No section or No option error occured...")
 
         print "\n"
