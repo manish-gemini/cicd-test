@@ -189,7 +189,7 @@ class Action:
         else:
             cntrlimageName = 'apporbit/apporbit-controller'
 
-        if build_deploy_mode == '2':
+        if build_deploy_mode == '2' or '1':
             cntrlimageName = 'apporbit/apporbit-controller'
 
         if vol_mount:
