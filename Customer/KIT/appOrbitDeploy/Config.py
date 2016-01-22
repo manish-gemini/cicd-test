@@ -18,7 +18,7 @@ class Config():
         self.api_version = 'v2'
         self.hostip = ''
         self.self_signed_crt = '1'
-        self.volume_mount = '/opt'
+        self.volume_mount = ''
         self.registry_url = 'registry.gsintlab.com'
         return
 
@@ -109,7 +109,7 @@ class Config():
 
     # For Dev Mode Deployment - Need to add volume Mount of Code.
     def set_volume_mount_location(self, val = '/opt'):
-        self.volumeMount = val
+        self.volume_mount = val
         return
 
 
@@ -137,6 +137,7 @@ class Config():
             self.registry_url = config.get('User Config', 'registry_url')
             self.internal_repo = config.get('User Config', 'internal_repo')
             self.volume_mount = config.get('User Config', 'volume_mount')
+
 
         except ConfigParser.NoSectionError, ConfigParser.NoOptionError:
             logging.warning("warning No section or No option error occured...")

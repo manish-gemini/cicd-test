@@ -105,7 +105,7 @@ class Action:
         else:
             image_name = "apporbit/apporbit-services"
 
-        if mode == '2':
+        if mode == '2' or '1':
             image_name = "apporbit/apporbit-services"
 
         if vol_mount:
@@ -121,6 +121,8 @@ class Action:
         -v /var/lib/apporbit/sshKey_root:/root --volumes-from apporbit-chef \
         -v /var/log/apporbit/services:/var/log/apporbit" + vol_mount_str + " -d  \
         " + image_name
+
+        # print cmd_deploy_services
 
         process = subprocess.Popen(cmd_deploy_services, shell=True, stdout=subprocess.PIPE, \
                                    stderr=subprocess.PIPE)
@@ -207,6 +209,7 @@ class Action:
         -d " + cntrlimageName
 
         # print cmd_deploy_controller
+
         process = subprocess.Popen(cmd_deploy_controller, shell=True, stdout=subprocess.PIPE, \
                                    stderr=subprocess.PIPE)
 
@@ -283,14 +286,14 @@ class Action:
         # DEPLOY SERVICES
 
         self.deployServices(config_obj.internal_repo, config_obj.hostip,\
-                            config_obj.registry_url, config_obj.build_deploy_mode)
+                            config_obj.registry_url, config_obj.build_deploy_mode, config_obj.volume_mount)
 
 
         # DEPLOY PLATFORM
         self.deployController(config_obj.onprem_emailID, config_obj.hostip,\
                               config_obj.deploy_mode, config_obj.theme_name,\
                               config_obj.api_version, config_obj.registry_url,\
-                              config_obj.build_deploy_mode)
+                              config_obj.build_deploy_mode, config_obj.volume_mount)
 
         print "Please change your chef password by logging into the UI."
         print "Apporbit Deploy completed - SUCCESS!"
@@ -455,7 +458,6 @@ class Action:
 
 
     def pullImagesformRepos(self, repo_str):
-        print repo_str
         controller_image = repo_str + '/apporbit/apporbit-controller'
         services_image = repo_str + '/apporbit/apporbit-services'
         message_queue_image = repo_str + '/apporbit/apporbit-rmq'
