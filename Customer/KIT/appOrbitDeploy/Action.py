@@ -29,6 +29,9 @@ class Action:
 
 
     def deployRMQ(self, reg_url):
+        if not reg_url:
+            reg_url = "secure-registry.gsintlab.com"
+
         rmq_image_name = reg_url + "/apporbit/apporbit-rmq"
 
         cmd_deploy_rmq = "docker run -m 2g -d --hostname rmq --restart=always \
@@ -47,6 +50,43 @@ class Action:
             logging.warning(err)
             print "Deploy rmq - FAILED"
             exit()
+
+
+    def deployDocs(self):
+        if not reg_url:
+            reg_url = "secure-registry.gsintlab.com"
+
+        rmq_image_name = reg_url + "/apporbit/apporbit-docs"
+
+        cmd_image_pull = "docker pull " + rmq_image_name
+
+        process = subprocess.Popen(cmd_image_pull, shell=True, stdout=subprocess.PIPE, \
+                                   stderr=subprocess.PIPE)
+
+        out, err =  process.communicate()
+
+        if process.returncode == 0:
+            logging.info(out)
+        else:
+            logging.error(err)
+            print "pull docs image from repo. Check Logs for details - FAILED"
+            exit()
+
+        cmd_deploy_docs = "docker run --name apporbit-docs --restart=always -p 9080:80 -d " + rmq_image_name
+
+        process = subprocess.Popen(cmd_deploy_docs, shell=True, stdout=subprocess.PIPE, \
+                                   stderr=subprocess.PIPE)
+
+        out, err =  process.communicate()
+
+        if process.returncode == 0:
+            logging.info(out)
+        else:
+            logging.error(err)
+            print "pull docs image from repo. Check Logs for details - FAILED"
+            exit()
+
+        return
 
     def deployDB(self):
         cmd_deploy_db = "docker run --name db --restart=always -e MYSQL_ROOT_PASSWORD=admin \
@@ -279,6 +319,9 @@ class Action:
 
         # DEPLOY DATABASE CONTAINER
         self.deployDB()
+
+        #DEPLOY DOCS CONTAINER
+        self.deployDocs()
 
         # DEPLOY RABBIT MQ
         self.deployRMQ(config_obj.registry_url)
