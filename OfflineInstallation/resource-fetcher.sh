@@ -76,6 +76,12 @@ function check_platform {
     fi
 }
 
+function get_internal_registry {
+    echo "Enter url of registry(without https://)"
+    read -p "Default(https://offline-registry.gsintlab.com): " internal_registry_url
+    export INTERNAL_REGISTRY=${internal_registry_url:-offline-registry.gsintlab.com}
+}
+
 function install_docker {
     if [ ! -f /etc/yum.repos.d/apporbit.repo ]
     then
@@ -100,7 +106,7 @@ function install_docker {
     fi
 
     # Login to secure registry
-    docker login https://registry.apporbit.com
+    docker login https://${INTERNAL_REGISTRY}
 
 
 }
@@ -112,15 +118,20 @@ function download_images {
     echo "Downloading MySQL..."
     docker pull mysql:5.6.24
     echo "Downloading services..."
-    docker pull registry.apporbit.com/apporbit/apporbit-services
+    docker pull ${INTERNAL_REGISTRY}/apporbit/apporbit-services
+    docker tag ${INTERNAL_REGISTRY}/apporbit/apporbit-services apporbit/apporbit-services
     echo "Downloading controller..."
-    docker pull registry.apporbit.com/apporbit/apporbit-controller
+    docker pull ${INTERNAL_REGISTRY}/apporbit/apporbit-controller
+    docker tag ${INTERNAL_REGISTRY}/apporbit/apporbit-controller apporbit/apporbit-controller
     echo "Downloading RMQ..."
-    docker pull registry.apporbit.com/apporbit/apporbit-rmq
+    docker pull ${INTERNAL_REGISTRY}/apporbit/apporbit-rmq
+    docker tag ${INTERNAL_REGISTRY}/apporbit/apporbit-rmq apporbit/apporbit-rmq
     echo "Downloading Docs..."
-    docker pull registry.apporbit.com/apporbit/apporbit-docs
+    docker pull ${INTERNAL_REGISTRY}/apporbit/apporbit-docs
+    docker tag ${INTERNAL_REGISTRY}/apporbit/apporbit-docs apporbit/apporbit-docs
     echo "Downloading CM..."
-    docker pull registry.apporbit.com/apporbit/apporbit-chef:1.0
+    docker pull ${INTERNAL_REGISTRY}/apporbit/apporbit-chef:1.0
+    docker tag ${INTERNAL_REGISTRY}/apporbit/apporbit-chef:1.0 apporbit/apporbit-chef:1.0
 
 }
 
@@ -129,15 +140,15 @@ function save_images {
     mkdir -p appOrbitPackages
     cd appOrbitPackages
     echo "Saving image services..."
-    docker save registry.apporbit.com/apporbit/apporbit-services > apporbit-services.tar
+    docker save apporbit/apporbit-services > apporbit-services.tar
     echo "Saving image controller..."
-    docker save registry.apporbit.com/apporbit/apporbit-controller > apporbit-controller.tar
+    docker save apporbit/apporbit-controller > apporbit-controller.tar
     echo "Saving image RMQ..."
-    docker save registry.apporbit.com/apporbit/apporbit-rmq > apporbit-rmq.tar
+    docker save apporbit/apporbit-rmq > apporbit-rmq.tar
     echo "Saving image Docs..."
-    docker save registry.apporbit.com/apporbit/apporbit-docs > apporbit-docs.tar
+    docker save apporbit/apporbit-docs > apporbit-docs.tar
     echo "Saving image CM..."
-    docker save registry.apporbit.com/apporbit/apporbit-chef:1.0 > apporbit-chef.tar
+    docker save apporbit/apporbit-chef:1.0 > apporbit-chef.tar
     echo "Saving image MySQL..."
     docker save mysql:5.6.24 > mysql.tar
     cd ..
@@ -250,6 +261,8 @@ function main {
     echo "...[OK]"
 
     set_selinux
+
+    get_internal_registry
 
     echo -n "Installing Docker"
     install_docker
