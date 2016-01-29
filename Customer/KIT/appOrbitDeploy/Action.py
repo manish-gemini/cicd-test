@@ -54,7 +54,7 @@ class Action:
             exit()
 
 
-    def deployDocs(self):
+    def deployDocs(self, reg_url):
         if not reg_url:
             reg_url = "secure-registry.gsintlab.com"
 
@@ -323,7 +323,7 @@ class Action:
         self.deployDB()
 
         #DEPLOY DOCS CONTAINER
-        self.deployDocs()
+        self.deployDocs(config_obj.registry_url)
 
         # DEPLOY RABBIT MQ
         self.deployRMQ(config_obj.registry_url)

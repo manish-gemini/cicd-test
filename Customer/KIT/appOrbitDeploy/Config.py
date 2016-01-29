@@ -20,7 +20,7 @@ class Config():
         self.hostip = ''
         self.self_signed_crt = '1'
         self.volume_mount = ''
-        self.registry_url = 'registry.gsintlab.com'
+        self.registry_url = 'registry.apporbit.com'
         return
 
 
@@ -153,7 +153,7 @@ class Config():
                                      hostIp, on_prem_emailid = '',\
                                      themeName = 'apporbit-v2',\
                                      api_version = 'v2',\
-                                     build_deploy_mode = '3', reg_url='registry.gsintlab.com',\
+                                     build_deploy_mode = '3', reg_url='registry.apporbit.com',\
                                      internal_repo = 'http://repos.gsintlab.com/repos',\
                                      volume_mount = '' ):
 
