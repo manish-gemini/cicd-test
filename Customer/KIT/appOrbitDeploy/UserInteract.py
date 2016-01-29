@@ -77,30 +77,30 @@ class UserInteract:
         return
 
 
-    def showConfigInfo(self,fname='local.conf' ):
-        logging.info("Started to show summary of configuration")
-        print "\n\n"
-        print "CONFIGURATION SUMMARY:"
-        print "**********************"
-        config = ConfigParser.ConfigParser()
-        fp = open(fname, 'r')
-        config.readfp(fp)
-
-        if fname == 'local.conf':
-            print 'Local Deploy'
-            print '------------'
-        try:
-            print "BUILD ID : " + config.get('User Config', 'build_id')
-            print "Clean Setup : " + config.get('User Config', 'clean_setup')
-            print "Config manager : " + config.get('User Config', 'cfg_mgr')
-            print "Deploy Mode : " + config.get('User Config', 'deploy_mode')
-            print "On Prem Email ID : " + config.get('User Config', 'on_prem_emailid')
-            print "Theme Name : " + config.get('User Config', 'themeName')
-            print "Host IP : " + config.get('User Config', 'hostIP')
-        except ConfigParser.NoSectionError, ConfigParser.NoOptionError:
-            logging.warning("warning No section or No option error occured...")
-
-        print "\n"
-        print "**************************"
-        fp.close()
-        return
+    # def showConfigInfo(self,fname='local.conf' ):
+    #     logging.info("Started to show summary of configuration")
+    #     print "\n\n"
+    #     print "CONFIGURATION SUMMARY:"
+    #     print "**********************"
+    #     config = ConfigParser.ConfigParser()
+    #     fp = open(fname, 'r')
+    #     config.readfp(fp)
+    #
+    #     if fname == 'local.conf':
+    #         print 'Local Deploy'
+    #         print '------------'
+    #     try:
+    #         print "BUILD ID : " + config.get('User Config', 'build_id')
+    #         print "Clean Setup : " + config.get('User Config', 'clean_setup')
+    #         print "Config manager : " + config.get('User Config', 'cfg_mgr')
+    #         print "Deploy Mode : " + config.get('User Config', 'deploy_mode')
+    #         print "On Prem Email ID : " + config.get('User Config', 'on_prem_emailid')
+    #         print "Theme Name : " + config.get('User Config', 'themeName')
+    #         print "Host IP : " + config.get('User Config', 'hostIP')
+    #     except ConfigParser.NoSectionError, ConfigParser.NoOptionError:
+    #         logging.warning("warning No section or No option error occured...")
+    #
+    #     print "\n"
+    #     print "**************************"
+    #     fp.close()
+    #     return

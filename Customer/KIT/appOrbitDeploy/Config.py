@@ -150,7 +150,7 @@ class Config():
                                      build_id, is_install_cfgmgr,\
                                      self_signed_crt, clean_setup, deploy_mode,\
                                      hostIp, on_prem_emailid = '',\
-                                     theme_name = 'apporbit-v2',\
+                                     themeName = 'apporbit-v2',\
                                      api_version = 'v2',\
                                      build_deploy_mode = '3', reg_url='registry.gsintlab.com',\
                                      internal_repo = 'http://repos.gsintlab.com/repos',\
@@ -171,7 +171,7 @@ class Config():
         config.set('User Config', 'deploy_mode', deploy_mode)
         config.set('User Config', 'on_prem_emailid', on_prem_emailid)
         config.set('User Config', 'hostIP', hostIp)
-        config.set('User Config', 'theme_name', theme_name)
+        config.set('User Config', 'themeName', themeName)
         config.set('User Config', 'api_version', api_version)
         config.set('User Config', 'registry_url', reg_url)
         config.set('User Config', 'internal_repo', internal_repo)
