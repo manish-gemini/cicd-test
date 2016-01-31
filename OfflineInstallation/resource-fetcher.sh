@@ -117,6 +117,8 @@ function download_images {
     docker pull centos:centos7.0.1406
     echo "Downloading MySQL..."
     docker pull mysql:5.6.24
+    echo "Downloading registry..."
+    docker pull registry:2
     echo "Downloading services..."
     docker pull ${INTERNAL_REGISTRY}/apporbit/apporbit-services
     docker tag ${INTERNAL_REGISTRY}/apporbit/apporbit-services apporbit/apporbit-services
@@ -132,6 +134,14 @@ function download_images {
     echo "Downloading CM..."
     docker pull ${INTERNAL_REGISTRY}/apporbit/apporbit-chef:1.0
     docker tag ${INTERNAL_REGISTRY}/apporbit/apporbit-chef:1.0 apporbit/apporbit-chef:1.0
+
+    echo "Downloading infra containers..."
+
+    for k in ${!infra_containers[@]}
+    do
+        docker pull gcr.io/google_containers/$k:${infra_containers[$k]}
+        docker tag gcr.io/google_containers/$k:${infra_containers[$k]} google_containers/$k:${infra_containers[$k]}
+    done
 
 }
 
@@ -151,6 +161,17 @@ function save_images {
     docker save apporbit/apporbit-chef:1.0 > apporbit-chef.tar
     echo "Saving image MySQL..."
     docker save mysql:5.6.24 > mysql.tar
+    cd ..
+
+    echo "Saving infra containers..."
+
+    mkdir -p infra_images
+    cd infra_images
+    for k in ${!infra_containers[@]}
+    do
+        docker pull gcr.io/google_containers/$k:${infra_containers[$k]}
+        docker save google_containers/$k:${infra_containers[$k]} > apporbit-$k.tar
+    done
     cd ..
 
 }
@@ -241,8 +262,12 @@ function save_offline_container {
     docker save apporbit/apporbit-offline > apporbit-offline.tar
 }
 
+function save_registry_container {
+    docker save registry:2 > registry.tar
+}
+
 function create_cargo_to_ship {
-    tar -cvf appOrbitResources.tar apporbit-offline.tar appOrbitRPMs.tar.gz appOrbitGems.tar.gz
+    tar -cvf appOrbitResources.tar apporbit-offline.tar registry.tar appOrbitRPMs.tar.gz appOrbitGems.tar.gz infra_images
     tar -cvf appOrbitPackages.tar appOrbitPackages
 
     echo "Dependent resources of appOrbit successfully downoaded and saved."
@@ -252,6 +277,15 @@ function create_cargo_to_ship {
 }
 
 function main {
+    declare -rA infra_containers=(
+        [etcd]=2.0.9
+        [kube2sky]=1.11
+        [skydns]=2015-03-11-001
+        [exechealthz]=1.0
+        [kube-ui]=v3
+        [pause]=0.8.0
+    )
+
     echo -n "Checking Internet Connectivity"
     check_internet
     echo "...[OK]"
@@ -302,6 +336,10 @@ function main {
 
     echo -n "Saving Offline Container Image"
     save_offline_container
+    echo "...[OK]"
+
+    echo -n "Saving Registry Image"
+    save_registry_container
     echo "...[OK]"
 
     echo -n "Generating archives to transfer"
