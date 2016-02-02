@@ -76,6 +76,12 @@ function check_platform {
     fi
 }
 
+function get_internal_registry {
+    echo "Enter url of registry(without https://)"
+    read -p "Default(https://offline-registry.gsintlab.com): " internal_registry_url
+    export INTERNAL_REGISTRY=${internal_registry_url:-offline-registry.gsintlab.com}
+}
+
 function install_docker {
     if [ ! -f /etc/yum.repos.d/apporbit.repo ]
     then
@@ -100,7 +106,7 @@ function install_docker {
     fi
 
     # Login to secure registry
-    docker login https://registry.apporbit.com
+    docker login https://${INTERNAL_REGISTRY}
 
 
 }
@@ -111,16 +117,31 @@ function download_images {
     docker pull centos:centos7.0.1406
     echo "Downloading MySQL..."
     docker pull mysql:5.6.24
+    echo "Downloading registry..."
+    docker pull registry:2
     echo "Downloading services..."
-    docker pull registry.apporbit.com/apporbit/apporbit-services
+    docker pull ${INTERNAL_REGISTRY}/apporbit/apporbit-services
+    docker tag ${INTERNAL_REGISTRY}/apporbit/apporbit-services apporbit/apporbit-services
     echo "Downloading controller..."
-    docker pull registry.apporbit.com/apporbit/apporbit-controller
+    docker pull ${INTERNAL_REGISTRY}/apporbit/apporbit-controller
+    docker tag ${INTERNAL_REGISTRY}/apporbit/apporbit-controller apporbit/apporbit-controller
     echo "Downloading RMQ..."
-    docker pull registry.apporbit.com/apporbit/apporbit-rmq
+    docker pull ${INTERNAL_REGISTRY}/apporbit/apporbit-rmq
+    docker tag ${INTERNAL_REGISTRY}/apporbit/apporbit-rmq apporbit/apporbit-rmq
     echo "Downloading Docs..."
-    docker pull registry.apporbit.com/apporbit/apporbit-docs
+    docker pull ${INTERNAL_REGISTRY}/apporbit/apporbit-docs
+    docker tag ${INTERNAL_REGISTRY}/apporbit/apporbit-docs apporbit/apporbit-docs
     echo "Downloading CM..."
-    docker pull registry.apporbit.com/apporbit/apporbit-chef:1.0
+    docker pull ${INTERNAL_REGISTRY}/apporbit/apporbit-chef:1.0
+    docker tag ${INTERNAL_REGISTRY}/apporbit/apporbit-chef:1.0 apporbit/apporbit-chef:1.0
+
+    echo "Downloading infra containers..."
+
+    for k in ${!infra_containers[@]}
+    do
+        docker pull gcr.io/google_containers/$k:${infra_containers[$k]}
+        docker tag gcr.io/google_containers/$k:${infra_containers[$k]} google_containers/$k:${infra_containers[$k]}
+    done
 
 }
 
@@ -129,17 +150,28 @@ function save_images {
     mkdir -p appOrbitPackages
     cd appOrbitPackages
     echo "Saving image services..."
-    docker save registry.apporbit.com/apporbit/apporbit-services > apporbit-services.tar
+    docker save apporbit/apporbit-services > apporbit-services.tar
     echo "Saving image controller..."
-    docker save registry.apporbit.com/apporbit/apporbit-controller > apporbit-controller.tar
+    docker save apporbit/apporbit-controller > apporbit-controller.tar
     echo "Saving image RMQ..."
-    docker save registry.apporbit.com/apporbit/apporbit-rmq > apporbit-rmq.tar
+    docker save apporbit/apporbit-rmq > apporbit-rmq.tar
     echo "Saving image Docs..."
-    docker save registry.apporbit.com/apporbit/apporbit-docs > apporbit-docs.tar
+    docker save apporbit/apporbit-docs > apporbit-docs.tar
     echo "Saving image CM..."
-    docker save registry.apporbit.com/apporbit/apporbit-chef:1.0 > apporbit-chef.tar
+    docker save apporbit/apporbit-chef:1.0 > apporbit-chef.tar
     echo "Saving image MySQL..."
     docker save mysql:5.6.24 > mysql.tar
+    cd ..
+
+    echo "Saving infra containers..."
+
+    mkdir -p infra_images
+    cd infra_images
+    for k in ${!infra_containers[@]}
+    do
+        docker pull gcr.io/google_containers/$k:${infra_containers[$k]}
+        docker save google_containers/$k:${infra_containers[$k]} > apporbit-$k.tar
+    done
     cd ..
 
 }
@@ -230,8 +262,12 @@ function save_offline_container {
     docker save apporbit/apporbit-offline > apporbit-offline.tar
 }
 
+function save_registry_container {
+    docker save registry:2 > registry.tar
+}
+
 function create_cargo_to_ship {
-    tar -cvf appOrbitResources.tar apporbit-offline.tar appOrbitRPMs.tar.gz appOrbitGems.tar.gz
+    tar -cvf appOrbitResources.tar apporbit-offline.tar registry.tar appOrbitRPMs.tar.gz appOrbitGems.tar.gz infra_images
     tar -cvf appOrbitPackages.tar appOrbitPackages
 
     echo "Dependent resources of appOrbit successfully downoaded and saved."
@@ -241,6 +277,15 @@ function create_cargo_to_ship {
 }
 
 function main {
+    declare -rA infra_containers=(
+        [etcd]=2.0.9
+        [kube2sky]=1.11
+        [skydns]=2015-03-11-001
+        [exechealthz]=1.0
+        [kube-ui]=v3
+        [pause]=0.8.0
+    )
+
     echo -n "Checking Internet Connectivity"
     check_internet
     echo "...[OK]"
@@ -250,6 +295,8 @@ function main {
     echo "...[OK]"
 
     set_selinux
+
+    get_internal_registry
 
     echo -n "Installing Docker"
     install_docker
@@ -289,6 +336,10 @@ function main {
 
     echo -n "Saving Offline Container Image"
     save_offline_container
+    echo "...[OK]"
+
+    echo -n "Saving Registry Image"
+    save_registry_container
     echo "...[OK]"
 
     echo -n "Generating archives to transfer"

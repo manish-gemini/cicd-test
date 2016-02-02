@@ -108,6 +108,12 @@ function load_offline_container {
     echo "...[OK]"
 }
 
+function load_registry_container {
+    echo -n "Loading registry container..."
+    docker load < $AO_RESOURCE_PATH/registry.tar
+    echo "...[OK]"
+}
+
 function run_offline_container {
 
     if docker ps -a |grep -aq apporbit-offline; then
@@ -128,6 +134,64 @@ function run_offline_container {
     docker run --name apporbit-offline --restart=always -p 9291:9291 -p 9292:9292 -v $AO_RESOURCE_PATH/appOrbitGems:/opt/rubygems -v $AO_RESOURCE_PATH/appOrbitRPMs:/opt/repos -d apporbit/apporbit-offline
     echo "...[OK]"
 }
+
+function run_registry_container {
+
+    if docker ps -a |grep -aq apporbit-registry; then
+        echo "appOrbit Registry Container is already runnning. The container will removed first."
+        read -r -p "Do you want to continue?[y/n]" -n 1 -r installRegistry
+        echo    # (optional) move to a new line
+        if [[ $installRegistry =~ ^[Yy]$ ]]
+        then
+            echo "Removing existing Registry container"
+            docker rm -f apporbit-registry
+        else
+            echo "Exiting without installing Registry Server"
+            return 1
+        fi
+    fi
+
+    echo -n "Starting apporbit-registry service..."
+    mkdir -p $AO_RESOURCE_PATH/registry-data
+    docker run -d -p 5000:5000 --restart=always --name apporbit-registry -v $AO_RESOURCE_PATH/registry-data:/var/lib/registry registry:2
+    echo "...[OK]"
+}
+
+function setup_docker_daemon_insecure_reg {
+    DOCKER_CONF_PATH=/etc/sysconfig/docker
+    grep -q '^INSECURE_REGISTRY' $DOCKER_CONF_PATH && sed -i "s/^INSECURE_REGISTRY.*/INSECURE_REGISTRY='--insecure-registry ${docker_registry_url}'/" $DOCKER_CONF_PATH || echo "INSECURE_REGISTRY='--insecure-registry ${docker_registry_url}'" >> $DOCKER_CONF_PATH
+    systemctl restart docker.service
+}
+
+function load_infra_containers {
+    echo -n "Loading infra images..."
+    for k in ${!infra_containers[@]}
+    do
+        docker load < $AO_RESOURCE_PATH/infra_images/apporbit-$k.tar
+    done
+    echo "...[OK]"
+}
+
+function tag_push_infra_containers {
+    echo "Waiting for registry container to come up.."
+    until $(curl --output /dev/null --silent --head --fail http://${docker_registry_url}/v2/); do
+        printf '.'
+        sleep 5
+    done
+    echo -n "Tagging infra containers..."
+    for k in ${!infra_containers[@]}
+    do
+        docker tag google_containers/$k:${infra_containers[$k]} ${docker_registry_url}/google_containers/$k:${infra_containers[$k]}
+        docker push ${docker_registry_url}/google_containers/$k:${infra_containers[$k]}
+    done
+    echo "...[OK]"
+}
+
+function get_host_ip() {
+    read -p "Enter IP of this host: " offline_provider_ip
+    docker_registry_url=$offline_provider_ip:5000
+}
+
 function set_selinux {
     echo "Setting sestatus to permissive"
     response="y"
@@ -144,10 +208,32 @@ function set_selinux {
     fi
 }
 
+function show_setup_information() {
+    echo
+    echo "################################################################################"
+    echo "Note down following information for further provisioning."
+    echo
+    echo "INTERNAL REGISTRY URL: ${docker_registry_url}"
+    echo "PROVIDER IP: ${offline_provider_ip}"
+    echo
+    echo "################################################################################"
+}
+
 function main {
+    declare -rA infra_containers=(
+        [etcd]=2.0.9
+        [kube2sky]=1.11
+        [skydns]=2015-03-11-001
+        [exechealthz]=1.0
+        [kube-ui]=v3
+        [pause]=0.8.0
+    )
+
     echo -n "Checking Platform Compatibility"
     check_platform
     echo "...[OK]"
+
+    get_host_ip
 
     set_selinux
 
@@ -159,7 +245,19 @@ function main {
 
     load_offline_container
 
+    load_registry_container
+
     run_offline_container
+
+    run_registry_container
+
+    setup_docker_daemon_insecure_reg
+
+    load_infra_containers
+
+    tag_push_infra_containers
+
+    show_setup_information
 }
 
 read -p "Enter path of downloaded archive: " AO_DOWNLOADS_PATH
