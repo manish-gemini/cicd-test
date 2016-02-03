@@ -159,7 +159,7 @@ class Config():
 
         logging.info("Create Config file")
         config = ConfigParser.ConfigParser()
-        cfg_file = open('appobit_deploy.conf','w')
+        cfg_file = open('apporbit_deploy.conf','w')
         config.add_section('Docker Login')
         config.set('Docker Login' , 'username', reg_user_name)
         config.set('Docker Login', 'password', reg_password)

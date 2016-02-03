@@ -55,11 +55,12 @@ def main():
         # utilityObj.deployFromFile('local.conf')
         utilityObj.progressBar(20)
         print "   -- [Done]"
+        print "change your default password 'admin1234' by logging into the User Management console in the UI at https://<HOSTIP>/users"
         logging.info("END OF DEPLOYMENT")
     else:
         logging.info("Starting to get user configuration.")
         # Get User Configuration for Customer Deployment
-        # and write to a config file apporit_deploy.conf
+        # and write to a config file apporbit_deploy.conf
         userinteractObj.getUserConfigInfo(config_obj)
         config_obj.loadConfig('apporbit_deploy.conf')
         logging.info("user configuration is recived SUCCESS.")
@@ -75,9 +76,9 @@ def main():
         utilityObj.progressBar(20)
         print "   -- [Done]"
         # utilityObj.deployFromFile('appobit_deploy.conf')
-
+        print "change your default password 'admin1234' by logging into the User Management console in the UI at https://<HOSTIP>/users"
         logging.info("END OF DEPLOYMENT")
-
+   
     return
 
 if __name__ == "__main__":
