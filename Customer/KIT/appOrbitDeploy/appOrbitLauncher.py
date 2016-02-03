@@ -61,7 +61,7 @@ def main():
         # Get User Configuration for Customer Deployment
         # and write to a config file apporit_deploy.conf
         userinteractObj.getUserConfigInfo(config_obj)
-        config_obj.loadConfig('appobit_deploy.conf')
+        config_obj.loadConfig('apporbit_deploy.conf')
         logging.info("user configuration is recived SUCCESS.")
 
         # The User config file is read and processed, if not avilable exit
