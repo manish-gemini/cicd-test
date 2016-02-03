@@ -154,6 +154,7 @@ class Action:
             volonhost = vol_mount + "/Gemini-poc-stack"
             voloncontainer = "/home/apporbit/apporbit-services"
             vol_mount_str = " -v " + volonhost + ":" + voloncontainer
+            logging.info("volume mount str" + vol_mount_str)
 
 
         cmd_deploy_services = "docker run -t --name apporbit-services --restart=always \
@@ -515,12 +516,12 @@ class Action:
         cmd_docs_image = 'docker pull ' + docs_image
         cmd_dbs_image = 'docker pull ' + database_image
 
+        print "Controller Image"
         process = subprocess.Popen(cmd_ctrl_image, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = process.communicate()
         if(process.returncode==0):
             # print out
             logging.info(out)
-
         else:
             logging.warning(err)
             print ("Getting Image Failed. Check log for details")
