@@ -26,47 +26,46 @@ class UserInteract:
         hostIp = ""
 
         logging.info("Starting to get user config info")
-        print "DEPLOYMENT CONFIGURATIONS:"
-        print "************************** \n "
-        print "  Login to appOrbit Docker Registry using the credentials obtained from appOrbit Business contact. "
-        reg_user_name = raw_input("\n Enter the User Name : ")
+        print "Enter the user configuration informations."
+        print "------------------------------------------"
+        print "Login to the appOrbit registry using the credentials sent to you by email by your appOrbit sales representative"
+        reg_user_name = raw_input("Enter the user name: ")
         reg_password = getpass.getpass()
-        build_id = raw_input("\n Enter the Build ID [Default:latest] : ") or "latest"
-        # is_install_cfgmgr = raw_input("\n Do you want to deploy config Manager in the same machine? [Y/n] : ") or 'y'
+        build_id = raw_input("Enter the build id [latest] : ") or "latest"
+        # is_install_cfgmgr = raw_input("\n Do you want to deploy config manager in the same machine? [Y/n] : ") or 'y'
 
-        print '\n Enter Config Manager Deploy Mode :'
-        print '  1. Deploy on the same host '
-        print '  2. Do not deploy, will configure it later'
-        is_install_cfgmgr = raw_input("  Choose the setup type from the above [Default : 1] :") or '1'
-        logging.info ("Chef Mode of deployment : %s", is_install_cfgmgr)
+        print 'Enter the chef server deploy mode :'
+        print '1. Deploy on the same host '
+        print '2. Do not deploy, will configure it later'
+        is_install_cfgmgr = raw_input("choose the setup type from the above [1] :") or '1'
+        logging.info ("Chef mode of deployment : %s", is_install_cfgmgr)
 
-        print "\n Retain old entries or clean it "
-        print "  1. Clean the setup "
-        print "  2. Retain the old entries "
-        clean_setup = raw_input("  Choose the setup type from the above [Default : 1] :") or '1'
+        print "New install or upgrade : "
+        print "1. New install "
+        print "2. Upgrade "
+        clean_setup = raw_input("choose the setup type from the above [2] :") or '2'
 
         logging.info("Clean Setup : %s", clean_setup)
 
-        print '\n Enter the type of SSL Certificate Type:'
-        print '  1. Create a new ssl Certificate'
-        print '  2. Use Existing Certificate'
-        self_signed_crt = raw_input ("  Choose the type of ssl Certificate [Default 1]:") or '1'
-        logging.info ("  Mode of deployment : %s", self_signed_crt)
+        print 'Enter the type of SSL certificate type:'
+        print '1. Create a new ssl Certificate'
+        print '2. Use Existing Certificate'
+        self_signed_crt = raw_input ("Choose the type of ssl Certificate [1]:") or '1'
+        logging.info ("self signed certificate : %s", self_signed_crt)
 
 
-        print "\n Enter the Mode of Deployment "
-        print "  1. On Prem Mode "
-        print "  2. SASS Mode "
-        deploy_mode = raw_input("  Choose the type of deployment [Default: 1 ]: ") or '1'
+        print "Enter the Mode of Deployment "
+        print "1. Singe-Tenant"
+        print "2. Multi-Tenant"
+        deploy_mode = raw_input("Choose the type of deployment [1]: ") or '1'
 
-        logging.info ("  Mode of deployment : %s", deploy_mode)
+        logging.info ("Mode of deployment : %s", deploy_mode)
         if deploy_mode == '1':
-            on_prem_emailid = raw_input("\n Enter the user email id for On-Prem-Mode Deployment \
-            [Default:admin@apporbit.com] : ") or "admin@apporbit.com"
+            on_prem_emailid = raw_input("Enter the user email id for single-tenant deployment [admin@apporbit.com] : ") or "admin@apporbit.com"
             logging.info ("Email ID : %s", on_prem_emailid )
 
         ip = urllib2.urlopen("http://whatismyip.akamai.com").read()
-        hostIp = raw_input("\n Enter hostname or host ip [Default:%s] :" %ip) or ip
+        hostIp = raw_input("Enter hostname or host ip [Default:%s] :" %ip) or ip
         logging.info("Host Ip : %s", hostIp)
 
         logging.info("Creating config file...")
@@ -79,30 +78,3 @@ class UserInteract:
         return
 
 
-    # def showConfigInfo(self,fname='local.conf' ):
-    #     logging.info("Started to show summary of configuration")
-    #     print "\n\n"
-    #     print "CONFIGURATION SUMMARY:"
-    #     print "**********************"
-    #     config = ConfigParser.ConfigParser()
-    #     fp = open(fname, 'r')
-    #     config.readfp(fp)
-    #
-    #     if fname == 'local.conf':
-    #         print 'Local Deploy'
-    #         print '------------'
-    #     try:
-    #         print "BUILD ID : " + config.get('User Config', 'build_id')
-    #         print "Clean Setup : " + config.get('User Config', 'clean_setup')
-    #         print "Config manager : " + config.get('User Config', 'cfg_mgr')
-    #         print "Deploy Mode : " + config.get('User Config', 'deploy_mode')
-    #         print "On Prem Email ID : " + config.get('User Config', 'on_prem_emailid')
-    #         print "Theme Name : " + config.get('User Config', 'themeName')
-    #         print "Host IP : " + config.get('User Config', 'hostIP')
-    #     except ConfigParser.NoSectionError, ConfigParser.NoOptionError:
-    #         logging.warning("warning No section or No option error occured...")
-    #
-    #     print "\n"
-    #     print "**************************"
-    #     fp.close()
-    #     return

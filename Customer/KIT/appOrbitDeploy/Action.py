@@ -8,12 +8,14 @@ import shutil
 import multiprocessing
 import re
 
+import Utility
 import Config
 
 
 class Action:
 
     def __init__(self):
+        self.utilityobj = Utility.Utility()
         return
 
         # self.removeRunningContainers()
@@ -45,12 +47,12 @@ class Action:
 
         if process.returncode == 0:
             logging.info(out)
-            print "Deploy rmq - SUCCESS"
-            print "Deploy in progress ..."
+            # print "Deploy rmq - SUCCESS"
+            # print "Deploy in progress ..."
             time.sleep(20)
         else:
             logging.warning(err)
-            print "Deploy rmq - FAILED"
+            # print "Deploy rmq - FAILED"
             exit()
 
 
@@ -71,7 +73,7 @@ class Action:
             logging.info(out)
         else:
             logging.error(err)
-            print "pull docs image from repo. Check Logs for details - FAILED"
+            # print "pull docs image from repo. Check Logs for details - FAILED"
             exit()
 
         cmd_deploy_docs = "docker run --name apporbit-docs --restart=always -p 9080:80 -d " + rmq_image_name
@@ -85,7 +87,7 @@ class Action:
             logging.info(out)
         else:
             logging.error(err)
-            print "pull docs image from repo. Check Logs for details - FAILED"
+            # print "pull docs image from repo. Check Logs for details - FAILED"
             exit()
 
         return
@@ -102,12 +104,12 @@ class Action:
 
         if process.returncode == 0:
             logging.info(out)
-            print "Deploy db  -SUCCESS"
-            print "Deploy in progress ..."
+            # print "Deploy db  -SUCCESS"
+            # print "Deploy in progress ..."
             time.sleep(60)
         else:
             logging.error(err)
-            print "Deploy db - FAILED"
+            # print "Deploy db - FAILED"
             exit()
 
 
@@ -126,12 +128,12 @@ class Action:
         out, err =  process.communicate()
         if process.returncode == 0:
             logging.info(out)
-            print "Deploy Chef - SUCCESS"
-            print "Deploy in progress ..."
+            # print "Deploy Chef - SUCCESS"
+            # print "Deploy in progress ..."
             time.sleep(120)
         else:
             logging.error(err)
-            print "Deploy Chef - FAILED"
+            # print "Deploy Chef - FAILED"
             exit()
 
         return
@@ -174,12 +176,12 @@ class Action:
 
         if process.returncode == 0:
             logging.info(out)
-            print "Deploy services - SUCCESS"
-            print "Deploy in progress ..."
+            # print "Deploy services - SUCCESS"
+            # print "Deploy in progress ..."
             time.sleep(20)
         else:
             logging.error(err)
-            print "Deploy services - FAILED"
+            # print "Deploy services - FAILED"
             exit()
         return
 
@@ -260,10 +262,10 @@ class Action:
 
         if process.returncode == 0:
             logging.info(out)
-            print "Deploy Controller - SUCCESS"
+            # print "Deploy Controller - SUCCESS"
         else:
             logging.error(err)
-            print "Deploy Controller - FAILED"
+            # print "Deploy Controller - FAILED"
             exit()
 
         return
@@ -290,10 +292,12 @@ class Action:
 
 
     def deployAppOrbit(self, config_obj):
-        print "Deploy in progress ..."
+        # print "Deploy in progress ..."
         # Remove Running Containers
         # If Clean Setup is 1 , It will remove chef as well other wise will retain chef server
+        self.utilityobj.progressBar(1)
         self.removeRunningContainers()
+        self.utilityobj.progressBar(2)
 
         # CLEAN or RETAIN OLD ENTRIES
         if config_obj.clean_setup == '1':
@@ -305,12 +309,13 @@ class Action:
         if config_obj.self_signed_crt == '1':
             self.createSelfSignedCert()
 
-
+        self.utilityobj.progressBar(5)
         # LOGIN to DOCKER REGISTRY
         if config_obj.build_deploy_mode == '3' or config_obj.build_deploy_mode == '0':
             self.loginDockerRegistry(config_obj.docker_uname, config_obj.docker_passwd, config_obj.registry_url)
+            self.utilityobj.progressBar(6)
             self.pullImagesformRepos(config_obj.registry_url)
-
+            self.utilityobj.progressBar(7)
 
         # DEPLOY CHEF CONTAINER
         if config_obj.deploy_chef == '1' or '3':
@@ -319,30 +324,29 @@ class Action:
             self.deployChef(config_obj.hostip)                        #LOCAL DEPLOYMENT- LOCAL IMAGE
         else:
             logging.info("Chef is chosen to be deployed in a different machine.")
+        self.utilityobj.progressBar(10)
 
         # DEPLOY DATABASE CONTAINER
         self.deployDB()
-
+        self.utilityobj.progressBar(12)
         #DEPLOY DOCS CONTAINER
         self.deployDocs(config_obj.registry_url)
-
+        self.utilityobj.progressBar(14)
         # DEPLOY RABBIT MQ
         self.deployRMQ(config_obj.registry_url)
-
+        self.utilityobj.progressBar(15)
         # DEPLOY SERVICES
 
         self.deployServices(config_obj.internal_repo, config_obj.hostip,\
                             config_obj.registry_url, config_obj.build_deploy_mode, config_obj.volume_mount)
 
-
+        self.utilityobj.progressBar(17)
         # DEPLOY PLATFORM
         self.deployController(config_obj.onprem_emailID, config_obj.hostip,\
                               config_obj.deploy_mode, config_obj.theme_name,\
                               config_obj.api_version, config_obj.registry_url,\
                               config_obj.build_deploy_mode, config_obj.volume_mount)
-
-        print "Please change your chef password by logging into the UI."
-        print "Apporbit Deploy completed - SUCCESS!"
+        self.utilityobj.progressBar(19)
         return True
 
 
@@ -489,16 +493,17 @@ class Action:
 
 
     def loginDockerRegistry(self, uname, passwd, repo_str = "secure-registry.gsintlab.com" ):
-        print "Login to Docker Registry " + repo_str
+        # print "Login to Docker Registry " + repo_str
         cmd_str = 'docker login -e='' -u=' + uname + ' -p=' + passwd +' '+ repo_str
         process = subprocess.Popen(cmd_str, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = process.communicate()
         if(process.returncode==0):
-            print out
-            print ("Login Success!")
+            # print out
+            # print ("Login Success!")
+            pass
         else:
-            print err
-            print ("Login Failed!")
+            # print err
+            # print ("Login Failed!")
             exit()
         return
 
@@ -516,7 +521,7 @@ class Action:
         cmd_docs_image = 'docker pull ' + docs_image
         cmd_dbs_image = 'docker pull ' + database_image
 
-        print "Controller Image"
+        # print "Controller Image"
         process = subprocess.Popen(cmd_ctrl_image, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = process.communicate()
         if(process.returncode==0):
@@ -524,7 +529,7 @@ class Action:
             logging.info(out)
         else:
             logging.warning(err)
-            print ("Getting Image Failed. Check log for details")
+            # print ("Getting Image Failed. Check log for details")
             exit()
 
         process = subprocess.Popen(cmd_srvc_image, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -535,7 +540,7 @@ class Action:
 
         else:
             logging.warning(err)
-            print ("Getting Image Failed. Check log for details")
+            # print ("Getting Image Failed. Check log for details")
             exit()
 
         process = subprocess.Popen(cmd_msgq_image, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -546,7 +551,7 @@ class Action:
 
         else:
             logging.warning(err)
-            print ("Getting Image Failed. Check log for details")
+            # print ("Getting Image Failed. Check log for details")
             exit()
 
         process = subprocess.Popen(cmd_docs_image, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -557,7 +562,7 @@ class Action:
 
         else:
             logging.warning(err)
-            print ("Getting Image Failed. Check log for details")
+            # print ("Getting Image Failed. Check log for details")
             exit()
 
         process = subprocess.Popen(cmd_dbs_image, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -568,5 +573,6 @@ class Action:
 
         else:
             logging.warning(err)
-            print ("Getting Image Failed. Check log for details")
+            # print ("Getting Image Failed. Check log for details")
             exit()
+

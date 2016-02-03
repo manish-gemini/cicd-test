@@ -10,7 +10,8 @@ import os
 import os.path
 import shutil
 import ConfigParser
-import time
+import sys
+from time import sleep
 
 class Utility:
 
@@ -22,47 +23,55 @@ class Utility:
         return
 
 
+
+    # Progress Bar Impleementaion
+    def progressBar(self, i):
+        sys.stdout.write('\r')
+        # the exact output you're looking for:
+        sys.stdout.write("[%-20s] %d%%" % ('='*i, 5*i))
+        sys.stdout.flush()
+        sleep(0.25)
+
     # Check for System Information if it satisfy all Pre Deploy Requirements
     # If not fixable errors found exit the process and log the errors.
     def verifySystemInfo(self):
         logging.info("Hardware Requirement Check   -STARTED")
-        print "Hardware Requirement Check  - STARTED"
+        self.progressBar(1)
         if not self.verifyHardwareRequirement():
             logging.error("Hardware requirements are not satisfied !")
-            print ("ERROR : Hardware requirement check failed! \
-            Check log for details.")
+            #print ("ERROR : Hardware requirement check failed! \
+            #Check log for details.")
             exit()
         logging.info("Hardware Requirement Check   -COMPLETED")
-        print "Hardware Requirement Check  - COMPLETED"
+        self.progressBar(2)
 
-        print "Software Requirement Check  - STARTED"
         logging.info("Software Requirement Check   -STARTED")
         if not self.verifySoftwareRequirement():
             logging.error("Software requirements are not satisfied !")
-            print ("ERROR : Software requirement check failed! \
-            Check log for details.")
+            # print ("ERROR : Software requirement check failed! \
+            # Check log for details.")
             exit()
         logging.info("Software Requirement Check   -COMPLETED")
-        print "Software Requirement Check  - COMPLETED"
+        self.progressBar(5)
 
-        print "Security Requirement Check  - STARTED"
+        # print "Security Requirement Check  - STARTED"
         logging.info("Security Requirement Check   -STARTED")
         if not self.verifySecuirtyIssues():
             logging.error('security requirements not satisfied')
-            print "ERROR: Security Requirements not satified."
+            # print "ERROR: Security Requirements not satified."
             exit()
         logging.info("Security Requirement Check   -COMPLETED")
-        print "Security Requirement Check  - COMPLETED"
-
-        print "Repo Connectivity Requirement Check  - STARTED"
+        # print "Security Requirement Check  - COMPLETED"
+        self.progressBar(8)
+        # print "Repo Connectivity Requirement Check  - STARTED"
         logging.info("Repo Connectivity Requirement Check   -STARTED")
         if not self.verifyRepoConnection():
             logging.error("Network requirement not satisfied !")
-            print " ERROR: Network requirement not satisfied !"
+            # print " ERROR: Network requirement not satisfied !"
             exit()
         logging.info("Repo Connectivity Requirement Check   -COMPLETED")
-        print "Repo Connectivity Requirement Check  - COMPLETED"
-
+        # print "Repo Connectivity Requirement Check  - COMPLETED"
+        self.progressBar(10)
         return
 
     # Check for cpu count
@@ -72,20 +81,20 @@ class Utility:
         if multiprocessing.cpu_count() < 2:
             logging.error("No of cpu is expected to be atleast two.\
                           Increase your system cpu count and try again.")
-            print "ERROR: Number of processor is expected to be alteast two"
+            # print "ERROR: Number of processor is expected to be alteast two"
             return False
         else:
             logging.info("verify cpu count success!")
 
 
-        meminfo = open('/proc/meminfo').read() 
-        matched = re.search(r'^MemTotal:\s+(\d+)', meminfo) 
-        ram_size = int(matched.groups()[0]) 
+        meminfo = open('/proc/meminfo').read()
+        matched = re.search(r'^MemTotal:\s+(\d+)', meminfo)
+        ram_size = int(matched.groups()[0])
         logging.info("RAM size = %d", ram_size)
         if ram_size < 3000000: #4194304:
             logging.info("RAM size is less than expected 4 GB.\
                          Upgrade your system and proceed with installation.")
-            print "ERROR: System Memory is expected to be alteast 4GB"
+            # print "ERROR: System Memory is expected to be alteast 4GB"
             return False
 
         logging.info("Hardware requirement verified successfully")
@@ -99,10 +108,11 @@ class Utility:
         if os.path.isfile('apporbit.repo'):
             logging.info('copying apporbit.repo to yum.repos.d directory.')
             shutil.copyfile('apporbit.repo', '/etc/yum.repos.d/apporbit.repo')
+
         else:
             logging.error('apporbit.repo file is missing in the package.\
                           check with appOrbit Business contact.')
-            print ("ERROR: package files missing! check with your appOrbit Business contact.")
+            # print ("ERROR: package files missing! check with your appOrbit Business contact.")
             return False
 
         logging.info ("Verifying docker installation")
@@ -137,11 +147,12 @@ class Utility:
 
             if process.returncode == 0:
                 logging.info("ntp is already installed. %s", out)
+
             else:
                 logging.warning("ntp needs to be installed. %s", err)
                 self.do_ntpinstall = 1
         except Exception as exp:
-            logging.error("ntp needs to be installed! %d : %s", exp.errno, exp.strerror)
+            logging.warning("Exception:ntp needs to be installed! %d : %s", exp.errno, exp.strerror)
             self.do_ntpinstall = 1
 
         logging.info("Verify wget installation")
@@ -154,6 +165,7 @@ class Utility:
 
             if process.returncode == 0:
                 logging.info("wget is already installed. %s", out)
+
             else:
                 logging.info("wget needs to be installed. %s", err)
                 self.do_wgetinstall = 1
@@ -200,8 +212,8 @@ class Utility:
                 logging.error("Unable to connect to repository \
                  Check Network settings and Enable connection to http://repos.gsintlab.com \
                  %d", conn.getresponse().status )
-                print ("Unable to connect to repository. \
-                Check Network settings and Enable connection to http://repos.gsintlab.com ")
+                # print ("Unable to connect to repository. \
+                # Check Network settings and Enable connection to http://repos.gsintlab.com ")
                 return False
         except StandardError:
             logging.error ("Unable to connect repositories.\
@@ -222,9 +234,11 @@ class Utility:
             if process.returncode == 0:
                 # print out
                 logging.info("Install wget success. %s", out)
+
             else:
                 logging.warning("Install wget failed. %s", err)
 
+        self.progressBar(12)
         if self.do_ntpinstall:
             cmd_ntpInstall = "yum install -y ntp"
 
@@ -235,11 +249,12 @@ class Utility:
 
             if process.returncode == 0:
                 logging.info("Install ntp success. %s", out)
+
             else:
                 logging.warning("Install ntp failed. %s", err)
-                print ("NTP Install - FAILED")
+                # print ("NTP Install - FAILED")
                 return False
-
+        self.progressBar(14)
 
         if self.do_dockerinstall:
             cmd_dockerInstall = "yum install -y docker-1.7.1"
@@ -251,13 +266,15 @@ class Utility:
 
             if process.returncode == 0:
                 logging.info("Install docker success. %s", out)
+
             else:
-                logging.error("Install docker failed. %s", err)
-                print ("docker Install - Failed")
+                logging.warning("Install docker failed. %s", err)
+                # print ("docker Install - Failed")
                 return False
 
+        self.progressBar(16)
         if self.do_sesettings:
-            print ("Info: Setting SElinux status to permissive")
+            # print ("Info: Setting SElinux status to permissive")
             cmd_sesettings = "setenforce 0"
 
             process = subprocess.Popen(cmd_sesettings, shell=True, stdout=subprocess.PIPE, \
@@ -267,10 +284,11 @@ class Utility:
 
             if process.returncode == 0:
                 logging.info("setting sestatus success. %s", out)
+
             else:
                 logging.warning("setting sestatus Failed. %s", out)
                 return False
-
+        self.progressBar(17)
         # Enable Docker Service
         cmd_dockerservice = "systemctl enable docker.service"
         process_doc = subprocess.Popen(cmd_dockerservice, shell=True, stdout=subprocess.PIPE, \
@@ -278,6 +296,7 @@ class Utility:
         out_doc, err_doc =  process_doc.communicate()
         if process_doc.returncode == 0:
             logging.info("service docker enabled on startup  -success. %s", out_doc)
+
         else:
             logging.warning("service docker enabled on startup - Failed. %s", err_doc)
 
@@ -290,10 +309,11 @@ class Utility:
         out_doc, err_doc =  process_doc.communicate()
         if process_doc.returncode == 0:
             logging.info("service docker start  -success. %s", out_doc)
+
         else:
             logging.error("service docker start  -Failed. %s", err_doc)
             return False
-
+        self.progressBar(18)
         # Sync Network Time
         cmd_ntpupdate = "ntpdate -b -u time.nist.gov"
 
@@ -341,6 +361,7 @@ class Utility:
         out, err =  process.communicate()
 
         if process.returncode == 0:
+
             logging.info("iptable rules saved - success %s", out)
         else:
             logging.warning("iptable rules saved - Failed %s", err)
@@ -356,11 +377,12 @@ class Utility:
             out, err =  process.communicate()
 
             if process.returncode == 0:
+
                 logging.info("firewall rules saved - success %s", out)
             else:
                 logging.warning("firewall rules saved - Failed %s", err)
 
-
-
+        self.progressBar(19)
 
         return True
+
