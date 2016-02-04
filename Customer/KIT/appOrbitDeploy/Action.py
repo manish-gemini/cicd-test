@@ -18,19 +18,6 @@ class Action:
         self.utilityobj = Utility.Utility()
         return
 
-        # self.removeRunningContainers()
-        #
-        # if clean_setup == '1':
-        #     self.clearOldEntries()
-        #
-        # self.setupDirectoriesForVolumeMount()
-        #
-        # if repo_str:
-        #     self.loginDockerRegistry(uname, passwd, repo_str)
-        #     self.pullImagesformRepos(repo_str)
-        #
-        # self.deployAppOrbit(deploy_mode, email_id, theme_name, host_ip, repo_str, cfg_mgr)
-
 
     def deployRMQ(self, reg_url):
         if not reg_url:
@@ -47,12 +34,11 @@ class Action:
 
         if process.returncode == 0:
             logging.info(out)
-            # print "Deploy rmq - SUCCESS"
-            # print "Deploy in progress ..."
-            time.sleep(20)
+            #Sleep Added for safe start of containers
+            time.sleep(10)
         else:
             logging.warning(err)
-            # print "Deploy rmq - FAILED"
+            print "Deploy rmq  -[FAILED]. Check logs for details."
             exit()
 
 
@@ -73,7 +59,7 @@ class Action:
             logging.info(out)
         else:
             logging.error(err)
-            # print "pull docs image from repo. Check Logs for details - FAILED"
+            print "pull docs image from repo - [FAILED] Check logs for details. "
             exit()
 
         cmd_deploy_docs = "docker run --name apporbit-docs --restart=always -p 9080:80 -d " + rmq_image_name
@@ -87,7 +73,7 @@ class Action:
             logging.info(out)
         else:
             logging.error(err)
-            # print "pull docs image from repo. Check Logs for details - FAILED"
+            print "Deploy docs container - [FAILED] Check logs for details. "
             exit()
 
         return
@@ -104,12 +90,11 @@ class Action:
 
         if process.returncode == 0:
             logging.info(out)
-            # print "Deploy db  -SUCCESS"
-            # print "Deploy in progress ..."
+            # sleep added for mysql container to get completed started
             time.sleep(60)
         else:
             logging.error(err)
-            # print "Deploy db - FAILED"
+            print "Deploy db container - [FAILED] Check logs for details. "
             exit()
 
 
@@ -128,12 +113,11 @@ class Action:
         out, err =  process.communicate()
         if process.returncode == 0:
             logging.info(out)
-            # print "Deploy Chef - SUCCESS"
-            # print "Deploy in progress ..."
+            print "sleep added for chef container to start completely before other containers"
             time.sleep(120)
         else:
             logging.error(err)
-            # print "Deploy Chef - FAILED"
+            print "Deploy chef container -[FAILED] Check logs for details. "
             exit()
 
         return
@@ -176,12 +160,12 @@ class Action:
 
         if process.returncode == 0:
             logging.info(out)
-            # print "Deploy services - SUCCESS"
-            # print "Deploy in progress ..."
-            time.sleep(20)
+            #Sleep added for safe start of container process before next container start
+            time.sleep(10)
         else:
             logging.error(err)
-            # print "Deploy services - FAILED"
+            logging.error(cmd_deploy_services)
+            print "Deploy deploy services container - [FAILED] Check logs for details. "
             exit()
         return
 
@@ -265,7 +249,7 @@ class Action:
             # print "Deploy Controller - SUCCESS"
         else:
             logging.error(err)
-            # print "Deploy Controller - FAILED"
+            print "Deploy controllers container - [FAILED] Check logs for details."
             exit()
 
         return
@@ -287,14 +271,13 @@ class Action:
             logging.info("SSL Certificate Create - SUCCESS. %s", out)
         else:
             logging.warning("SSL Certificate Create - Failed. %s", err)
+            print "SSL Certificate Create - [FAILED] Check logs for details. "
+            exit()
 
         return
 
 
     def deployAppOrbit(self, config_obj):
-        # print "Deploy in progress ..."
-        # Remove Running Containers
-        # If Clean Setup is 1 , It will remove chef as well other wise will retain chef server
         self.utilityobj.progressBar(1)
         self.removeRunningContainers()
         self.utilityobj.progressBar(2)
@@ -377,7 +360,7 @@ class Action:
                     logging.warning(rmverr)
 
             if "apporbit-services" in out:
-                logging.info( "apporapporbit-rmqbit-services exist remove it")
+                logging.info( "apporbit-rmq-services exist remove it")
                 rmvprocess = subprocess.Popen("docker rm -f apporbit-services", shell=True,\
                                               stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 rmvout, rmverr = rmvprocess.communicate()
@@ -478,7 +461,6 @@ class Action:
         process = subprocess.Popen(cmd_services, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = process.communicate()
         if(process.returncode==0):
-            # print out
             logging.info(out)
         else:
             logging.error(err)
@@ -491,6 +473,8 @@ class Action:
         else:
             logging.error(err)
 
+        return
+
 
     def loginDockerRegistry(self, uname, passwd, repo_str = "secure-registry.gsintlab.com" ):
         # print "Login to Docker Registry " + repo_str
@@ -498,12 +482,10 @@ class Action:
         process = subprocess.Popen(cmd_str, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = process.communicate()
         if(process.returncode==0):
-            # print out
-            # print ("Login Success!")
+            logging.info("Docker Login Success ")
             pass
         else:
-            # print err
-            # print ("Login Failed!")
+            logging.error("Docker Login Failed ")
             exit()
         return
 
@@ -529,7 +511,7 @@ class Action:
             logging.info(out)
         else:
             logging.warning(err)
-            # print ("Getting Image Failed. Check log for details")
+            print "Getting images for repo  - [Failed]. Check log for details"
             exit()
 
         process = subprocess.Popen(cmd_srvc_image, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -540,7 +522,7 @@ class Action:
 
         else:
             logging.warning(err)
-            # print ("Getting Image Failed. Check log for details")
+            print "Getting images for repo  - [Failed]. Check log for details"
             exit()
 
         process = subprocess.Popen(cmd_msgq_image, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -551,7 +533,7 @@ class Action:
 
         else:
             logging.warning(err)
-            # print ("Getting Image Failed. Check log for details")
+            print "Getting images for repo  - [Failed]. Check log for details"
             exit()
 
         process = subprocess.Popen(cmd_docs_image, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -562,17 +544,15 @@ class Action:
 
         else:
             logging.warning(err)
-            # print ("Getting Image Failed. Check log for details")
+            print "Getting images for repo  - [Failed]. Check log for details"
             exit()
 
         process = subprocess.Popen(cmd_dbs_image, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = process.communicate()
         if(process.returncode==0):
-            # print out
             logging.info(out)
-
         else:
             logging.warning(err)
-            # print ("Getting Image Failed. Check log for details")
+            print "Getting images for repo  - [Failed]. Check log for details"
             exit()
 
