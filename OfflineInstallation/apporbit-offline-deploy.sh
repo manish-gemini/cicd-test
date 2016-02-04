@@ -45,6 +45,9 @@ function check_platform {
     os=`uname -s`
 
     if test -f "/etc/redhat-release"; then
+        if test -f "/etc/os-release"; then
+            platform_id=`awk -F= '/ID="[a-z]*"/{print $2}' /etc/os-release | tr -d '"'`
+        fi
         platform=`sed 's/^\(.\+\) release.*/\1/' /etc/redhat-release | tr '[A-Z]' '[a-z]'`
         platform_version=`sed 's/^.\+ release \([.0-9]\+\).*/\1/' /etc/redhat-release`
         major_version=`echo $platform_version | cut -d. -f1`
@@ -121,7 +124,9 @@ function install_docker {
         echo "Docker exists:" `docker -v` "from" `rpm -qa docker`
     else
         echo "Docker is not installed. Installing docker..."
-        yum -y update
+        if [ "x$platform_id" == "xcentos" ]; then
+            yum -y update
+        fi
         yum -y --disablerepo="*" --enablerepo="apporbit-offline" install docker-1.7.1
         systemctl enable docker.service
         systemctl start docker.service
