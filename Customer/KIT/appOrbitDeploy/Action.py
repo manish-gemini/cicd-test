@@ -113,7 +113,7 @@ class Action:
         out, err =  process.communicate()
         if process.returncode == 0:
             logging.info(out)
-            print "sleep added for chef container to start completely before other containers"
+            # sleep added for chef container to start completely before other containers
             time.sleep(120)
         else:
             logging.error(err)

@@ -66,7 +66,7 @@ def main():
         logging.info("user configuration is recived SUCCESS.")
 
         # The User config file is read and processed, if not avilable exit
-        if not os.path.isfile('appobit_deploy.conf'):
+        if not os.path.isfile('apporbit_deploy.conf'):
             logging.error("ERROR: Deployment Configuration file not found!")
             # print "Config file is missing! check log for more details."
             exit()
