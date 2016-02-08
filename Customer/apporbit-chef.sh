@@ -28,7 +28,7 @@ then
   printf "Enter the Host IP :"
   read -p "Default($ip):" hostip
   hostip=${hostip:-$ip}
-  docker run -m 2g -it -p $chef_port:$chef_port  -v /etc/chef-server/ --name apporbit-chef -h $hostip -d registry.apporbit.com/apporbit/apporbit-chef:1.0
+  docker run -m 2g -it --restart=always -p $chef_port:$chef_port  -v /etc/chef-server/ --name apporbit-chef -h $hostip -d registry.apporbit.com/apporbit/apporbit-chef:1.0
   echo "Please change your chef password by logging into the UI at http://${hostip}:9443"
 fi
 echo "`date` Finished apporbit-chef.sh" >>$LOGFILE
