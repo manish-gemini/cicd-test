@@ -1,8 +1,10 @@
 Pre-requsite:
-  Have Python installed.
+  Have Python,Curl installed.
   
 
-1) Now ./apporbit-curl.sh
+1) Run
+
+/>  curl http://repos.gsintlab.com/install/appOrbitKit/apporbit-curl.sh | sh
 
 	a) Start to install curl, python if not already installed.
 	
