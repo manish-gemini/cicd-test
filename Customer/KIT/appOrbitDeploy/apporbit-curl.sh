@@ -1,7 +1,7 @@
 #!/bin/bash
 if [ -z "$1" ]
 then
-    url='http://repos.gsintlab.com/install/TestDir/appOrbitKit'
+    url='http://repos.gsintlab.com/install/appOrbitKit'
 else
     url=$1
 fi
@@ -27,7 +27,7 @@ else
   cproxy=""
 fi
 
-FILES="Action.py  Config.py  README.txt  UserInteract.py  Utility.py  appOrbitLauncher.py  apporbit.repo"
+FILES="Action.pyc  Config.pyc  README.txt  UserInteract.pyc  Utility.pyc  appOrbitLauncher.pyc  apporbit.repo"
 
 echo "Downloading apporbit installer"
 for i in $FILES
@@ -44,10 +44,10 @@ do
   fi
 
 done
-chmod a+x /opt/apporbit/bin/*.py
+chmod a+x /opt/apporbit/bin/*.pyc
 # Running predeploy script
 cd /opt/apporbit/bin
 #/opt/apporbit/bin/apporbit-deploy.sh 
-python /opt/apporbit/bin/appOrbitLauncher.py
+python /opt/apporbit/bin/appOrbitLauncher.pyc
 
 echo "Done."
