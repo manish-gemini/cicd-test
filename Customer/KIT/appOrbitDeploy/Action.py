@@ -478,14 +478,19 @@ class Action:
 
     def loginDockerRegistry(self, uname, passwd, repo_str = "secure-registry.gsintlab.com" ):
         # print "Login to Docker Registry " + repo_str
-        cmd_str = 'docker login -e='' -u=' + uname + ' -p=' + passwd +' '+ repo_str
-        process = subprocess.Popen(cmd_str, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        out, err = process.communicate()
-        if(process.returncode==0):
-            logging.info("Docker Login Success ")
-            pass
+        if passwd:
+            cmd_str = 'docker login -e=admin@apporbit.com -u=' + uname + ' -p=' + passwd +' '+ repo_str
+            process = subprocess.Popen(cmd_str, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            out, err = process.communicate()
+            if(process.returncode==0):
+                logging.info("Docker Login Success ")
+                pass
+            else:
+                logging.error("Docker Login Failed ")
+                print 'Docker login -[Failed]'
+                exit()
         else:
-            logging.error("Docker Login Failed ")
+            print 'Docker login -[Failed!]'
             exit()
         return
 
