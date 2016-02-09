@@ -1,8 +1,11 @@
 Pre-requsite:
-  Have Python installed.
+  Have python, curl installed.
   
+To install appOrbit Management server :
 
-1) Now ./apporbit-curl.sh
+1) Run the below command.
+
+ ~]# bash <(curl -s  http://repos.gsintlab.com/install/appOrbitKit/install.sh)
 
 	a) Start to install curl, python if not already installed.
 	
