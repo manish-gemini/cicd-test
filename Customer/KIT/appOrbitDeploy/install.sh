@@ -50,4 +50,4 @@ cd /opt/apporbit/bin
 #/opt/apporbit/bin/apporbit-deploy.sh 
 python /opt/apporbit/bin/appOrbitLauncher.pyc
 
-echo "Done."
+
