@@ -4,7 +4,7 @@ Pre-requsite:
 
 1) Run
 
-/>  curl http://repos.gsintlab.com/install/appOrbitKit/apporbit-curl.sh | sh
+/>   bash <(curl -s  http://repos.gsintlab.com/install/appOrbitKit/install.sh)
 
 	a) Start to install curl, python if not already installed.
 	
