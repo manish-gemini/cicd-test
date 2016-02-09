@@ -490,6 +490,7 @@ class Action:
                 print 'Docker login -[Failed]'
                 exit()
         else:
+            logging.error("Docker Login Failed ")
             print 'Docker login -[Failed!]'
             exit()
         return
