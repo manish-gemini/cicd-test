@@ -56,7 +56,7 @@ source_suffix = ['.rst', '.md']
 master_doc = 'index'
 
 # General information about the project.
-project = 'appOrbit'
+project = ''
 copyright = '2015, appOrbit'
 author = 'Jon'
 
