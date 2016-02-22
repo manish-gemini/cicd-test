@@ -35,7 +35,7 @@ Have python and curl installed.
 Run the below command.
 
 ```
-bash <(curl -s  http://repos.gsintlab.com/install/appOrbitKit/install.sh)
+bash <(curl -s http://repos.apporbit.com/install/appOrbitKit/install.sh)
 ```
 
 * This will Start to download the installer binaries in /opt/apporbit/bin
