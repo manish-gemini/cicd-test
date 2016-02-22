@@ -1,7 +1,7 @@
 #!/bin/bash
 if [ -z "$1" ]
 then
-    url='http://repos.gsintlab.com/install/appOrbitKit'
+    url='http://repos.apporbit.com/install/appOrbitKit'
 else
     url=$1
 fi
