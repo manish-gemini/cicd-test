@@ -279,7 +279,7 @@ class Action:
 
     def deployAppOrbit(self, config_obj):
         self.utilityobj.progressBar(1)
-        self.removeRunningContainers()
+        self.removeRunningContainers(config_obj)
         self.utilityobj.progressBar(2)
 
         # CLEAN or RETAIN OLD ENTRIES
@@ -301,12 +301,14 @@ class Action:
             self.utilityobj.progressBar(7)
 
         # DEPLOY CHEF CONTAINER
-        if config_obj.deploy_chef == '1' or '3':
-            self.deployChef(config_obj.hostip, config_obj.registry_url) #CUSTOMER DEPLOYMENT or Master Deployment
-        elif config_obj.deploy_chef == '2':
-            self.deployChef(config_obj.hostip)                        #LOCAL DEPLOYMENT- LOCAL IMAGE
-        else:
-            logging.info("Chef is chosen to be deployed in a different machine.")
+        if config_obj.clean_setup == '1':
+            if config_obj.deploy_chef == '1' or '3':
+                self.deployChef(config_obj.hostip, config_obj.registry_url) #CUSTOMER DEPLOYMENT or Master Deployment
+            elif config_obj.deploy_chef == '2':
+                self.deployChef(config_obj.hostip)                        #LOCAL DEPLOYMENT- LOCAL IMAGE
+            else:
+                logging.info("Chef is chosen to be deployed in a different machine.")
+        
         self.utilityobj.progressBar(10)
 
         # DEPLOY DATABASE CONTAINER
@@ -334,20 +336,21 @@ class Action:
 
 
 
-    def removeRunningContainers(self):
+    def removeRunningContainers(self, config_obj):
         process = subprocess.Popen("docker ps -a ", shell=True, stdout=subprocess.PIPE, \
                                    stderr=subprocess.PIPE)
         out, err =  process.communicate()
         if process.returncode == 0:
-            if "apporbit-chef" in out:
-                logging.info( "apporbit-chef exist remove it")
-                rmvprocess = subprocess.Popen("docker rm -f apporbit-chef", shell=True,\
+            if config_obj.clean_setup == '1':
+                if "apporbit-chef" in out:
+                    logging.info( "apporbit-chef exist remove it")
+                    rmvprocess = subprocess.Popen("docker rm -f apporbit-chef", shell=True,\
                                               stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                rmvout, rmverr = rmvprocess.communicate()
-                if rmvprocess.returncode == 0:
-                    logging.info("Successfully removed apporbit-controller")
-                else:
-                    logging.warning(rmverr)
+                    rmvout, rmverr = rmvprocess.communicate()
+                    if rmvprocess.returncode == 0:
+                        logging.info("Successfully removed apporbit-chef")
+                    else:
+                        logging.warning(rmverr)
 
             if "apporbit-controller" in out:
                 logging.info("apporbit-controller exist remove it")

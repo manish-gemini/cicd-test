@@ -1,7 +1,7 @@
 #!/bin/bash
 if [ -z "$1" ]
 then
-    url='http://repos.gsintlab.com/install/appOrbitKit'
+    url='http://repos.apporbit.com/install/appOrbitKit'
 else
     url=$1
 fi
@@ -27,7 +27,7 @@ else
   cproxy=""
 fi
 
-FILES="Action.pyc  Config.pyc  README.txt  UserInteract.pyc  Utility.pyc  appOrbitLauncher.pyc  apporbit.repo"
+FILES="Action.pyc  Config.pyc  README.md  UserInteract.pyc  Utility.pyc  appOrbitLauncher.pyc  apporbit.repo apporbit-supportbundle.sh"
 
 echo "Downloading apporbit installer"
 for i in $FILES
