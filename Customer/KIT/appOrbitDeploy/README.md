@@ -51,23 +51,23 @@ bash <(curl -s  http://repos.gsintlab.com/install/appOrbitKit/install.sh)
      Enter the build id [latest] :
 	
 * Enter the chef server deploy mode :
-   1  Deploy on the same host
-   2  Do not deploy, will configure it later
+   1. Deploy on the same host
+   2. Do not deploy, will configure it later
    choose the setup type from the above [1] :1
-		
-* New install or upgrade :
-   1  New install
-   2  Upgrade
+
+* New install or upgrade
+   1. New install
+   2. Upgrade
    choose the setup type from the above [2] :1
 		
 * Enter the type of SSL certificate type:
-   1  Create a new ssl Certificate
-   2  Use Existing Certificate
+   1. Create a new ssl Certificate
+   2. Use Existing Certificate
    Choose the type of ssl Certificate [1]:1
 
 * Enter the Mode of Deployment:
-   1  Singe-Tenant
-   2  Multi-Tenant
+   1. Singe-Tenant
+   2. Multi-Tenant
    Choose the type of deployment [1]:1
 
 * Enter the user email id for single-tenant deployment [admin@apporbit.com] :
@@ -90,8 +90,4 @@ bash <(curl -s  http://repos.gsintlab.com/install/appOrbitKit/install.sh)
 ##Installation Logs
 
 In case of Installation issues, you can refer to /opt/apporbit/bin/appOrbitInstall.log .
-
-
-
-
 
