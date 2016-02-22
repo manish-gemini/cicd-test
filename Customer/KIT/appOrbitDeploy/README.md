@@ -42,13 +42,11 @@ bash <(curl -s  http://repos.gsintlab.com/install/appOrbitKit/install.sh)
 
 * System requirements as specified in the requirement documentations is verified. On success the installation proceeds, in case of failure error message is displayed and you can verify the detailed installation logs at /opt/apporbit/bin/appOrbitInstall.log
 
-* Login to the appOrbit registry using the credentials sent to you by email by your appOrbit sales representative admin/<password>
+* Login to the appOrbit registry using the credentials sent to you by email by your appOrbit sales representative.
 	
-     Enter the user name: admin
-     Password:
+     Enter the user name and password
 		
-* Enter the build ID, by default is latest
-     Enter the build id [latest] :
+* Enter the build ID, by default it is "latest".
 	
 * Enter the chef server deploy mode :
    1. Deploy on the same host
