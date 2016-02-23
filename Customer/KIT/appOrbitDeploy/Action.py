@@ -137,7 +137,7 @@ class Action:
         vol_mount_str = ""
 
         if repo_str:
-            image_name = repo_str + "/apporbit/apporbit-services"
+            image_name = repo_str + "/apporbit/apporbit-services:" + config_obj.buildid
         else:
             image_name = "apporbit/apporbit-services"
 
@@ -238,7 +238,7 @@ class Action:
             onpremmode = 'false'
 
         if registry_url:
-            cntrlimageName = registry_url + '/apporbit/apporbit-controller'
+            cntrlimageName = registry_url + '/apporbit/apporbit-controller:' + config_obj.buildid
         else:
             cntrlimageName = 'apporbit/apporbit-controller'
 
@@ -374,7 +374,7 @@ class Action:
         if config_obj.build_deploy_mode == '3' or config_obj.build_deploy_mode == '0':
             self.loginDockerRegistry(config_obj.docker_uname, config_obj.docker_passwd, config_obj.registry_url)
             self.utilityobj.progressBar(6)
-            self.pullImagesformRepos(config_obj.registry_url)
+            self.pullImagesformRepos(config_obj.registry_url, config_obj.buildid)
             self.utilityobj.progressBar(7)
 
         # DEPLOY CHEF CONTAINER
@@ -572,9 +572,9 @@ class Action:
         return
 
 
-    def pullImagesformRepos(self, repo_str):
-        controller_image = repo_str + '/apporbit/apporbit-controller'
-        services_image = repo_str + '/apporbit/apporbit-services'
+    def pullImagesformRepos(self, repo_str, build_id):
+        controller_image = repo_str + '/apporbit/apporbit-controller:' + build_id
+        services_image = repo_str + '/apporbit/apporbit-services:' + build_id
         message_queue_image = repo_str + '/apporbit/apporbit-rmq'
         docs_image = repo_str + '/apporbit/apporbit-docs'
         database_image = 'mysql:5.6.24'
