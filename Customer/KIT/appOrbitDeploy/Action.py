@@ -167,7 +167,7 @@ class Action:
         cmd_deploy_services = cmd_deploy_services + " -v /var/log/apporbit/services:/var/log/apporbit" + vol_mount_str + " -d  \
         " + image_name
 
-        print cmd_deploy_services
+        #print cmd_deploy_services
 
         process = subprocess.Popen(cmd_deploy_services, shell=True, stdout=subprocess.PIPE, \
                                    stderr=subprocess.PIPE)
@@ -267,7 +267,7 @@ class Action:
         -v /var/lib/apporbit/sslkeystore/:/home/apporbit/apporbit-controller/sslkeystore \
         -d " + cntrlimageName
 
-        print cmd_deploy_controller
+        #print cmd_deploy_controller
 
         process = subprocess.Popen(cmd_deploy_controller, shell=True, stdout=subprocess.PIPE, \
                                    stderr=subprocess.PIPE)
