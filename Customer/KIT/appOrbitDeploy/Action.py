@@ -123,7 +123,15 @@ class Action:
         return
 
 
-    def deployServices(self, internal_repo, host_ip, repo_str, mode, vol_mount=''):
+    def deployServices(self, config_obj):
+
+        internal_repo = config_obj.internal_repo
+        host_ip = config_obj.hostip
+        repo_str = config_obj.registry_url
+        mode = config_obj.build_deploy_mode
+        vol_mount = config_obj.volume_mount
+        deploy_chef = config_obj.deploy_chef
+
         # Varaiable Declaration
         image_name = ""
         vol_mount_str = ""
@@ -144,14 +152,22 @@ class Action:
 
 
         cmd_deploy_services = "docker run -t --name apporbit-services --restart=always \
-        -e GEMINI_INT_REPO=" + internal_repo + " -e CHEF_URL=https://" + host_ip +":9443 -e MYSQL_HOST=db \
+        -e GEMINI_INT_REPO=" + internal_repo
+        if deploy_chef == "1":
+            cmd_deploy_services = cmd_deploy_services + " -e CHEF_URL=https://" + host_ip +":9443 "
+
+        cmd_deploy_services = cmd_deploy_services + " -e MYSQL_HOST=db \
         -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist \
         -e GEMINI_STACK_IPANEMA=1 --link db:db --link apporbit-rmq:rmq \
-        -v /var/lib/apporbit/sshKey_root:/root --volumes-from apporbit-chef \
-        -v /var/log/apporbit/services:/var/log/apporbit" + vol_mount_str + " -d  \
+        -v /var/lib/apporbit/sshKey_root:/root "
+
+        if deploy_chef == "1":
+            cmd_deploy_services = cmd_deploy_services + "--volumes-from apporbit-chef "
+
+        cmd_deploy_services = cmd_deploy_services + " -v /var/log/apporbit/services:/var/log/apporbit" + vol_mount_str + " -d  \
         " + image_name
 
-        # print cmd_deploy_services
+        print cmd_deploy_services
 
         process = subprocess.Popen(cmd_deploy_services, shell=True, stdout=subprocess.PIPE, \
                                    stderr=subprocess.PIPE)
@@ -196,10 +212,18 @@ class Action:
         return max_app_process
 
 
-    def deployController (self, onprem_emailID, hostip,\
-                              deploy_mode, theme_name,\
-                              api_version, registry_url,\
-                              build_deploy_mode, vol_mount = ""):
+    def deployController (self, config_obj):
+
+        onprem_emailID = config_obj.onprem_emailID
+        hostip = config_obj.hostip
+        deploy_mode = config_obj.deploy_mode
+        theme_name = config_obj.theme_name
+        api_version = config_obj.api_version
+        registry_url = config_obj.registry_url
+        build_deploy_mode = config_obj.build_deploy_mode
+        vol_mount = config_obj.volume_mount
+        deploy_chef = config_obj.deploy_chef
+
 
         log_level = 'DEBUG'
         onpremmode = 'true'
@@ -228,16 +252,22 @@ class Action:
 
         cmd_deploy_controller = "docker run -t --name apporbit-controller --restart=always \
         -p 80:80 -p 443:443 -e ONPREM_EMAIL_ID="+ onprem_emailID + " \
-        -e LOG_LEVEL="+log_level + " -e MAX_POOL_SIZE=" + str(max_phusion_process) +" \
-        -e CHEF_URL=https://"+ hostip +":9443 \
-        -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller \
+        -e LOG_LEVEL="+log_level + " -e MAX_POOL_SIZE=" + str(max_phusion_process)
+
+        if deploy_chef == "1":
+            cmd_deploy_controller = cmd_deploy_controller + " -e CHEF_URL=https://"+ hostip +":9443"
+
+        cmd_deploy_controller = cmd_deploy_controller + " -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller \
         -e ON_PREM_MODE=" + onpremmode + " -e THEME_NAME="+ theme_name + "\
-        -e CURRENT_API_VERSION=" + api_version + " --link db:db --link apporbit-rmq:rmq \
-        --volumes-from apporbit-chef" + vol_mount_str + " -v /var/log/apporbit/controller:/var/log/apporbit \
+        -e CURRENT_API_VERSION=" + api_version + " --link db:db --link apporbit-rmq:rmq "
+        if deploy_chef == "1":
+            cmd_deploy_controller = cmd_deploy_controller + "--volumes-from apporbit-chef "
+
+        cmd_deploy_controller = cmd_deploy_controller + vol_mount_str + " -v /var/log/apporbit/controller:/var/log/apporbit \
         -v /var/lib/apporbit/sslkeystore/:/home/apporbit/apporbit-controller/sslkeystore \
         -d " + cntrlimageName
 
-        # print cmd_deploy_controller
+        print cmd_deploy_controller
 
         process = subprocess.Popen(cmd_deploy_controller, shell=True, stdout=subprocess.PIPE, \
                                    stderr=subprocess.PIPE)
@@ -349,9 +379,9 @@ class Action:
 
         # DEPLOY CHEF CONTAINER
         if config_obj.clean_setup == '1':
-            if config_obj.deploy_chef == '1' or '3':
+            if config_obj.deploy_chef == '1' or config_obj.deploy_chef == '3':
                 self.deployChef(config_obj.hostip, config_obj.registry_url) #CUSTOMER DEPLOYMENT or Master Deployment
-            elif config_obj.deploy_chef == '2':
+            elif config_obj.deploy_chef == '0':
                 self.deployChef(config_obj.hostip)                        #LOCAL DEPLOYMENT- LOCAL IMAGE
             else:
                 logging.info("Chef is chosen to be deployed in a different machine.")
@@ -369,15 +399,11 @@ class Action:
         self.utilityobj.progressBar(15)
         # DEPLOY SERVICES
 
-        self.deployServices(config_obj.internal_repo, config_obj.hostip,\
-                            config_obj.registry_url, config_obj.build_deploy_mode, config_obj.volume_mount)
+        self.deployServices(config_obj)
 
         self.utilityobj.progressBar(17)
         # DEPLOY PLATFORM
-        self.deployController(config_obj.onprem_emailID, config_obj.hostip,\
-                              config_obj.deploy_mode, config_obj.theme_name,\
-                              config_obj.api_version, config_obj.registry_url,\
-                              config_obj.build_deploy_mode, config_obj.volume_mount)
+        self.deployController(config_obj)
         self.utilityobj.progressBar(19)
         return True
 
