@@ -22,6 +22,8 @@ clean_setup :
 self_signed_crt :
     # 1 - Create new SSL
     #2 - Use Existing SSL
+self_signed_crt_dir :
+    In case you are using Use Existing SSL, Provide the Directory where to pick apporbitserver.key apporbitserver.crt files
 deploy_chef :
     #0 - Dont Deploy Chef in the same machine
     # 1 - Deploy Chef in the same machine Using Customer Repo

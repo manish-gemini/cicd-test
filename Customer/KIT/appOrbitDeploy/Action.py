@@ -276,6 +276,50 @@ class Action:
 
         return
 
+    def copySSLCertificate(self, dir):
+
+        sslkeyfile = dir + "/apporbitserver.key"
+        sslkeycrt = dir + "/apporbitserver.crt"
+
+        if not os.path.isfile(sslkeyfile):
+            logging.error('%s SSL key file does not exist.', sslkeyfile)
+            print "SSL key file does not exist. Check logs for details."
+            exit()
+
+        if not os.path.isfile(sslkeycrt):
+            logging.error('%s SSL certificate file does not exist.', sslkeycrt)
+            print "SSL certificate file does not exist. Check logs for details."
+            exit()
+
+        cmd_cpysslkey = "cp -f " + dir +"/apporbitserver.key /var/lib/apporbit/sslkeystore/apporbitserver.key"
+        cmd_cpysslcrt = "cp -f " + dir +"/apporbitserver.crt /var/lib/apporbit/sslkeystore/apporbitserver.crt"
+
+        process = subprocess.Popen(cmd_cpysslkey, shell=True, stdout=subprocess.PIPE, \
+                                   stderr=subprocess.PIPE)
+
+        out, err =  process.communicate()
+
+        if process.returncode == 0:
+            logging.info("SSL key copy  - SUCCESS. %s", out)
+        else:
+            logging.warning("SSL key copy  - Failed. %s", err)
+            print "Copy SSL key - [FAILED] Check logs for details. "
+            exit()
+
+        process = subprocess.Popen(cmd_cpysslcrt, shell=True, stdout=subprocess.PIPE, \
+                                   stderr=subprocess.PIPE)
+
+        out, err =  process.communicate()
+
+        if process.returncode == 0:
+            logging.info("SSL Certificate copy - SUCCESS. %s", out)
+        else:
+            logging.warning("SSL Certificate copy - Failed. %s", err)
+            print "Copy SSL Certificate - [FAILED] Check logs for details. "
+            exit()
+
+        return
+
 
     def deployAppOrbit(self, config_obj):
         self.utilityobj.progressBar(1)
@@ -291,6 +335,9 @@ class Action:
 
         if config_obj.self_signed_crt == '1':
             self.createSelfSignedCert()
+        else:
+            logging.info("Copying SSL Certificate from the dir %s", config_obj.self_signed_crt_dir)
+            self.copySSLCertificate(config_obj.self_signed_crt_dir)
 
         self.utilityobj.progressBar(5)
         # LOGIN to DOCKER REGISTRY

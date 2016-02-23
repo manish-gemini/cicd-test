@@ -24,6 +24,7 @@ class UserInteract:
         deploy_mode = ""
         on_prem_emailid = ""
         hostIp = ""
+        ssldir = ""
 
         logging.info("Starting to get user config info")
         print "Enter the user configuration informations."
@@ -52,7 +53,10 @@ class UserInteract:
         print '2. Use Existing Certificate'
         self_signed_crt = raw_input ("Choose the type of ssl Certificate [1]:") or '1'
         logging.info ("self signed certificate : %s", self_signed_crt)
-
+        if self_signed_crt == '2':
+            print "Rename your SSL certificate files as apporbitserver.crt and key as apporbitserver.key"
+            ssldir = raw_input("Enter the location where your certificate and key file exist [/opt/certs]:") or "/opt/certs"
+            logging.info ("SSL Certs Directory is  : %s", ssldir )
 
         print "Enter the Mode of Deployment "
         print "1. Singe-Tenant"
@@ -72,7 +76,7 @@ class UserInteract:
         config_obj.createConfigFile(reg_user_name, reg_password,\
                                      build_id, is_install_cfgmgr,\
                                      self_signed_crt, clean_setup,\
-                                        deploy_mode, hostIp, on_prem_emailid)
+                                        deploy_mode, hostIp, on_prem_emailid, ssldir)
         # self.createConfigFile()
         logging.info("completed collecting user config info")
         return
