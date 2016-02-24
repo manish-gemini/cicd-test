@@ -172,7 +172,7 @@ class Utility:
         else:
             logging.error('apporbit.repo file is missing in the package.\
                           check with AppOrbit Business contact.')
-            print ("ERROR: package files missing! check with your AppOrbit Business contact.")
+            print ("ERROR: package files missing! check with your appOrbit Business contact.")
             return False
 
         logging.info ("Verifying docker installation")
@@ -272,7 +272,7 @@ class Utility:
                 logging.error("Unable to connect to repository \
                  Check Network settings and Enable connection to http://repos.gsintlab.com \
                  %d", conn.getresponse().status )
-                print ("Unable to connect to AppOrbit repository. Check Network settings and Enable connection to http://repos.apporbit.com ")
+                print ("Unable to connect to appOrbit repository. Check Network settings and Enable connection to http://repos.apporbit.com ")
                 return False
         except StandardError:
             logging.error ("Unable to connect repositories.\

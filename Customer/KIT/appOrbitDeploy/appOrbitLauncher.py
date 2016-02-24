@@ -14,7 +14,7 @@ def main():
     logging.basicConfig(filename='appOrbitInstall.log', level=logging.DEBUG,
                          format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
 
-    print ("This installer will install the AppOrbit Management Server on this machine")
+    print ("This installer will install the appOrbit Management Server on this machine")
     logging.info("Starting appOrbit Installation")
 
     config_obj = Config.Config()
@@ -49,7 +49,7 @@ def main():
     if os.path.isfile('local.conf'):
         logging.info('Using local.conf file for deployment')
         config_obj.loadConfig('local.conf')
-        print "Deploying AppOrbit Management Server."
+        print "Deploying appOrbit Management Server."
         utilityObj.progressBar(0)
         actionObj.deployAppOrbit(config_obj)
         # utilityObj.deployFromFile('local.conf')
@@ -70,7 +70,7 @@ def main():
             logging.error("ERROR: Deployment Configuration file not found!")
             # print "Config file is missing! check log for more details."
             exit()
-        print "Deploying AppOrbit Management Server."
+        print "Deploying appOrbit Management Server."
         utilityObj.progressBar(0)
         actionObj.deployAppOrbit(config_obj)
         utilityObj.progressBar(20)
