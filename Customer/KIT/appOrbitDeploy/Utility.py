@@ -11,6 +11,7 @@ import os.path
 import shutil
 import ConfigParser
 import sys
+import platform
 from time import sleep
 
 class Utility:
@@ -101,10 +102,70 @@ class Utility:
         return True
 
 
+    # Check if OS is REDHAT/Centos and also check for Version compatibility.
+
+    def verifyOSRequirement(self):
+        logging.info("Verifying OS Requirement.")
+        logging.info(platform.linux_distribution())
+        osname = platform.linux_distribution()[0]
+        osversion = platform.linux_distribution()[1]
+
+        osname = osname.lower()
+
+        if "centos" in osname:
+            logging.info("OS is Centos")
+        elif "red hat" in osname:
+            logging.info("OS is Redhat")
+        else:
+            logging.error("Incompatible Operating System. Only Redhat and Centos are supported.")
+            print "Incompatible Operating System. Check logs for more information."
+            exit()
+
+        if "7.0" in osversion:
+            logging.info("OS Version is 7.0")
+        elif "7.1" in osversion:
+            logging.info("OS Version is 7.1")
+        else:
+            logging.error("Incompatible Operating System Version. Check the System Requirement Documentation.")
+            print "Incompatible Operating System Version. Check logs for more information"
+            exit()
+
+        if "red hat" in osname:
+            logging.info("Verifying Subscription Details.")
+            try:
+                subscription_cmd = "subscription-manager version"
+                process = subprocess.Popen(subscription_cmd, shell=True, stdout=subprocess.PIPE, \
+                                   stderr=subprocess.PIPE)
+                out, err =  process.communicate()
+
+                if process.returncode == 0:
+                    # print out
+                    logging.info("subscription manager version. %s", out)
+                    if "currently not registered" in out:
+                        logging.error("Red Hat Subscription : This system is not Registered. Register and retry installation.")
+                        print "Red Hat is not having a valid subscription. Get a valid subscription and retry installation."
+                        exit()
+
+                else:
+                    # print err
+                    logging.error("Error in finding subscription details. %s", err)
+
+
+            except Exception as exp:
+                logging.error("subscription manager version command failed.")
+                logging.error("Unable to find subscription details..")
+
+
+        return
+
+
     # Check - apporbit.repo file
     # Check - docker, ntp, wget
     def verifySoftwareRequirement(self):
         logging.info("started verifying software requirements")
+        # Check for Operating System compatibility.
+        self.verifyOSRequirement()
+
         if os.path.isfile('apporbit.repo'):
             logging.info('copying apporbit.repo to yum.repos.d directory.')
             shutil.copyfile('apporbit.repo', '/etc/yum.repos.d/apporbit.repo')
