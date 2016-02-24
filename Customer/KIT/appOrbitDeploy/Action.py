@@ -91,6 +91,7 @@ class Action:
         if process.returncode == 0:
             logging.info(out)
             # sleep added for mysql container to get completed started
+            self.utilityobj.progressBar(11)
             time.sleep(60)
         else:
             logging.error(err)
@@ -369,13 +370,13 @@ class Action:
             logging.info("Copying SSL Certificate from the dir %s", config_obj.self_signed_crt_dir)
             self.copySSLCertificate(config_obj.self_signed_crt_dir)
 
-        self.utilityobj.progressBar(5)
+        self.utilityobj.progressBar(3)
         # LOGIN to DOCKER REGISTRY
         if config_obj.build_deploy_mode == '3' or config_obj.build_deploy_mode == '0':
             self.loginDockerRegistry(config_obj.docker_uname, config_obj.docker_passwd, config_obj.registry_url)
-            self.utilityobj.progressBar(6)
+
             self.pullImagesformRepos(config_obj.registry_url, config_obj.buildid)
-            self.utilityobj.progressBar(7)
+
 
         # DEPLOY CHEF CONTAINER
         if config_obj.clean_setup == '1':
@@ -595,7 +596,7 @@ class Action:
             logging.warning(err)
             print "Getting images for repo  - [Failed]. Check log for details"
             exit()
-
+        self.utilityobj.progressBar(4)
         process = subprocess.Popen(cmd_srvc_image, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = process.communicate()
         if(process.returncode==0):
@@ -606,7 +607,7 @@ class Action:
             logging.warning(err)
             print "Getting images for repo  - [Failed]. Check log for details"
             exit()
-
+        self.utilityobj.progressBar(5)
         process = subprocess.Popen(cmd_msgq_image, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = process.communicate()
         if(process.returncode==0):
@@ -617,7 +618,7 @@ class Action:
             logging.warning(err)
             print "Getting images for repo  - [Failed]. Check log for details"
             exit()
-
+        self.utilityobj.progressBar(6)
         process = subprocess.Popen(cmd_docs_image, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = process.communicate()
         if(process.returncode==0):
@@ -628,7 +629,7 @@ class Action:
             logging.warning(err)
             print "Getting images for repo  - [Failed]. Check log for details"
             exit()
-
+        self.utilityobj.progressBar(7)
         process = subprocess.Popen(cmd_dbs_image, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = process.communicate()
         if(process.returncode==0):
