@@ -55,7 +55,7 @@ def main():
         # utilityObj.deployFromFile('local.conf')
         utilityObj.progressBar(20)
         print "   -- [Done]"
-        print "change your default password 'admin1234' by logging into the User Management console in the UI at https://<HOSTIP>/users"
+        print "Now login to the User Management Console in the UI at https://" + config_obj.hostip + " using the default password 'admin1234'"
         logging.info("END OF DEPLOYMENT")
     else:
         logging.info("Starting to get user configuration.")
@@ -76,7 +76,7 @@ def main():
         utilityObj.progressBar(20)
         print "   -- [Done]"
         # utilityObj.deployFromFile('appobit_deploy.conf')
-        print "change your default password 'admin1234' by logging into the User Management console in the UI at https://<HOSTIP>/users"
+        print "Now login to the User Management Console in the UI at https://" + config_obj.hostip + " using the default password 'admin1234'"
         logging.info("END OF DEPLOYMENT")
    
     return
