@@ -14,7 +14,7 @@ def main():
     logging.basicConfig(filename='appOrbitInstall.log', level=logging.DEBUG,
                          format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
 
-    print ("This installer will install the appOrbit Management Server on this machine")
+    print ("This installer will install the appOrbit management server in this machine")
     logging.info("Starting appOrbit Installation")
 
     config_obj = Config.Config()
@@ -49,13 +49,13 @@ def main():
     if os.path.isfile('local.conf'):
         logging.info('Using local.conf file for deployment')
         config_obj.loadConfig('local.conf')
-        print "Deploying appOrbit Management Server."
+        print "Deploying appOrbit management server."
         utilityObj.progressBar(0)
         actionObj.deployAppOrbit(config_obj)
         # utilityObj.deployFromFile('local.conf')
         utilityObj.progressBar(20)
         print "   -- [Done]"
-        print "Now login to the User Management Console in the UI at https://" + config_obj.hostip + " using the default password 'admin1234'"
+        print "Now login to the appOrbit management server using https://" + config_obj.hostip + " with the default password 'admin1234'"
         logging.info("END OF DEPLOYMENT")
     else:
         logging.info("Starting to get user configuration.")
@@ -70,13 +70,13 @@ def main():
             logging.error("ERROR: Deployment Configuration file not found!")
             # print "Config file is missing! check log for more details."
             exit()
-        print "Deploying appOrbit Management Server."
+        print "Deploying appOrbit management server."
         utilityObj.progressBar(0)
         actionObj.deployAppOrbit(config_obj)
         utilityObj.progressBar(20)
         print "   -- [Done]"
         # utilityObj.deployFromFile('appobit_deploy.conf')
-        print "Now login to the User Management Console in the UI at https://" + config_obj.hostip + " using the default password 'admin1234'"
+        print "Now login to the appOrbit management server using https://" + config_obj.hostip + " with the default password 'admin1234'"
         logging.info("END OF DEPLOYMENT")
    
     return
