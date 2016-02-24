@@ -25,7 +25,7 @@ def main():
     # Fail and exit if Not fixable Requirements like
     # Hardware Requirements are not satisfied
     # Fail but not exit with Fixable Reqruiements
-    print "Verifying system informations."
+    print "Verifying system information."
     utilityObj.progressBar(0)
     utilityObj.verifySystemInfo()
     logging.info("System info verification is completed!")
@@ -49,7 +49,7 @@ def main():
     if os.path.isfile('local.conf'):
         logging.info('Using local.conf file for deployment')
         config_obj.loadConfig('local.conf')
-        print "Deploying appOrbit management server."
+        print "Deploying AppOrbit Management Server."
         utilityObj.progressBar(0)
         actionObj.deployAppOrbit(config_obj)
         # utilityObj.deployFromFile('local.conf')
@@ -70,7 +70,7 @@ def main():
             logging.error("ERROR: Deployment Configuration file not found!")
             # print "Config file is missing! check log for more details."
             exit()
-        print "Deploying appOrbit management server."
+        print "Deploying AppOrbit Management Server."
         utilityObj.progressBar(0)
         actionObj.deployAppOrbit(config_obj)
         utilityObj.progressBar(20)

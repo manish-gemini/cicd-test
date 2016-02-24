@@ -40,8 +40,7 @@ class Utility:
         self.progressBar(1)
         if not self.verifyHardwareRequirement():
             logging.error("Hardware requirements are not satisfied !")
-            #print ("ERROR : Hardware requirement check failed! \
-            #Check log for details.")
+            print "ERROR : Hardware requirement verification failed! Check log for details."
             exit()
         logging.info("Hardware Requirement Check   -COMPLETED")
         self.progressBar(2)
@@ -49,7 +48,7 @@ class Utility:
         logging.info("Software Requirement Check   -STARTED")
         if not self.verifySoftwareRequirement():
             logging.error("Software requirements are not satisfied !")
-            # print ("ERROR : Software requirement check failed! \
+            #print ("ERROR : Software requirement check failed! \
             # Check log for details.")
             exit()
         logging.info("Software Requirement Check   -COMPLETED")
@@ -172,8 +171,8 @@ class Utility:
 
         else:
             logging.error('apporbit.repo file is missing in the package.\
-                          check with appOrbit Business contact.')
-            # print ("ERROR: package files missing! check with your appOrbit Business contact.")
+                          check with AppOrbit Business contact.')
+            print ("ERROR: package files missing! check with your AppOrbit Business contact.")
             return False
 
         logging.info ("Verifying docker installation")
@@ -261,7 +260,7 @@ class Utility:
 
     # Verify RepoConnection
     def verifyRepoConnection(self):
-        host = "repos.gsintlab.com"
+        host = "repos.apporbit.com"
         path = "/"
         try:
             conn = httplib.HTTPConnection(host)
@@ -273,8 +272,7 @@ class Utility:
                 logging.error("Unable to connect to repository \
                  Check Network settings and Enable connection to http://repos.gsintlab.com \
                  %d", conn.getresponse().status )
-                # print ("Unable to connect to repository. \
-                # Check Network settings and Enable connection to http://repos.gsintlab.com ")
+                print ("Unable to connect to AppOrbit repository. Check Network settings and Enable connection to http://repos.apporbit.com ")
                 return False
         except StandardError:
             logging.error ("Unable to connect repositories.\
@@ -298,6 +296,8 @@ class Utility:
 
             else:
                 logging.warning("Install wget failed. %s", err)
+                print "Installing wget failed!. Check log for details."
+                return False
 
         self.progressBar(12)
         if self.do_ntpinstall:
@@ -313,7 +313,7 @@ class Utility:
 
             else:
                 logging.warning("Install ntp failed. %s", err)
-                # print ("NTP Install - FAILED")
+                print "Installing ntp failed!. check log for details."
                 return False
         self.progressBar(14)
 
@@ -330,7 +330,7 @@ class Utility:
 
             else:
                 logging.warning("Install docker failed. %s", err)
-                # print ("docker Install - Failed")
+                print "Installing docker failed!. check log for details."
                 return False
 
         self.progressBar(16)
@@ -348,6 +348,7 @@ class Utility:
 
             else:
                 logging.warning("setting sestatus Failed. %s", out)
+                print "setting sestatus failed!. check log for details."
                 return False
         self.progressBar(17)
         # Enable Docker Service
@@ -373,6 +374,7 @@ class Utility:
 
         else:
             logging.error("service docker start  -Failed. %s", err_doc)
+            print "service docker start failed. check log for details."
             return False
         self.progressBar(18)
         # Sync Network Time

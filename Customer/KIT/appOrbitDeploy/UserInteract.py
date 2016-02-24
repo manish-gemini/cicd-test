@@ -27,9 +27,9 @@ class UserInteract:
         ssldir = ""
 
         logging.info("Starting to get user config info")
-        print "Enter the user configuration informations."
+        print "Enter the user configuration information."
         print "------------------------------------------"
-        print "Login to the appOrbit registry using the credentials sent to you by email by your appOrbit sales representative"
+        print "Login to the AppOrbit registry using the credentials sent to you by email by your AppOrbit sales representative"
         reg_user_name = raw_input("Enter the user name: ")
         reg_password = getpass.getpass()
         build_id = raw_input("Enter the build id [latest] : ") or "latest"
