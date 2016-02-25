@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 
-import os
-import urllib2
 import getpass
-import ConfigParser
 import logging
 
-import Config
+import urllib2
+
 
 class UserInteract:
 

@@ -1,15 +1,14 @@
 #!/usr/bin/env python
 
-import os
 import logging
+import multiprocessing
+import os
+import re
+import shutil
 import subprocess
 import time
-import shutil
-import multiprocessing
-import re
 
 import Utility
-import Config
 
 
 class Action:
