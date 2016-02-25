@@ -282,6 +282,22 @@ class Utility:
 
 
     def fixSysRequirements(self):
+        cmd_upgradelvm = "yum -y upgrade lvm2"
+
+        process = subprocess.Popen(cmd_upgradelvm, shell=True, stdout=subprocess.PIPE, \
+                                   stderr=subprocess.PIPE)
+
+        out, err =  process.communicate()
+
+        if process.returncode == 0:
+            # print out
+            logging.info("Upgrade lvm2. %s", out)
+
+        else:
+            logging.warning("Upgrade lvm2 failed. %s", err)
+            print "Upgrade lvm2 failed!. Check log for details."
+            return False
+
         if self.do_wgetinstall:
             cmd_wgetInstall = "yum install -y wget"
 
