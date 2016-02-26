@@ -165,8 +165,10 @@ class Utility:
         if "red hat" in osname:
             logging.info("Verifying Subscription Details.")
             subscription_cmd = "subscription-manager version"
-            self.cmdExecute(subscription_cmd, "Check Red Hat Subscription", False)
-                        self.redhat_subscription = False
+            code, out, err = self.cmdExecute(subscription_cmd, "Check Red Hat Subscription", False)
+            if code:
+                if "currently not registered" in out:
+                    self.redhat_subscription = False
 
         return True
 
@@ -251,9 +253,9 @@ class Utility:
 
     def fixSysRequirements(self):
         cmd_upgradelvm = "yum -y upgrade lvm2"
+        if not self.cmdExecute(cmd_upgradelvm, "lvm upgrade", False)
+            return False
 
-        process = subprocess.Popen(cmd_upgradelvm, shell=True, stdout=subprocess.PIPE, \
-                                   stderr=subprocess.PIPE)
 
         out, err =  process.communicate()
 
@@ -268,9 +270,9 @@ class Utility:
 
         if self.do_wgetinstall:
             cmd_wgetInstall = "yum install -y wget"
-            if not self.cmdExecute(cmd_wgetInstall, "Wget Install", False):
+            code, out, err = self.cmdExecute(cmd_wgetInstall, "Wget Install", False)
+            if not code:
                 if self.redhat_subscription:
-                else:
                     print "FAILED- Red Hat is not having a valid subscription. Get a valid subscription and retry installation."
                 return False
 
