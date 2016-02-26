@@ -43,7 +43,7 @@ class Utility:
                 else:
                     logging.warning("WARNING - %s", cmd_desc)
                     logging.warning(err)
-                    return False
+                    return False, out, err
         except Exception as exp:
             if bexit :
                     logging.error("FAILED - %s", cmd_desc)
@@ -54,8 +54,7 @@ class Utility:
             else:
                     logging.warning("WARNING - %s", cmd_desc)
                     logging.warning("Exception: %d : %s", exp.errno, exp.strerror)
-
-        return True
+        return True, out, err
 
 
     # Progress Bar Impleementaion

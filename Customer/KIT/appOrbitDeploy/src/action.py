@@ -314,7 +314,7 @@ class Action:
     def removeRunningContainers(self, config_obj):
         cmd_dockerps = "docker ps -a "
         cmd_desc = "Docker ps"
-        self.utilityobj.cmdExecute(cmd_dockerps, cmd_desc, True)
+        code, out, err = self.utilityobj.cmdExecute(cmd_dockerps, cmd_desc, True)
 
         if config_obj.clean_setup == '1':
             if "apporbit-chef" in out:
