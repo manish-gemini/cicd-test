@@ -21,6 +21,7 @@ class Utility:
         self.do_ntpinstall = 0
         self.do_wgetinstall = 0
         self.do_sesettings = 0
+        self.redhat_subscription = True
         return
 
 
@@ -142,20 +143,18 @@ class Utility:
                     logging.info("subscription manager version. %s", out)
                     if "currently not registered" in out:
                         logging.error("Red Hat Subscription : This system is not Registered. Register and retry installation.")
-                        print "Red Hat is not having a valid subscription. Get a valid subscription and retry installation."
-                        exit()
+                        self.redhat_subscription = False
 
                 else:
                     # print err
                     logging.error("Error in finding subscription details. %s", err)
-
 
             except Exception as exp:
                 logging.error("subscription manager version command failed.")
                 logging.error("Unable to find subscription details..")
 
 
-        return
+        return True
 
 
     # Check - apporbit.repo file
@@ -312,7 +311,10 @@ class Utility:
 
             else:
                 logging.warning("Install wget failed. %s", err)
-                print "Installing wget failed!. Check log for details."
+                if self.redhat_subscription:
+                    print "Installing wget failed!. Check log for details."
+                else:
+                    print "FAILED- Red Hat is not having a valid subscription. Get a valid subscription and retry installation."
                 return False
 
         self.progressBar(12)
