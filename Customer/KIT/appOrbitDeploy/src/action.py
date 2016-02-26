@@ -5,16 +5,15 @@ import multiprocessing
 import os
 import re
 import shutil
-import subprocess
 import time
 
-import Utility
+import utility
 
 
 class Action:
 
     def __init__(self):
-        self.utilityobj = Utility.Utility()
+        self.utilityobj = utility.Utility()
         return
 
 
@@ -26,19 +25,20 @@ class Action:
 
         cmd_deploy_rmq = "docker run -m 2g -d --hostname rmq --restart=always \
         --name apporbit-rmq -d " + rmq_image_name
-        process = subprocess.Popen(cmd_deploy_rmq, shell=True, stdout=subprocess.PIPE, \
-                                   stderr=subprocess.PIPE)
-
-        out, err =  process.communicate()
-
-        if process.returncode == 0:
-            logging.info(out)
-            #Sleep Added for safe start of containers
-            time.sleep(10)
-        else:
-            logging.warning(err)
-            print "Deploy rmq  -[FAILED]. Check logs for details."
+        try:
+            code, out, err = self.utilityobj.cmdExecute(cmd_deploy_rmq)
+            if code == 0:
+                logging.info(out)
+                #Sleep Added for safe start of containers
+                time.sleep(10)
+            else:
+                logging.warning(err)
+                print "Deploy rmq  -[FAILED]. Check logs for details."
+                exit()
+        except Exception as exp:
+            logging.warning("Exception:Deploy rmq  -[FAILED]. %d : %s", exp.errno, exp.strerror)
             exit()
+
 
 
     def deployDocs(self, reg_url):
@@ -47,55 +47,41 @@ class Action:
 
         rmq_image_name = reg_url + "/apporbit/apporbit-docs"
 
-        cmd_image_pull = "docker pull " + rmq_image_name
-
-        process = subprocess.Popen(cmd_image_pull, shell=True, stdout=subprocess.PIPE, \
-                                   stderr=subprocess.PIPE)
-
-        out, err =  process.communicate()
-
-        if process.returncode == 0:
-            logging.info(out)
-        else:
-            logging.error(err)
-            print "pull docs image from repo - [FAILED] Check logs for details. "
-            exit()
-
         cmd_deploy_docs = "docker run --name apporbit-docs --restart=always -p 9080:80 -d " + rmq_image_name
-
-        process = subprocess.Popen(cmd_deploy_docs, shell=True, stdout=subprocess.PIPE, \
-                                   stderr=subprocess.PIPE)
-
-        out, err =  process.communicate()
-
-        if process.returncode == 0:
-            logging.info(out)
-        else:
-            logging.error(err)
-            print "Deploy docs container - [FAILED] Check logs for details. "
+        try:
+            code, out, err = self.utilityobj.cmdExecute(cmd_deploy_docs)
+            if code == 0:
+                logging.info(out)
+            else:
+                logging.error(err)
+                print "Deploy docs container - [FAILED] Check logs for details. "
+                exit()
+        except Exception as exp:
+            logging.warning("Exception:Deploy docs container - [FAILED]. %d : %s", exp.errno, exp.strerror)
             exit()
 
-        return
+        return True
 
     def deployDB(self):
         cmd_deploy_db = "docker run --name db --restart=always -e MYSQL_ROOT_PASSWORD=admin \
         -e MYSQL_USER=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller \
         -v /var/dbstore:/var/lib/mysql -d mysql:5.6.24"
-
-        process = subprocess.Popen(cmd_deploy_db, shell=True, stdout=subprocess.PIPE, \
-                                   stderr=subprocess.PIPE)
-
-        out, err =  process.communicate()
-
-        if process.returncode == 0:
-            logging.info(out)
-            # sleep added for mysql container to get completed started
-            self.utilityobj.progressBar(11)
-            time.sleep(60)
-        else:
-            logging.error(err)
-            print "Deploy db container - [FAILED] Check logs for details. "
+        try:
+            code, out, err = self.utilityobj.cmdExecute(cmd_deploy_db)
+            if code == 0:
+                logging.info(out)
+                # sleep added for mysql container to get completed started
+                self.utilityobj.progressBar(11)
+                time.sleep(60)
+            else:
+                logging.error(err)
+                print "Deploy db container - [FAILED] Check logs for details. "
+                exit()
+        except Exception as exp:
+            logging.warning("Exception:Deploy db container - [FAILED]. %d : %s", exp.errno, exp.strerror)
             exit()
+
+        return  True
 
 
     def deployChef(self, host_ip, reg_url = ""):
@@ -107,20 +93,21 @@ class Action:
         cmd_chefDeploy = "docker run -m 2g -it --restart=always -p 9443:9443  \
         -v /etc/chef-server/ --name apporbit-chef -h "+ host_ip + " -d " + chef_image_name
 
-        process = subprocess.Popen(cmd_chefDeploy, shell=True, stdout=subprocess.PIPE, \
-                            stderr=subprocess.PIPE)
-
-        out, err =  process.communicate()
-        if process.returncode == 0:
-            logging.info(out)
-            # sleep added for chef container to start completely before other containers
-            time.sleep(120)
-        else:
-            logging.error(err)
-            print "Deploy chef container -[FAILED] Check logs for details. "
+        try:
+            code, out, err = self.utilityobj.cmdExecute(cmd_chefDeploy)
+            if code == 0:
+                logging.info(out)
+                # sleep added for chef container to start completely before other containers
+                time.sleep(120)
+            else:
+                logging.error(err)
+                print "Deploy chef container -[FAILED] Check logs for details. "
+                exit()
+        except Exception as exp:
+            logging.warning("Exception:Deploy chef container -[FAILED]. %d : %s", exp.errno, exp.strerror)
             exit()
 
-        return
+        return True
 
 
     def deployServices(self, config_obj):
@@ -167,23 +154,21 @@ class Action:
         cmd_deploy_services = cmd_deploy_services + " -v /var/log/apporbit/services:/var/log/apporbit" + vol_mount_str + " -d  \
         " + image_name
 
-        #print cmd_deploy_services
-
-        process = subprocess.Popen(cmd_deploy_services, shell=True, stdout=subprocess.PIPE, \
-                                   stderr=subprocess.PIPE)
-
-        out, err =  process.communicate()
-
-        if process.returncode == 0:
-            logging.info(out)
-            #Sleep added for safe start of container process before next container start
-            time.sleep(10)
-        else:
-            logging.error(err)
-            logging.error(cmd_deploy_services)
-            print "Deploy deploy services container - [FAILED] Check logs for details. "
+        try:
+            code, out, err = self.utilityobj.cmdExecute(cmd_deploy_services)
+            if code == 0:
+                logging.info(out)
+                #Sleep added for safe start of container process before next container start
+                time.sleep(10)
+            else:
+                logging.error(err)
+                logging.error(cmd_deploy_services)
+                print "Deploy deploy services container - [FAILED] Check logs for details. "
+                exit()
+        except Exception as exp:
+            logging.warning("Exception:Deploy deploy services container -[FAILED]. %d : %s", exp.errno, exp.strerror)
             exit()
-        return
+        return True
 
 
     def calcMaxPhusionProcess(self):
@@ -267,22 +252,19 @@ class Action:
         -v /var/lib/apporbit/sslkeystore/:/home/apporbit/apporbit-controller/sslkeystore \
         -d " + cntrlimageName
 
-        #print cmd_deploy_controller
-
-        process = subprocess.Popen(cmd_deploy_controller, shell=True, stdout=subprocess.PIPE, \
-                                   stderr=subprocess.PIPE)
-
-        out, err =  process.communicate()
-
-        if process.returncode == 0:
-            logging.info(out)
-            # print "Deploy Controller - SUCCESS"
-        else:
-            logging.error(err)
-            print "Deploy controllers container - [FAILED] Check logs for details."
+        try:
+            code, out, err = self.utilityobj.cmdExecute(cmd_deploy_controller)
+            if code == 0:
+                logging.info(out)
+                # print "Deploy Controller - SUCCESS"
+            else:
+                logging.error(err)
+                print "Deploy controllers container - [FAILED] Check logs for details."
+                exit()
+        except Exception as exp:
+            logging.warning("Exception:Deploy controllers container -[FAILED]. %d : %s", exp.errno, exp.strerror)
             exit()
-
-        return
+        return True
 
 
     def createSelfSignedCert(self):
@@ -291,20 +273,19 @@ class Action:
         -subj "/C=US/ST=NY/L=appOrbit/O=Dis/CN=www.apporbit.com" \
         -keyout /var/lib/apporbit/sslkeystore/apporbitserver.key \
         -out /var/lib/apporbit/sslkeystore/apporbitserver.crt'
-
-        process = subprocess.Popen(cmd_sslcert, shell=True, stdout=subprocess.PIPE, \
-                                   stderr=subprocess.PIPE)
-
-        out, err =  process.communicate()
-
-        if process.returncode == 0:
-            logging.info("SSL Certificate Create - SUCCESS. %s", out)
-        else:
-            logging.warning("SSL Certificate Create - Failed. %s", err)
-            print "SSL Certificate Create - [FAILED] Check logs for details. "
+        try:
+            code, out, err = self.utilityobj.cmdExecute(cmd_sslcert)
+            if code == 0:
+                logging.info("SSL Certificate Create - SUCCESS. %s", out)
+            else:
+                logging.warning("SSL Certificate Create - Failed. %s", err)
+                print "SSL Certificate Create - [FAILED] Check logs for details. "
+                exit()
+        except Exception as exp:
+            logging.warning("Exception:SSL Certificate Create -[FAILED]. %d : %s", exp.errno, exp.strerror)
             exit()
 
-        return
+        return True
 
     def copySSLCertificate(self, dir):
 
@@ -324,31 +305,31 @@ class Action:
         cmd_cpysslkey = "cp -f " + dir +"/apporbitserver.key /var/lib/apporbit/sslkeystore/apporbitserver.key"
         cmd_cpysslcrt = "cp -f " + dir +"/apporbitserver.crt /var/lib/apporbit/sslkeystore/apporbitserver.crt"
 
-        process = subprocess.Popen(cmd_cpysslkey, shell=True, stdout=subprocess.PIPE, \
-                                   stderr=subprocess.PIPE)
-
-        out, err =  process.communicate()
-
-        if process.returncode == 0:
-            logging.info("SSL key copy  - SUCCESS. %s", out)
-        else:
-            logging.warning("SSL key copy  - Failed. %s", err)
-            print "Copy SSL key - [FAILED] Check logs for details. "
+        try:
+            code, out, err = self.utilityobj.cmdExecute(cmd_cpysslkey)
+            if code == 0:
+                logging.info("SSL key copy  - SUCCESS. %s", out)
+            else:
+                logging.warning("SSL key copy  - Failed. %s", err)
+                print "Copy SSL key - [FAILED] Check logs for details. "
+                exit()
+        except Exception as exp:
+            logging.warning("Exception:SSL key copy -[FAILED]. %d : %s", exp.errno, exp.strerror)
             exit()
 
-        process = subprocess.Popen(cmd_cpysslcrt, shell=True, stdout=subprocess.PIPE, \
-                                   stderr=subprocess.PIPE)
-
-        out, err =  process.communicate()
-
-        if process.returncode == 0:
-            logging.info("SSL Certificate copy - SUCCESS. %s", out)
-        else:
-            logging.warning("SSL Certificate copy - Failed. %s", err)
-            print "Copy SSL Certificate - [FAILED] Check logs for details. "
+        try:
+            code, out, err = self.utilityobj.cmdExecute(cmd_cpysslcrt)
+            if code == 0:
+                logging.info("SSL Certificate copy - SUCCESS. %s", out)
+            else:
+                logging.warning("SSL Certificate copy - Failed. %s", err)
+                print "Copy SSL Certificate - [FAILED] Check logs for details. "
+                exit()
+        except Exception as exp:
+            logging.warning("Exception:SSL Certificate copy -[FAILED]. %d : %s", exp.errno, exp.strerror)
             exit()
 
-        return
+        return True
 
 
     def deployAppOrbit(self, config_obj):
@@ -410,71 +391,101 @@ class Action:
 
 
     def removeRunningContainers(self, config_obj):
-        process = subprocess.Popen("docker ps -a ", shell=True, stdout=subprocess.PIPE, \
-                                   stderr=subprocess.PIPE)
-        out, err =  process.communicate()
-        if process.returncode == 0:
-            if config_obj.clean_setup == '1':
-                if "apporbit-chef" in out:
-                    logging.info( "apporbit-chef exist remove it")
-                    rmvprocess = subprocess.Popen("docker rm -f apporbit-chef", shell=True,\
-                                              stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                    rmvout, rmverr = rmvprocess.communicate()
-                    if rmvprocess.returncode == 0:
-                        logging.info("Successfully removed apporbit-chef")
-                    else:
-                        logging.warning(rmverr)
+        cmd_dockerps = "docker ps -a "
+        try:
+            code, out, err = self.utilityobj.cmdExecute(cmd_dockerps)
+            if code == 0:
+                if config_obj.clean_setup == '1':
+                    if "apporbit-chef" in out:
+                        logging.info( "apporbit-chef exist remove it")
+                        cmd_chef_rm = "docker rm -f apporbit-chef"
+                        try:
+                            code, out, err = self.utilityobj.cmdExecute(cmd_chef_rm)
+                            if code == 0:
+                                logging.info("Successfully removed apporbit-chef")
+                            else:
+                                logging.warning(err)
+                        except Exception as exp:
+                            logging.warning("Exception: Clean up chef container -[FAILED]. %d : %s", exp.errno, exp.strerror)
+                            print "Clean up chef container - [FAILED]. Check logs for details."
+                            exit()
 
-            if "apporbit-controller" in out:
-                logging.info("apporbit-controller exist remove it")
-                rmvprocess = subprocess.Popen("docker rm -f apporbit-controller", shell=True,\
-                                              stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                rmvout, rmverr = rmvprocess.communicate()
-                if rmvprocess.returncode == 0:
-                    logging.info("Successfully removed apporbit-controller")
-                else:
-                    logging.warning(rmverr)
+                if "apporbit-controller" in out:
+                    logging.info("apporbit-controller exist remove it")
+                    cmd_controller_rm = "docker rm -f apporbit-controller"
+                    try:
+                        code, out, err = self.utilityobj.cmdExecute(cmd_controller_rm)
+                        if code == 0:
+                            logging.info("Successfully removed apporbit-controller")
+                        else:
+                            logging.warning(err)
+                    except Exception as exp:
+                        logging.warning("Exception: Clean up controller container -[FAILED]. %d : %s", exp.errno, exp.strerror)
+                        print "Clean up controller container - [FAILED]. Check logs for details."
+                        exit()
 
-            if "apporbit-services" in out:
-                logging.info( "apporbit-rmq-services exist remove it")
-                rmvprocess = subprocess.Popen("docker rm -f apporbit-services", shell=True,\
-                                              stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                rmvout, rmverr = rmvprocess.communicate()
-                if rmvprocess.returncode == 0:
-                    logging.info("Successfully removed apporbit-services")
-                else:
-                    logging.warning(rmverr)
+                if "apporbit-services" in out:
+                    logging.info( "apporbit-rmq-services exist remove it")
+                    cmd_services_rm = "docker rm -f apporbit-services"
+                    try:
+                        code, out, err = self.utilityobj.cmdExecute(cmd_services_rm)
+                        if code == 0:
+                            logging.info("Successfully removed apporbit-services")
+                        else:
+                            logging.warning(err)
+                    except Exception as exp:
+                        logging.warning("Exception: Clean up services container -[FAILED]. %d : %s", exp.errno, exp.strerror)
+                        print "Clean up services container - [FAILED]. Check logs for details."
+                        exit()
 
-            if  "db" in out:
-                logging.info( "db container exist remove it")
-                rmvprocess = subprocess.Popen("docker rm -f db", shell=True,\
-                                              stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                rmvout, rmverr = rmvprocess.communicate()
-                if rmvprocess.returncode == 0:
-                    logging.info("Successfully removed apporbit-db")
-                else:
-                    logging.warning(rmverr)
-            if "apporbit-rmq" in out:
-                logging.info( "rmq container exist remove it")
-                rmvprocess = subprocess.Popen("docker rm -f apporbit-rmq", shell=True,\
-                                              stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                rmvout, rmverr = rmvprocess.communicate()
-                if rmvprocess.returncode == 0:
-                    logging.info("Successfully removed apporbit-rmq")
-                else:
-                    logging.warning(rmverr)
-            if "apporbit-docs" in out:
-                rmvprocess = subprocess.Popen("docker rm -f apporbit-docs", shell=True,\
-                                              stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                rmvout, rmverr = rmvprocess.communicate()
-                if rmvprocess.returncode == 0:
-                    logging.info("Successfully removed apporbit-docs")
-                else:
-                    logging.warning(rmverr)
+                if  "db" in out:
+                    logging.info( "db container exist remove it")
+                    cmd_db_rm = "docker rm -f db"
+                    try:
+                        code, out, err = self.utilityobj.cmdExecute(cmd_db_rm)
+                        if code == 0:
+                            logging.info("Successfully removed apporbit-db")
+                        else:
+                            logging.warning(err)
+                    except Exception as exp:
+                        logging.warning("Exception: Clean up database container -[FAILED]. %d : %s", exp.errno, exp.strerror)
+                        print "Clean up database container - [FAILED]. Check logs for details."
+                        exit()
 
-        return
+                if "apporbit-rmq" in out:
+                    logging.info( "rmq container exist remove it")
+                    cmd_rmq_rm = "docker rm -f apporbit-rmq"
+                    try:
+                        code, out, err = self.utilityobj.cmdExecute(cmd_rmq_rm)
+                        if code == 0:
+                            logging.info("Successfully removed apporbit-rmq")
+                        else:
+                            logging.warning(err)
+                    except Exception as exp:
+                        logging.warning("Exception: Clean up message container -[FAILED]. %d : %s", exp.errno, exp.strerror)
+                        print "Clean up message container - [FAILED]. Check logs for details."
+                        exit()
+
+                if "apporbit-docs" in out:
+                    cmd_docs_rm = "docker rm -f apporbit-docs"
+                    try:
+                        code, out, err = self.utilityobj.cmdExecute(cmd_docs_rm)
+                        if code == 0:
+                            logging.info("Successfully removed apporbit-docs")
+                        else:
+                            logging.warning(err)
+                    except Exception as exp:
+                        logging.warning("Exception: Clean up document container -[FAILED]. %d : %s", exp.errno, exp.strerror)
+                        print "Clean up document container - [FAILED]. Check logs for details."
+                        exit()
 
 
+        except Exception as exp:
+            logging.warning("Exception:DOCKER PS -[FAILED]. %d : %s", exp.errno, exp.strerror)
+            print "Getting Docker Running Process failed. Check log for more information."
+            exit()
+
+        return True
 
     def clearOldEntries(self):
         logging.info("clean old entries to create freash setup STARTED!!!")
@@ -509,56 +520,49 @@ class Action:
         cmd_services = "chcon -Rt svirt_sandbox_file_t /var/log/apporbit/services"
         cmd_controller = "chcon -Rt svirt_sandbox_file_t /var/log/apporbit/controller"
 
-        process = subprocess.Popen(cmd_db_dir, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        out, err = process.communicate()
-        if(process.returncode==0):
-            # print out
-            logging.info( out)
-        else:
-            logging.error(err)
+        try:
+            code, out, err = self.utilityobj.cmdExecute(cmd_db_dir)
+            if code == 0:
+                logging.info( out)
+            else:
+                logging.error(err)
 
-        process = subprocess.Popen(cmd_sshkey, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        out, err = process.communicate()
-        if(process.returncode==0):
-            # print out
-            logging.info(out)
-        else:
-            logging.error(err)
+            code, out, err = self.utilityobj.cmdExecute(cmd_sshkey)
+            if code == 0:
+                logging.info( out)
+            else:
+                logging.error(err)
 
-        process = subprocess.Popen(cmd_sslkey, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        out, err = process.communicate()
-        if(process.returncode==0):
-            # print out
-            logging.info(out)
-        else:
-            logging.error(err)
+            code, out, err = self.utilityobj.cmdExecute(cmd_sslkey)
+            if code == 0:
+                logging.info( out)
+            else:
+                logging.error(err)
 
+            code, out, err = self.utilityobj.cmdExecute(cmd_services)
+            if code == 0:
+                logging.info( out)
+            else:
+                logging.error(err)
 
-        process = subprocess.Popen(cmd_services, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        out, err = process.communicate()
-        if(process.returncode==0):
-            logging.info(out)
-        else:
-            logging.error(err)
+            code, out, err = self.utilityobj.cmdExecute(cmd_controller)
+            if code == 0:
+                logging.info( out)
+            else:
+                logging.error(err)
 
-        process = subprocess.Popen(cmd_controller, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        out, err = process.communicate()
-        if(process.returncode==0):
-            # print out
-            logging.info(out)
-        else:
-            logging.error(err)
+        except Exception as exp:
+            logging.warning("Exception: Setting folder permission -[FAILED]. %d : %s", exp.errno, exp.strerror)
 
-        return
+        return True
 
 
     def loginDockerRegistry(self, uname, passwd, repo_str = "secure-registry.gsintlab.com" ):
         # print "Login to Docker Registry " + repo_str
         if passwd:
             cmd_str = 'docker login -e=admin@apporbit.com -u=' + uname + ' -p=' + passwd +' '+ repo_str
-            process = subprocess.Popen(cmd_str, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            out, err = process.communicate()
-            if(process.returncode==0):
+            code, out, err = self.utilityobj.cmdExecute(cmd_str)
+            if code == 0:
                 logging.info("Docker Login Success ")
                 pass
             else:
@@ -569,7 +573,8 @@ class Action:
             logging.error("Docker Login Failed ")
             print 'Docker login -[Failed!]'
             exit()
-        return
+
+        return True
 
 
     def pullImagesformRepos(self, repo_str, build_id):
@@ -581,60 +586,61 @@ class Action:
 
         cmd_ctrl_image = 'docker pull ' + controller_image
         cmd_srvc_image = 'docker pull ' + services_image
-        cmd_msgq_image = 'docker pull ' + message_queue_image
+        cmd_msg_image = 'docker pull ' + message_queue_image
         cmd_docs_image = 'docker pull ' + docs_image
         cmd_dbs_image = 'docker pull ' + database_image
 
-        # print "Controller Image"
-        process = subprocess.Popen(cmd_ctrl_image, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        out, err = process.communicate()
-        if(process.returncode==0):
-            # print out
-            logging.info(out)
-        else:
-            logging.warning(err)
-            print "Getting images for repo  - [Failed]. Check log for details"
-            exit()
-        self.utilityobj.progressBar(4)
-        process = subprocess.Popen(cmd_srvc_image, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        out, err = process.communicate()
-        if(process.returncode==0):
-            # print out
-            logging.info(out)
 
-        else:
-            logging.warning(err)
-            print "Getting images for repo  - [Failed]. Check log for details"
-            exit()
-        self.utilityobj.progressBar(5)
-        process = subprocess.Popen(cmd_msgq_image, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        out, err = process.communicate()
-        if(process.returncode==0):
-            # print out
-            logging.info(out)
+        try:
+            code, out, err = self.utilityobj.cmdExecute(cmd_ctrl_image)
+            if code == 0:
+                logging.info(out)
+            else:
+                logging.warning(err)
+                print "Getting images for repo  - [Failed]. Check log for details"
+                exit()
 
-        else:
-            logging.warning(err)
-            print "Getting images for repo  - [Failed]. Check log for details"
-            exit()
-        self.utilityobj.progressBar(6)
-        process = subprocess.Popen(cmd_docs_image, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        out, err = process.communicate()
-        if(process.returncode==0):
-            # print out
-            logging.info(out)
+            self.utilityobj.progressBar(4)
 
-        else:
-            logging.warning(err)
-            print "Getting images for repo  - [Failed]. Check log for details"
-            exit()
-        self.utilityobj.progressBar(7)
-        process = subprocess.Popen(cmd_dbs_image, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        out, err = process.communicate()
-        if(process.returncode==0):
-            logging.info(out)
-        else:
-            logging.warning(err)
-            print "Getting images for repo  - [Failed]. Check log for details"
-            exit()
+            code, out, err = self.utilityobj.cmdExecute(cmd_srvc_image)
+            if code == 0:
+                logging.info(out)
+            else:
+                logging.warning(err)
+                print "Getting images for repo  - [Failed]. Check log for details"
+                exit()
 
+            self.utilityobj.progressBar(5)
+
+            code, out, err = self.utilityobj.cmdExecute(cmd_msg_image)
+            if code == 0:
+                logging.info(out)
+            else:
+                logging.warning(err)
+                print "Getting images for repo  - [Failed]. Check log for details"
+                exit()
+
+            self.utilityobj.progressBar(6)
+
+            code, out, err = self.utilityobj.cmdExecute(cmd_docs_image)
+            if code == 0:
+                logging.info(out)
+            else:
+                logging.warning(err)
+                print "Getting images for repo  - [Failed]. Check log for details"
+                exit()
+
+            self.utilityobj.progressBar(7)
+
+            code, out, err = self.utilityobj.cmdExecute(cmd_dbs_image)
+            if code == 0:
+                logging.info(out)
+            else:
+                logging.warning(err)
+                print "Getting images for repo  - [Failed]. Check log for details"
+                exit()
+
+        except Exception as exp:
+            logging.warning("Exception: Getting images for repo  -[FAILED]. %d : %s", exp.errno, exp.strerror)
+            print "Getting images for repo  - Failed!. Check log for details."
+            exit()
