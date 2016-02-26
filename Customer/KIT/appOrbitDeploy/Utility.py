@@ -11,6 +11,7 @@ import os.path
 import shutil
 import ConfigParser
 import sys
+import platform
 from time import sleep
 
 class Utility:
@@ -39,8 +40,7 @@ class Utility:
         self.progressBar(1)
         if not self.verifyHardwareRequirement():
             logging.error("Hardware requirements are not satisfied !")
-            #print ("ERROR : Hardware requirement check failed! \
-            #Check log for details.")
+            print "ERROR : Hardware requirement verification failed! Check log for details."
             exit()
         logging.info("Hardware Requirement Check   -COMPLETED")
         self.progressBar(2)
@@ -48,7 +48,7 @@ class Utility:
         logging.info("Software Requirement Check   -STARTED")
         if not self.verifySoftwareRequirement():
             logging.error("Software requirements are not satisfied !")
-            # print ("ERROR : Software requirement check failed! \
+            #print ("ERROR : Software requirement check failed! \
             # Check log for details.")
             exit()
         logging.info("Software Requirement Check   -COMPLETED")
@@ -101,18 +101,78 @@ class Utility:
         return True
 
 
+    # Check if OS is REDHAT/Centos and also check for Version compatibility.
+
+    def verifyOSRequirement(self):
+        logging.info("Verifying OS Requirement.")
+        logging.info(platform.linux_distribution())
+        osname = platform.linux_distribution()[0]
+        osversion = platform.linux_distribution()[1]
+
+        osname = osname.lower()
+
+        if "centos" in osname:
+            logging.info("OS is Centos")
+        elif "red hat" in osname:
+            logging.info("OS is Redhat")
+        else:
+            logging.error("Incompatible Operating System. Only Redhat and Centos are supported.")
+            print "Incompatible Operating System. Check logs for more information."
+            exit()
+
+        if "7.0" in osversion:
+            logging.info("OS Version is 7.0")
+        elif "7.1" in osversion:
+            logging.info("OS Version is 7.1")
+        else:
+            logging.error("Incompatible Operating System Version. Check the System Requirement Documentation.")
+            print "Incompatible Operating System Version. Check logs for more information"
+            exit()
+
+        if "red hat" in osname:
+            logging.info("Verifying Subscription Details.")
+            try:
+                subscription_cmd = "subscription-manager version"
+                process = subprocess.Popen(subscription_cmd, shell=True, stdout=subprocess.PIPE, \
+                                   stderr=subprocess.PIPE)
+                out, err =  process.communicate()
+
+                if process.returncode == 0:
+                    # print out
+                    logging.info("subscription manager version. %s", out)
+                    if "currently not registered" in out:
+                        logging.error("Red Hat Subscription : This system is not Registered. Register and retry installation.")
+                        print "Red Hat is not having a valid subscription. Get a valid subscription and retry installation."
+                        exit()
+
+                else:
+                    # print err
+                    logging.error("Error in finding subscription details. %s", err)
+
+
+            except Exception as exp:
+                logging.error("subscription manager version command failed.")
+                logging.error("Unable to find subscription details..")
+
+
+        return
+
+
     # Check - apporbit.repo file
     # Check - docker, ntp, wget
     def verifySoftwareRequirement(self):
         logging.info("started verifying software requirements")
+        # Check for Operating System compatibility.
+        self.verifyOSRequirement()
+
         if os.path.isfile('apporbit.repo'):
             logging.info('copying apporbit.repo to yum.repos.d directory.')
             shutil.copyfile('apporbit.repo', '/etc/yum.repos.d/apporbit.repo')
 
         else:
             logging.error('apporbit.repo file is missing in the package.\
-                          check with appOrbit Business contact.')
-            # print ("ERROR: package files missing! check with your appOrbit Business contact.")
+                          check with AppOrbit Business contact.')
+            print ("ERROR: package files missing! check with your appOrbit Business contact.")
             return False
 
         logging.info ("Verifying docker installation")
@@ -200,7 +260,7 @@ class Utility:
 
     # Verify RepoConnection
     def verifyRepoConnection(self):
-        host = "repos.gsintlab.com"
+        host = "repos.apporbit.com"
         path = "/"
         try:
             conn = httplib.HTTPConnection(host)
@@ -212,8 +272,7 @@ class Utility:
                 logging.error("Unable to connect to repository \
                  Check Network settings and Enable connection to http://repos.gsintlab.com \
                  %d", conn.getresponse().status )
-                # print ("Unable to connect to repository. \
-                # Check Network settings and Enable connection to http://repos.gsintlab.com ")
+                print ("Unable to connect to appOrbit repository. Check Network settings and Enable connection to http://repos.apporbit.com ")
                 return False
         except StandardError:
             logging.error ("Unable to connect repositories.\
@@ -223,6 +282,22 @@ class Utility:
 
 
     def fixSysRequirements(self):
+        cmd_upgradelvm = "yum -y upgrade lvm2"
+
+        process = subprocess.Popen(cmd_upgradelvm, shell=True, stdout=subprocess.PIPE, \
+                                   stderr=subprocess.PIPE)
+
+        out, err =  process.communicate()
+
+        if process.returncode == 0:
+            # print out
+            logging.info("Upgrade lvm2. %s", out)
+
+        else:
+            logging.warning("Upgrade lvm2 failed. %s", err)
+            print "Upgrade lvm2 failed!. Check log for details."
+            return False
+
         if self.do_wgetinstall:
             cmd_wgetInstall = "yum install -y wget"
 
@@ -237,6 +312,8 @@ class Utility:
 
             else:
                 logging.warning("Install wget failed. %s", err)
+                print "Installing wget failed!. Check log for details."
+                return False
 
         self.progressBar(12)
         if self.do_ntpinstall:
@@ -252,7 +329,7 @@ class Utility:
 
             else:
                 logging.warning("Install ntp failed. %s", err)
-                # print ("NTP Install - FAILED")
+                print "Installing ntp failed!. check log for details."
                 return False
         self.progressBar(14)
 
@@ -269,7 +346,7 @@ class Utility:
 
             else:
                 logging.warning("Install docker failed. %s", err)
-                # print ("docker Install - Failed")
+                print "Installing docker failed!. check log for details."
                 return False
 
         self.progressBar(16)
@@ -287,6 +364,7 @@ class Utility:
 
             else:
                 logging.warning("setting sestatus Failed. %s", out)
+                print "setting sestatus failed!. check log for details."
                 return False
         self.progressBar(17)
         # Enable Docker Service
@@ -312,6 +390,7 @@ class Utility:
 
         else:
             logging.error("service docker start  -Failed. %s", err_doc)
+            print "service docker start failed. check log for details."
             return False
         self.progressBar(18)
         # Sync Network Time

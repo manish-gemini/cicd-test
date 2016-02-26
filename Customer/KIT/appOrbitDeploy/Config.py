@@ -19,6 +19,7 @@ class Config():
         self.api_version = 'v2'
         self.hostip = ''
         self.self_signed_crt = '1'
+        self.self_signed_crt_dir = ''
         self.volume_mount = ''
         self.registry_url = 'registry.apporbit.com'
         return
@@ -129,6 +130,7 @@ class Config():
             self.buildid = config.get('User Config', 'build_id')
             self.clean_setup = config.get('User Config', 'clean_setup')
             self.self_signed_crt = config.get('User Config', 'self_signed_crt')
+            self.self_signed_crt_dir = config.get('User Config', 'self_signed_crt_dir')
             self.deploy_chef = config.get('User Config', 'deploy_chef')
             self.deploy_mode = config.get('User Config', 'deploy_mode')
             self.onprem_emailID = config.get('User Config', 'on_prem_emailid')
@@ -151,6 +153,7 @@ class Config():
                                      build_id, is_install_cfgmgr,\
                                      self_signed_crt, clean_setup, deploy_mode,\
                                      hostIp, on_prem_emailid = '',\
+                                     ssldir = '',\
                                      themeName = 'apporbit-v2',\
                                      api_version = 'v2',\
                                      build_deploy_mode = '3', reg_url='registry.apporbit.com',\
@@ -167,7 +170,8 @@ class Config():
         config.set('User Config', 'build_deploy_mode', build_deploy_mode)
         config.set('User Config', 'build_id', build_id )
         config.set('User Config', 'clean_setup', clean_setup)
-        config.set('User Config', 'self_signed_crt',self_signed_crt)
+        config.set('User Config', 'self_signed_crt', self_signed_crt)
+        config.set('User Config', 'self_signed_crt_dir', ssldir)
         config.set('User Config', 'deploy_chef', is_install_cfgmgr)
         config.set('User Config', 'deploy_mode', deploy_mode)
         config.set('User Config', 'on_prem_emailid', on_prem_emailid)

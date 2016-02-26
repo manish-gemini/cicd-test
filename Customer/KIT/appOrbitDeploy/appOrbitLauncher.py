@@ -14,7 +14,7 @@ def main():
     logging.basicConfig(filename='appOrbitInstall.log', level=logging.DEBUG,
                          format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
 
-    print ("This installer will install the AppOrbit Management Server on this machine")
+    print ("This installer will install the appOrbit management server in this machine")
     logging.info("Starting appOrbit Installation")
 
     config_obj = Config.Config()
@@ -25,7 +25,7 @@ def main():
     # Fail and exit if Not fixable Requirements like
     # Hardware Requirements are not satisfied
     # Fail but not exit with Fixable Reqruiements
-    print "Verifying system informations."
+    print "Verifying system information."
     utilityObj.progressBar(0)
     utilityObj.verifySystemInfo()
     logging.info("System info verification is completed!")
@@ -55,7 +55,7 @@ def main():
         # utilityObj.deployFromFile('local.conf')
         utilityObj.progressBar(20)
         print "   -- [Done]"
-        print "change your default password 'admin1234' by logging into the User Management console in the UI at https://<HOSTIP>/users"
+        print "Now login to the appOrbit management server using https://" + config_obj.hostip + " with the default password 'admin1234'"
         logging.info("END OF DEPLOYMENT")
     else:
         logging.info("Starting to get user configuration.")
@@ -76,7 +76,7 @@ def main():
         utilityObj.progressBar(20)
         print "   -- [Done]"
         # utilityObj.deployFromFile('appobit_deploy.conf')
-        print "change your default password 'admin1234' by logging into the User Management console in the UI at https://<HOSTIP>/users"
+        print "Now login to the appOrbit management server using https://" + config_obj.hostip + " with the default password 'admin1234'"
         logging.info("END OF DEPLOYMENT")
    
     return

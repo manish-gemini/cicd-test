@@ -91,6 +91,7 @@ class Action:
         if process.returncode == 0:
             logging.info(out)
             # sleep added for mysql container to get completed started
+            self.utilityobj.progressBar(11)
             time.sleep(60)
         else:
             logging.error(err)
@@ -123,13 +124,21 @@ class Action:
         return
 
 
-    def deployServices(self, internal_repo, host_ip, repo_str, mode, vol_mount=''):
+    def deployServices(self, config_obj):
+
+        internal_repo = config_obj.internal_repo
+        host_ip = config_obj.hostip
+        repo_str = config_obj.registry_url
+        mode = config_obj.build_deploy_mode
+        vol_mount = config_obj.volume_mount
+        deploy_chef = config_obj.deploy_chef
+
         # Varaiable Declaration
         image_name = ""
         vol_mount_str = ""
 
         if repo_str:
-            image_name = repo_str + "/apporbit/apporbit-services"
+            image_name = repo_str + "/apporbit/apporbit-services:" + config_obj.buildid
         else:
             image_name = "apporbit/apporbit-services"
 
@@ -144,14 +153,22 @@ class Action:
 
 
         cmd_deploy_services = "docker run -t --name apporbit-services --restart=always \
-        -e GEMINI_INT_REPO=" + internal_repo + " -e CHEF_URL=https://" + host_ip +":9443 -e MYSQL_HOST=db \
+        -e GEMINI_INT_REPO=" + internal_repo
+        if deploy_chef == "1":
+            cmd_deploy_services = cmd_deploy_services + " -e CHEF_URL=https://" + host_ip +":9443 "
+
+        cmd_deploy_services = cmd_deploy_services + " -e MYSQL_HOST=db \
         -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist \
         -e GEMINI_STACK_IPANEMA=1 --link db:db --link apporbit-rmq:rmq \
-        -v /var/lib/apporbit/sshKey_root:/root --volumes-from apporbit-chef \
-        -v /var/log/apporbit/services:/var/log/apporbit" + vol_mount_str + " -d  \
+        -v /var/lib/apporbit/sshKey_root:/root "
+
+        if deploy_chef == "1":
+            cmd_deploy_services = cmd_deploy_services + "--volumes-from apporbit-chef "
+
+        cmd_deploy_services = cmd_deploy_services + " -v /var/log/apporbit/services:/var/log/apporbit" + vol_mount_str + " -d  \
         " + image_name
 
-        # print cmd_deploy_services
+        #print cmd_deploy_services
 
         process = subprocess.Popen(cmd_deploy_services, shell=True, stdout=subprocess.PIPE, \
                                    stderr=subprocess.PIPE)
@@ -196,10 +213,18 @@ class Action:
         return max_app_process
 
 
-    def deployController (self, onprem_emailID, hostip,\
-                              deploy_mode, theme_name,\
-                              api_version, registry_url,\
-                              build_deploy_mode, vol_mount = ""):
+    def deployController (self, config_obj):
+
+        onprem_emailID = config_obj.onprem_emailID
+        hostip = config_obj.hostip
+        deploy_mode = config_obj.deploy_mode
+        theme_name = config_obj.theme_name
+        api_version = config_obj.api_version
+        registry_url = config_obj.registry_url
+        build_deploy_mode = config_obj.build_deploy_mode
+        vol_mount = config_obj.volume_mount
+        deploy_chef = config_obj.deploy_chef
+
 
         log_level = 'DEBUG'
         onpremmode = 'true'
@@ -214,7 +239,7 @@ class Action:
             onpremmode = 'false'
 
         if registry_url:
-            cntrlimageName = registry_url + '/apporbit/apporbit-controller'
+            cntrlimageName = registry_url + '/apporbit/apporbit-controller:' + config_obj.buildid
         else:
             cntrlimageName = 'apporbit/apporbit-controller'
 
@@ -228,16 +253,22 @@ class Action:
 
         cmd_deploy_controller = "docker run -t --name apporbit-controller --restart=always \
         -p 80:80 -p 443:443 -e ONPREM_EMAIL_ID="+ onprem_emailID + " \
-        -e LOG_LEVEL="+log_level + " -e MAX_POOL_SIZE=" + str(max_phusion_process) +" \
-        -e CHEF_URL=https://"+ hostip +":9443 \
-        -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller \
+        -e LOG_LEVEL="+log_level + " -e MAX_POOL_SIZE=" + str(max_phusion_process)
+
+        if deploy_chef == "1":
+            cmd_deploy_controller = cmd_deploy_controller + " -e CHEF_URL=https://"+ hostip +":9443"
+
+        cmd_deploy_controller = cmd_deploy_controller + " -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller \
         -e ON_PREM_MODE=" + onpremmode + " -e THEME_NAME="+ theme_name + "\
-        -e CURRENT_API_VERSION=" + api_version + " --link db:db --link apporbit-rmq:rmq \
-        --volumes-from apporbit-chef" + vol_mount_str + " -v /var/log/apporbit/controller:/var/log/apporbit \
+        -e CURRENT_API_VERSION=" + api_version + " --link db:db --link apporbit-rmq:rmq "
+        if deploy_chef == "1":
+            cmd_deploy_controller = cmd_deploy_controller + "--volumes-from apporbit-chef "
+
+        cmd_deploy_controller = cmd_deploy_controller + vol_mount_str + " -v /var/log/apporbit/controller:/var/log/apporbit \
         -v /var/lib/apporbit/sslkeystore/:/home/apporbit/apporbit-controller/sslkeystore \
         -d " + cntrlimageName
 
-        # print cmd_deploy_controller
+        #print cmd_deploy_controller
 
         process = subprocess.Popen(cmd_deploy_controller, shell=True, stdout=subprocess.PIPE, \
                                    stderr=subprocess.PIPE)
@@ -276,6 +307,50 @@ class Action:
 
         return
 
+    def copySSLCertificate(self, dir):
+
+        sslkeyfile = dir + "/apporbitserver.key"
+        sslkeycrt = dir + "/apporbitserver.crt"
+
+        if not os.path.isfile(sslkeyfile):
+            logging.error('%s SSL key file does not exist.', sslkeyfile)
+            print "SSL key file does not exist. Check logs for details."
+            exit()
+
+        if not os.path.isfile(sslkeycrt):
+            logging.error('%s SSL certificate file does not exist.', sslkeycrt)
+            print "SSL certificate file does not exist. Check logs for details."
+            exit()
+
+        cmd_cpysslkey = "cp -f " + dir +"/apporbitserver.key /var/lib/apporbit/sslkeystore/apporbitserver.key"
+        cmd_cpysslcrt = "cp -f " + dir +"/apporbitserver.crt /var/lib/apporbit/sslkeystore/apporbitserver.crt"
+
+        process = subprocess.Popen(cmd_cpysslkey, shell=True, stdout=subprocess.PIPE, \
+                                   stderr=subprocess.PIPE)
+
+        out, err =  process.communicate()
+
+        if process.returncode == 0:
+            logging.info("SSL key copy  - SUCCESS. %s", out)
+        else:
+            logging.warning("SSL key copy  - Failed. %s", err)
+            print "Copy SSL key - [FAILED] Check logs for details. "
+            exit()
+
+        process = subprocess.Popen(cmd_cpysslcrt, shell=True, stdout=subprocess.PIPE, \
+                                   stderr=subprocess.PIPE)
+
+        out, err =  process.communicate()
+
+        if process.returncode == 0:
+            logging.info("SSL Certificate copy - SUCCESS. %s", out)
+        else:
+            logging.warning("SSL Certificate copy - Failed. %s", err)
+            print "Copy SSL Certificate - [FAILED] Check logs for details. "
+            exit()
+
+        return
+
 
     def deployAppOrbit(self, config_obj):
         self.utilityobj.progressBar(1)
@@ -291,20 +366,23 @@ class Action:
 
         if config_obj.self_signed_crt == '1':
             self.createSelfSignedCert()
+        else:
+            logging.info("Copying SSL Certificate from the dir %s", config_obj.self_signed_crt_dir)
+            self.copySSLCertificate(config_obj.self_signed_crt_dir)
 
-        self.utilityobj.progressBar(5)
+        self.utilityobj.progressBar(3)
         # LOGIN to DOCKER REGISTRY
         if config_obj.build_deploy_mode == '3' or config_obj.build_deploy_mode == '0':
             self.loginDockerRegistry(config_obj.docker_uname, config_obj.docker_passwd, config_obj.registry_url)
-            self.utilityobj.progressBar(6)
-            self.pullImagesformRepos(config_obj.registry_url)
-            self.utilityobj.progressBar(7)
+
+            self.pullImagesformRepos(config_obj.registry_url, config_obj.buildid)
+
 
         # DEPLOY CHEF CONTAINER
         if config_obj.clean_setup == '1':
-            if config_obj.deploy_chef == '1' or '3':
+            if config_obj.deploy_chef == '1' or config_obj.deploy_chef == '3':
                 self.deployChef(config_obj.hostip, config_obj.registry_url) #CUSTOMER DEPLOYMENT or Master Deployment
-            elif config_obj.deploy_chef == '2':
+            elif config_obj.deploy_chef == '0':
                 self.deployChef(config_obj.hostip)                        #LOCAL DEPLOYMENT- LOCAL IMAGE
             else:
                 logging.info("Chef is chosen to be deployed in a different machine.")
@@ -322,15 +400,11 @@ class Action:
         self.utilityobj.progressBar(15)
         # DEPLOY SERVICES
 
-        self.deployServices(config_obj.internal_repo, config_obj.hostip,\
-                            config_obj.registry_url, config_obj.build_deploy_mode, config_obj.volume_mount)
+        self.deployServices(config_obj)
 
         self.utilityobj.progressBar(17)
         # DEPLOY PLATFORM
-        self.deployController(config_obj.onprem_emailID, config_obj.hostip,\
-                              config_obj.deploy_mode, config_obj.theme_name,\
-                              config_obj.api_version, config_obj.registry_url,\
-                              config_obj.build_deploy_mode, config_obj.volume_mount)
+        self.deployController(config_obj)
         self.utilityobj.progressBar(19)
         return True
 
@@ -499,9 +573,9 @@ class Action:
         return
 
 
-    def pullImagesformRepos(self, repo_str):
-        controller_image = repo_str + '/apporbit/apporbit-controller'
-        services_image = repo_str + '/apporbit/apporbit-services'
+    def pullImagesformRepos(self, repo_str, build_id):
+        controller_image = repo_str + '/apporbit/apporbit-controller:' + build_id
+        services_image = repo_str + '/apporbit/apporbit-services:' + build_id
         message_queue_image = repo_str + '/apporbit/apporbit-rmq'
         docs_image = repo_str + '/apporbit/apporbit-docs'
         database_image = 'mysql:5.6.24'
@@ -522,7 +596,7 @@ class Action:
             logging.warning(err)
             print "Getting images for repo  - [Failed]. Check log for details"
             exit()
-
+        self.utilityobj.progressBar(4)
         process = subprocess.Popen(cmd_srvc_image, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = process.communicate()
         if(process.returncode==0):
@@ -533,7 +607,7 @@ class Action:
             logging.warning(err)
             print "Getting images for repo  - [Failed]. Check log for details"
             exit()
-
+        self.utilityobj.progressBar(5)
         process = subprocess.Popen(cmd_msgq_image, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = process.communicate()
         if(process.returncode==0):
@@ -544,7 +618,7 @@ class Action:
             logging.warning(err)
             print "Getting images for repo  - [Failed]. Check log for details"
             exit()
-
+        self.utilityobj.progressBar(6)
         process = subprocess.Popen(cmd_docs_image, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = process.communicate()
         if(process.returncode==0):
@@ -555,7 +629,7 @@ class Action:
             logging.warning(err)
             print "Getting images for repo  - [Failed]. Check log for details"
             exit()
-
+        self.utilityobj.progressBar(7)
         process = subprocess.Popen(cmd_dbs_image, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = process.communicate()
         if(process.returncode==0):
