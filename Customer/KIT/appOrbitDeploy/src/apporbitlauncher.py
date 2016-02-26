@@ -5,7 +5,7 @@ import logging
 import os
 
 # Project Modules
-from src import config, utility, action, userinteract
+import config, utility, action, userinteract
 
 
 def main():

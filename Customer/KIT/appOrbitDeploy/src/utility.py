@@ -51,7 +51,7 @@ class Utility:
                     print "[FAILED] - " + cmd_desc
                     print "Check log for details."
                     exit()
-                else:
+            else:
                     logging.warning("WARNING - %s", cmd_desc)
                     logging.warning("Exception: %d : %s", exp.errno, exp.strerror)
 
@@ -166,7 +166,7 @@ class Utility:
         if "red hat" in osname:
             logging.info("Verifying Subscription Details.")
             subscription_cmd = "subscription-manager version"
-            self.cmdExecute(subscription_cmd, "Check Red Hat Subscription", False):
+            self.cmdExecute(subscription_cmd, "Check Red Hat Subscription", False)
                         self.redhat_subscription = False
 
         return True
@@ -196,13 +196,13 @@ class Utility:
 
         logging.info ("Verify NTP Installation!")
         ntp_cmd = "ntpdate time.nist.gov > /dev/null"
-        self.cmdExecute(ntp_cmd, "ntp Install", False)
+        if not self.cmdExecute(ntp_cmd, "ntp Install", False):
             self.do_ntpinstall = 1
 
         logging.info("Verify wget installation")
         wget_cmd = "wget --version > /dev/null"
 
-        if not self.cmdExecute(wget_cmd, "wget Install", False)
+        if not self.cmdExecute(wget_cmd, "wget Install", False):
             self.do_wgetinstall = 1
 
         return True
@@ -291,7 +291,7 @@ class Utility:
 
         if self.do_sesettings:
             cmd_sesettings = "setenforce 0"
-            if not self.cmdExecute(cmd_sesettings, "Setenforce to permissive", False)
+            if not self.cmdExecute(cmd_sesettings, "Setenforce to permissive", False):
                 return False
 
         self.progressBar(17)
