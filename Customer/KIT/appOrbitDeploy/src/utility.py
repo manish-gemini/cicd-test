@@ -25,15 +25,37 @@ class Utility:
         return
 
 
-    def cmdExecute(self, cmd_str):
+    def cmdExecute(self, cmd_str, cmd_desc = '', bexit = False):
         try:
             process = subprocess.Popen(cmd_str, shell=True, stdout=subprocess.PIPE, \
                                    stderr=subprocess.PIPE)
             out, err =  process.communicate()
+            if process.returncode == 0:
+                logging.info("Success - %s",cmd_desc)
+                logging.info(out)
+            else:
+                if bexit :
+                    logging.error("FAILED - %s", cmd_desc)
+                    logging.error(err)
+                    print "FAILED - " + cmd_desc
+                    print "Check log for details."
+                    exit()
+                else:
+                    logging.warning("WARNING - %s", cmd_desc)
+                    logging.warning(err)
+                    return False
         except Exception as exp:
-            raise exp
+            if bexit :
+                    logging.error("FAILED - %s", cmd_desc)
+                    logging.error("Exception: %d : %s", exp.errno, exp.strerror)
+                    print "[FAILED] - " + cmd_desc
+                    print "Check log for details."
+                    exit()
+                else:
+                    logging.warning("WARNING - %s", cmd_desc)
+                    logging.warning("Exception: %d : %s", exp.errno, exp.strerror)
 
-        return process.returncode, out, err
+        return True
 
 
     # Progress Bar Impleementaion
@@ -143,23 +165,9 @@ class Utility:
 
         if "red hat" in osname:
             logging.info("Verifying Subscription Details.")
-            try:
-                subscription_cmd = "subscription-manager version"
-                code, out, err = self.cmdExecute(subscription_cmd)
-                if code == 0:
-                    # print out
-                    logging.info("subscription manager version. %s", out)
-                    if "currently not registered" in out:
-                        logging.error("Red Hat Subscription : This system is not Registered. Register and retry installation.")
+            subscription_cmd = "subscription-manager version"
+            self.cmdExecute(subscription_cmd, "Check Red Hat Subscription", False):
                         self.redhat_subscription = False
-                else:
-                    # print err
-                    logging.error("Error in finding subscription details. %s", err)
-
-            except Exception as exp:
-                logging.error("subscription manager version command failed.")
-                logging.error("Unable to find subscription details..")
-
 
         return True
 
@@ -170,7 +178,6 @@ class Utility:
         logging.info("started verifying software requirements")
         # Check for Operating System compatibility.
         self.verifyOSRequirement()
-
         if os.path.isfile('apporbit.repo'):
             logging.info('copying apporbit.repo to yum.repos.d directory.')
             shutil.copyfile('apporbit.repo', '/etc/yum.repos.d/apporbit.repo')
@@ -182,45 +189,20 @@ class Utility:
             return False
 
         logging.info ("Verifying docker installation")
-        try:
-            docker_cmd = "docker -v > /dev/null"
-            code, out, err = self.cmdExecute(docker_cmd)
-            if code == 0:
-                # print out
-                logging.info("docker is already installed. %s", out)
-            else:
-                # print err
-                logging.warning("docker needs to be installed. %s", err)
-                self.do_dockerinstall = 1
-        except Exception as exp:
-            logging.error("Docker is not installed.")
+
+        docker_cmd = "docker -v > /dev/null"
+        if not self.cmdExecute(docker_cmd, "Docker Install", False):
             self.do_dockerinstall = 1
 
         logging.info ("Verify NTP Installation!")
-        try:
-            ntp_cmd = "ntpdate time.nist.gov > /dev/null"
-            code, out, err = self.cmdExecute(ntp_cmd)
-            if code == 0:
-                logging.info("ntp is already installed. %s", out)
-            else:
-                logging.warning("ntp needs to be installed. %s", err)
-                self.do_ntpinstall = 1
-        except Exception as exp:
-            logging.warning("Exception:ntp needs to be installed! %d : %s", exp.errno, exp.strerror)
+        ntp_cmd = "ntpdate time.nist.gov > /dev/null"
+        self.cmdExecute(ntp_cmd, "ntp Install", False)
             self.do_ntpinstall = 1
 
-
         logging.info("Verify wget installation")
-        try:
-            wget_cmd = "wget --version > /dev/null"
-            code, out, err = self.cmdExecute(wget_cmd)
-            if code == 0:
-                logging.info("wget is already installed. %s", out)
-            else:
-                logging.info("wget needs to be installed. %s", err)
-                self.do_wgetinstall = 1
-        except OSError as e:
-            logging.error("wget needs to be installed! %d : %s", e.errno, e.strerror)
+        wget_cmd = "wget --version > /dev/null"
+
+        if not self.cmdExecute(wget_cmd, "wget Install", False)
             self.do_wgetinstall = 1
 
         return True
@@ -268,8 +250,6 @@ class Utility:
              Check Network settings and Enable connection to http://repos.gsintlab.com")
             return False
 
-
-
     def fixSysRequirements(self):
         cmd_upgradelvm = "yum -y upgrade lvm2"
 
@@ -288,154 +268,56 @@ class Utility:
             return False
 
         if self.do_wgetinstall:
-            try:
-                cmd_wgetInstall = "yum install -y wget"
-                code, out, err = self.cmdExecute(cmd_wgetInstall)
-                if code == 0:
-                    # print out
-                    logging.info("Install wget success. %s", out)
-                else:
-                    logging.warning("Install wget failed. %s", err)
+            cmd_wgetInstall = "yum install -y wget"
+            if not self.cmdExecute(cmd_wgetInstall, "Wget Install", False):
                 if self.redhat_subscription:
-                    print "Installing wget failed!. Check log for details."
                 else:
                     print "FAILED- Red Hat is not having a valid subscription. Get a valid subscription and retry installation."
-                    return False
-            except Exception as exp:
-                logging.warning("Exception:Install wget failed.! %d : %s", exp.errno, exp.strerror)
                 return False
 
         self.progressBar(12)
         if self.do_ntpinstall:
-            try:
-                cmd_ntpInstall = "yum install -y ntp"
-                code, out, err = self.cmdExecute(cmd_ntpInstall)
-                if code == 0:
-                    logging.info("Install ntp success. %s", out)
-                else:
-                    logging.warning("Install ntp failed. %s", err)
-                    print "Installing ntp failed!. check log for details."
-                    return False
-            except Exception as exp:
-                logging.warning("Exception:Install ntp failed.! %d : %s", exp.errno, exp.strerror)
+            cmd_ntpInstall = "yum install -y ntp"
+            if not self.cmdExecute(cmd_ntpInstall, "Ntp Install", False):
                 return False
 
         self.progressBar(14)
 
         if self.do_dockerinstall:
-            try:
-                cmd_dockerInstall = "yum install -y docker-1.7.1"
-                code, out, err = self.cmdExecute(cmd_dockerInstall)
-                if code == 0:
-                    logging.info("Install docker success. %s", out)
-
-                else:
-                    logging.warning("Install docker failed. %s", err)
-                    print "Installing docker failed!. check log for details."
-                    return False
-            except Exception as exp:
-                logging.warning("Exception:Install docker failed.! %d : %s", exp.errno, exp.strerror)
+            cmd_dockerInstall = "yum install -y docker-1.7.1"
+            if not self.cmdExecute(cmd_dockerInstall, "Docker Install", False):
                 return False
-
         self.progressBar(16)
+
         if self.do_sesettings:
-            try:
-                # print ("Info: Setting SElinux status to permissive")
-                cmd_sesettings = "setenforce 0"
-                code, out, err = self.cmdExecute(cmd_sesettings)
-                if code == 0:
-                    logging.info("setting sestatus success. %s", out)
-                else:
-                    logging.warning("setting sestatus Failed. %s", out)
-                    print "setting sestatus failed!. check log for details."
-                    return False
-            except Exception as exp:
-                logging.warning("Exception:setting sestatus Failed. %d : %s", exp.errno, exp.strerror)
+            cmd_sesettings = "setenforce 0"
+            if not self.cmdExecute(cmd_sesettings, "Setenforce to permissive", False)
                 return False
 
         self.progressBar(17)
-        try:
-            # Enable Docker Service
-            cmd_dockerservice = "systemctl enable docker.service"
-            code, out, err = self.cmdExecute(cmd_dockerservice)
-            if code == 0:
-                logging.info("service docker enabled on startup  -success. %s", out)
-            else:
-                logging.warning("service docker enabled on startup - Failed. %s", err)
-        except Exception as exp:
-            logging.warning("Exception:service docker enabled on startup - Failed. %d : %s", exp.errno, exp.strerror)
+        cmd_dockerservice = "systemctl enable docker.service"
+        self.cmdExecute(cmd_dockerservice, "Enable Docker service on restart", False)
 
-        try:
-            #Enable Docker service on restart
-            cmd_dockerservice = "systemctl start docker.service"
-            code, out, err = self.cmdExecute(cmd_dockerservice)
-            if code == 0:
-                logging.info("service docker start  -success. %s", out)
-            else:
-                logging.error("service docker start  -Failed. %s", err)
-                print "service docker start failed. check log for details."
-                return False
-        except Exception as exp:
-            logging.warning("Exception:service docker start  -Failed. %d : %s", exp.errno, exp.strerror)
+        cmd_dockerservice = "systemctl start docker.service"
+        if not self.cmdExecute(cmd_dockerservice, " Docker service start", False):
             return False
-
         self.progressBar(18)
-        try:
-            # Sync Network Time
-            cmd_ntpupdate = "ntpdate -b -u time.nist.gov"
-            code, out, err = self.cmdExecute(cmd_ntpupdate)
-            if code == 0:
-                logging.info("ntp update  -success. %s", out)
-            else:
-                logging.info("ntp update  -Failed. %s", err)
-        except Exception as exp:
-            logging.warning("Exception: ntp update  -Failed. %d : %s", exp.errno, exp.strerror)
-            return False
+
+        cmd_ntpupdate = "ntpdate -b -u time.nist.gov"
+        self.cmdExecute(cmd_ntpupdate, "Sync network time", False)
 
         #Setup IPTableRules
         cmd_iptablerule1 = "iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited "
         cmd_iptablerule2 = "iptables -D  FORWARD -j REJECT --reject-with icmp-host-prohibited"
         cmd_iptablesaverule = "/sbin/service iptables save"
 
-        try:
-            code, out, err = self.cmdExecute(cmd_iptablerule1)
-            if code == 0:
-                logging.info("iptable rule1 - success %s", out)
-            else:
-                logging.warning("iptable rule1 - Failed %s", err)
-        except Exception as exp:
-            logging.warning("Exception:iptable rule1 - Failed.  %d : %s", exp.errno, exp.strerror)
-
-        try:
-            code, out, err = self.cmdExecute(cmd_iptablerule2)
-            if code == 0:
-                logging.info("iptable rule2 - success. %s", out)
-            else:
-                logging.warning("iptable rule2 - Failed. %s", err)
-        except Exception as exp:
-            logging.warning("Exception:iptable rule2 - Failed.  %d : %s", exp.errno, exp.strerror)
-
-        try:
-            code, out, err = self.cmdExecute(cmd_iptablesaverule)
-            if code == 0:
-                logging.info("iptable rules saved - success %s", out)
-            else:
-                logging.warning("iptable rules saved - Failed %s", err)
-        except Exception as exp:
-            logging.warning("Exception:iptable rules saved - Failed.  %d : %s", exp.errno, exp.strerror)
+        self.cmdExecute(cmd_iptablerule1, "Setting iptables input rule", False)
+        self.cmdExecute(cmd_iptablerule2, "Setting iptables forward rule", False)
+        self.cmdExecute(cmd_iptablesaverule, "iptables save", False)
 
         if os.path.isfile('/usr/bin/firewall-cmd'):
-            try:
-                #  Enable the port used by Chef (permanent makes it persist after reboot
-                #  Chef Port HardCoded
-                cmd_firewall = "firewall-cmd --permanent --add-port=9443/tcp"
-                code, out, err = self.cmdExecute(cmd_firewall)
-                if code == 0:
-                    logging.info("firewall rules saved - success %s", out)
-                else:
-                    logging.warning("firewall rules saved - Failed %s", err)
-            except Exception as exp:
-                logging.warning("Exception:firewall rules saved - Failed.  %d : %s", exp.errno, exp.strerror)
+            cmd_firewall = "firewall-cmd --permanent --add-port=9443/tcp"
+            self.cmdExecute(cmd_firewall, "Setting firewall rules", False)
 
         self.progressBar(19)
 
