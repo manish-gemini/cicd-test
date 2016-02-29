@@ -274,8 +274,7 @@ class Action:
         self.utilityobj.progressBar(3)
         # LOGIN to DOCKER REGISTRY
         if config_obj.build_deploy_mode == '3' or config_obj.build_deploy_mode == '0':
-            self.loginDockerRegistry(config_obj.docker_uname, config_obj.docker_passwd, config_obj.registry_url)
-
+            self.utilityobj.loginDockerRegistry(config_obj.docker_uname, config_obj.docker_passwd, config_obj.registry_url)
             self.pullImagesformRepos(config_obj.registry_url, config_obj.buildid)
 
 
@@ -392,19 +391,6 @@ class Action:
         self.utilityobj.cmdExecute(cmd_sslkey, "selinux settings for ssl directory", False)
         self.utilityobj.cmdExecute(cmd_services, "selinux settings for services directory", False)
         self.utilityobj.cmdExecute(cmd_controller, "selinux settings for controller directory", False)
-
-        return True
-
-
-    def loginDockerRegistry(self, uname, passwd, repo_str = "secure-registry.gsintlab.com" ):
-        # print "Login to Docker Registry " + repo_str
-        if passwd:
-            cmd_str = 'docker login -e=admin@apporbit.com -u=' + uname + ' -p=' + passwd +' '+ repo_str
-            self.utilityobj.cmdExecute(cmd_str, "Docker login ", True)
-        else:
-            logging.error("Docker Login Failed ")
-            print 'Docker login -[Failed!]'
-            exit()
 
         return True
 

@@ -88,6 +88,19 @@ class Utility:
             ret_val = True
         return ret_val
 
+    #Docker Login
+    def loginDockerRegistry(self, uname, passwd, repo_str = "secure-registry.gsintlab.com" ):
+        # print "Login to Docker Registry " + repo_str
+        if passwd:
+            cmd_str = 'docker login -e=admin@apporbit.com -u=' + uname + ' -p=' + passwd +' '+ repo_str
+            self.utilityobj.cmdExecute(cmd_str, "Docker login ", True)
+        else:
+            logging.error("Docker Login Failed ")
+            print 'Docker login -[Failed!]'
+            exit()
+
+        return True
+
     # Check for System Information if it satisfy all Pre Deploy Requirements
     # If not fixable errors found exit the process and log the errors.
     def verifySystemInfo(self):
@@ -275,7 +288,7 @@ class Utility:
 
     def fixSysRequirements(self):
         cmd_upgradelvm = "yum -y upgrade lvm2"
-        if not self.cmdExecute(cmd_upgradelvm, "lvm upgrade", False)
+        if not self.cmdExecute(cmd_upgradelvm, "lvm upgrade", False):
             return False
 
 

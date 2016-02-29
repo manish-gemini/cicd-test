@@ -33,10 +33,10 @@ class UserInteract:
         print "Login to the appOrbit registry using the credentials sent to you by email, by appOrbit support team."
         reg_user_name = raw_input("Enter the user name: ")
         reg_password = getpass.getpass()
-        build_id = raw_input("Enter the build version [latest]: ") or "latest"
         # is_install_cfgmgr = raw_input("\n Do you want to deploy config manager in the same machine? [Y/n] : ") or 'y'
 
         Utility.loginDockerRegistry(reg_user_name, reg_password, reg_url)
+        build_id = raw_input("Enter the build version [latest]: ") or "latest"
         if Utility.isFreshInstall():
             logging.info("Fresh Install")
             is_fresh_install = True
