@@ -93,7 +93,7 @@ class Utility:
         # print "Login to Docker Registry " + repo_str
         if passwd:
             cmd_str = 'docker login -e=admin@apporbit.com -u=' + uname + ' -p=' + passwd +' '+ repo_str
-            self.utilityobj.cmdExecute(cmd_str, "Docker login ", True)
+            self.cmdExecute(cmd_str, "Docker login ", True)
         else:
             logging.error("Docker Login Failed ")
             print 'Docker login -[Failed!]'
