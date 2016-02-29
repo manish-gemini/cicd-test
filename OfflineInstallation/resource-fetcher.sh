@@ -100,6 +100,8 @@ function install_docker {
         if [ "x$platform_id" == "xcentos" ]; then
             yum -y update
         fi
+        # BUG: https://bugzilla.redhat.com/show_bug.cgi?id=1294128
+        yum -y upgrade lvm2
         yum -y install docker-1.7.1
         systemctl enable docker.service
         systemctl start docker.service
@@ -215,6 +217,27 @@ function download_general_packages {
 
 }
 
+function rhel_packages_setup {
+    if [ "x$platform_id" == "xrhel" ]; then
+        echo "Configuring RHEL repos for syncing..."
+        sub_id=$(basename `ls /etc/pki/entitlement/*-key.pem | head -1` | cut -d'-' -f1)
+        rhel_pkg_list=`cat rhel-pkglist.conf | xargs -I {} printf "{} "`
+
+        cat <<EOF >> reposync.conf
+
+[rhel-7-server-rpms]
+name=Red Hat Enterprise Linux 7 Server (RPMs)
+baseurl='https://cdn.redhat.com/content/dist/rhel/server/7/\$releasever/\$basearch/os'
+sslverify=0
+sslclientkey=/etc/pki/entitlement/${sub_id}-key.pem
+sslclientcert=/etc/pki/entitlement/${sub_id}.pem
+gpgcheck=0
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+includepkgs=${rhel_pkg_list}
+EOF
+    fi
+}
+
 function generate_rpm_packages {
     echo "Generating rpm packages"
     mkdir -p appOrbitRPMs
@@ -326,6 +349,8 @@ function main {
     echo -n "Downloading compressed tar of RPMs"
     download_general_packages
     echo "...[OK]"
+
+    rhel_packages_setup
 
     echo -n "Generating compressed tar of RPMs"
     generate_rpm_packages
