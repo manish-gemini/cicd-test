@@ -66,6 +66,28 @@ class Utility:
         sleep(0.25)
 
 
+    #Check if this Machine already runs apporbit management servers .
+    def isFreshInstall(self):
+        ret_val = True
+        cmd_dockerps = "docker ps -a "
+        cmd_desc = "Docker ps"
+        code, out, err = self.cmdExecute(cmd_dockerps, cmd_desc, True)
+        if "apporbit-controller" in out or "apporbit-services" in out:
+            logging.info("Not Fresh Install")
+            ret_val = False
+        return ret_val
+
+    #Check if this Machine already runs apporbit-chef container.
+    def isChefDeployed(self):
+        ret_val = False
+        cmd_dockerps = "docker ps"
+        cmd_desc = "Docker ps"
+        code, out, err = self.cmdExecute(cmd_dockerps, cmd_desc, True)
+        if "apporbit-chef" in out:
+            logging.info("Chef server is deployed in this host")
+            ret_val = True
+        return ret_val
+
     # Check for System Information if it satisfy all Pre Deploy Requirements
     # If not fixable errors found exit the process and log the errors.
     def verifySystemInfo(self):

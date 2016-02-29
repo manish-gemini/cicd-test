@@ -25,6 +25,7 @@ class UserInteract:
         on_prem_emailid = ""
         hostIp = ""
         ssldir = ""
+        is_fresh_install = True
 
         logging.info("Starting to get user config info")
         print "Enter the user configuration information."
@@ -36,20 +37,32 @@ class UserInteract:
         # is_install_cfgmgr = raw_input("\n Do you want to deploy config manager in the same machine? [Y/n] : ") or 'y'
 
         Utility.loginDockerRegistry(reg_user_name, reg_password, reg_url)
+        if Utility.isFreshInstall():
+            logging.info("Fresh Install")
+            is_fresh_install = True
+        else:
+            logging.info("Upgrade")
+            is_fresh_install = False
 
-
-        print 'Enter the chef server deployment mode:'
-        print '1. Deploy on the same host '
-        print '2. Do not deploy, configure it later'
-        is_install_cfgmgr = raw_input("Choose the deployment mode from the above [1]:") or '1'
-        logging.info ("Chef mode of deployment : %s", is_install_cfgmgr)
-
-        print "Install or upgrade:"
-        print "1. Install "
-        print "2. Upgrade "
-        clean_setup = raw_input("Choose the installation type from the above [2]:") or '2'
-
+        clean_setup = "1"
+        if not is_fresh_install:
+            print "Re-Install or upgrade:"
+            print "1. Re-Install "
+            print "2. Upgrade "
+            print "Re-Install will remove all your previous installation data."
+            print "Upgrade retains your previous installation data."
+            clean_setup = raw_input("Choose the installation type from the above [2]:") or '2'
         logging.info("Clean Setup : %s", clean_setup)
+
+        if clean_setup == "1":
+            print 'Enter the chef server deployment mode:'
+            print '1. Deploy on the same host '
+            print '2. Do not deploy, configure it later'
+            is_install_cfgmgr = raw_input("Choose the deployment mode from the above [1]:") or '1'
+            logging.info ("Chef mode of deployment : %s", is_install_cfgmgr)
+        else:
+            if Utility.isChefDeployed():
+                is_install_cfgmgr = "1"
 
         print 'Configure the SSL certificate:'
         print '1. Create a new SSL certificate'
@@ -84,5 +97,3 @@ class UserInteract:
         # self.createConfigFile()
         logging.info("completed collecting user config info")
         return
-
-
