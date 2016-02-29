@@ -13,6 +13,12 @@ class UserInteract:
         self.util_obj = Utility()
         return
 
+    def proceedWithPreviousInstall(self):
+        print "There seems to be an existing installation interrupted"
+        print "1. Abort previous installation and start a new installation"
+        print "2. Continue the previous interrupted installation"
+        old_install_mode = raw_input("Choose installation option from above [1]:")
+        return old_install_mode
 
     def getUserConfigInfo(self, config_obj):
         # Used Variables Decalred

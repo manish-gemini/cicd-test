@@ -88,6 +88,26 @@ class Utility:
             ret_val = True
         return ret_val
 
+    def isPreviousInstallSuccess(self):
+        ret_val = False
+        if os.path.isfile("install.tmp"):
+            logging.info("Previous Installation Failed or Interrupted.")
+            ret_val = True
+        return  ret_val
+
+    #Remove Temp file.
+    def removeTempFile(self):
+        if os.path.isfile("install.tmp"):
+            os.remove("install.tmp")
+            logging.info("Removed tmp file created during installation.")
+        return True
+
+    # Create Temp file
+    def createTempFile(self):
+        open("install.tmp", 'w').close()
+        return True
+
+
     #Docker Login
     def loginDockerRegistry(self, uname, passwd, repo_str = "secure-registry.gsintlab.com" ):
         # print "Login to Docker Registry " + repo_str

@@ -52,7 +52,15 @@ def main():
         logging.info("Starting to get user configuration.")
         # Get User Configuration for Customer Deployment
         # and write to a config file apporbit_deploy.conf
-        userinteract_obj.getUserConfigInfo(config_obj)
+        if utility_obj.isPreviousInstallSuccess():
+            userinteract_obj.getUserConfigInfo(config_obj)
+            utility_obj.createTempFile()
+        else:
+            previous_install = userinteract_obj.proceedWithPreviousInstall(config_obj)
+            if previous_install == "1":
+                userinteract_obj.getUserConfigInfo(config_obj)
+                utility_obj.createTempFile()
+
         config_obj.loadConfig('apporbit_deploy.conf')
         logging.info("user configuration is recived SUCCESS.")
 
@@ -65,6 +73,7 @@ def main():
     print "Deploying appOrbit management server."
     utility_obj.progressBar(0)
     action_obj.deployAppOrbit(config_obj)
+    utility_obj.removeTempFile()
     utility_obj.progressBar(20)
     print "   -- [Done]"
     # utilityObj.deployFromFile('appobit_deploy.conf')
