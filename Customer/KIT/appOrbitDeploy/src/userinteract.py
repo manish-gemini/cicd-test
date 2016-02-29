@@ -10,6 +10,7 @@ from utility import Utility
 class UserInteract:
 
     def __init__(self):
+        self.util_obj = Utility()
         return
 
 
@@ -35,9 +36,9 @@ class UserInteract:
         reg_password = getpass.getpass()
         # is_install_cfgmgr = raw_input("\n Do you want to deploy config manager in the same machine? [Y/n] : ") or 'y'
 
-        Utility.loginDockerRegistry(reg_user_name, reg_password, reg_url)
+        self.util_obj.loginDockerRegistry(reg_user_name, reg_password, reg_url)
         build_id = raw_input("Enter the build version [latest]: ") or "latest"
-        if Utility.isFreshInstall():
+        if self.util_obj.isFreshInstall():
             logging.info("Fresh Install")
             is_fresh_install = True
         else:
@@ -61,7 +62,7 @@ class UserInteract:
             is_install_cfgmgr = raw_input("Choose the deployment mode from the above [1]:") or '1'
             logging.info ("Chef mode of deployment : %s", is_install_cfgmgr)
         else:
-            if Utility.isChefDeployed():
+            if self.util_obj.isChefDeployed():
                 is_install_cfgmgr = "1"
 
         print 'Configure the SSL certificate:'
