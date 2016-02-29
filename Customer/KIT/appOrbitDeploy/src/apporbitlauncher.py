@@ -47,14 +47,7 @@ def main():
     if os.path.isfile('local.conf'):
         logging.info('Using local.conf file for deployment')
         config_obj.loadConfig('local.conf')
-        print "Deploying appOrbit management server."
-        utility_obj.progressBar(0)
-        action_obj.deployAppOrbit(config_obj)
-        # utilityObj.deployFromFile('local.conf')
-        utility_obj.progressBar(20)
-        print "   -- [Done]"
-        print "Now login to the appOrbit management server using https://" + config_obj.hostip + " with the default password 'admin1234'"
-        logging.info("END OF DEPLOYMENT")
+
     else:
         logging.info("Starting to get user configuration.")
         # Get User Configuration for Customer Deployment
@@ -68,15 +61,16 @@ def main():
             logging.error("ERROR: Deployment Configuration file not found!")
             # print "Config file is missing! check log for more details."
             exit()
-        print "Deploying appOrbit management server."
-        utility_obj.progressBar(0)
-        action_obj.deployAppOrbit(config_obj)
-        utility_obj.progressBar(20)
-        print "   -- [Done]"
-        # utilityObj.deployFromFile('appobit_deploy.conf')
-        print "Now login to the appOrbit management server using https://" + config_obj.hostip + " with the default password 'admin1234'"
-        logging.info("END OF DEPLOYMENT")
-   
+
+    print "Deploying appOrbit management server."
+    utility_obj.progressBar(0)
+    action_obj.deployAppOrbit(config_obj)
+    utility_obj.progressBar(20)
+    print "   -- [Done]"
+    # utilityObj.deployFromFile('appobit_deploy.conf')
+    print "Now login to the appOrbit management server using https://" + config_obj.hostip + " with the default password 'admin1234'"
+    logging.info("END OF DEPLOYMENT")
+
     return
 
 if __name__ == "__main__":
