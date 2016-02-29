@@ -5,6 +5,7 @@ import logging
 
 import urllib2
 
+from utility import Utility
 
 class UserInteract:
 
@@ -14,6 +15,7 @@ class UserInteract:
 
     def getUserConfigInfo(self, config_obj):
         # Used Variables Decalred
+        reg_url = "registry.apporbit.com"
         reg_user_name = ""
         reg_password = ""
         build_id = ""
@@ -32,6 +34,9 @@ class UserInteract:
         reg_password = getpass.getpass()
         build_id = raw_input("Enter the build version [latest]: ") or "latest"
         # is_install_cfgmgr = raw_input("\n Do you want to deploy config manager in the same machine? [Y/n] : ") or 'y'
+
+        Utility.loginDockerRegistry(reg_user_name, reg_password, reg_url)
+
 
         print 'Enter the chef server deployment mode:'
         print '1. Deploy on the same host '
