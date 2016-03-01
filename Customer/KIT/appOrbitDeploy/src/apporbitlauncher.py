@@ -56,7 +56,7 @@ def main():
             userinteract_obj.getUserConfigInfo(config_obj)
             utility_obj.createTempFile()
         else:
-            previous_install = userinteract_obj.proceedWithPreviousInstall(config_obj)
+            previous_install = userinteract_obj.proceedWithPreviousInstall()
             if previous_install == "1":
                 userinteract_obj.getUserConfigInfo(config_obj)
                 utility_obj.createTempFile()
