@@ -88,9 +88,10 @@ class UserInteract:
         #deploy_mode = raw_input("Choose the type of deployment [1]: ") or '1'
         deploy_mode = '1'
         logging.info ("Mode of deployment : %s", deploy_mode)
-        if deploy_mode == '1':
-            on_prem_emailid = raw_input("Enter the admin user email id for management console login [admin@apporbit.com]:") or "admin@apporbit.com"
-            logging.info ("Email ID : %s", on_prem_emailid )
+        if clean_setup == "1":
+            if deploy_mode == '1':
+                on_prem_emailid = raw_input("Enter the admin user email id for management console login [admin@apporbit.com]:") or "admin@apporbit.com"
+                logging.info ("Email ID : %s", on_prem_emailid )
 
         ip = urllib2.urlopen("http://whatismyip.akamai.com").read()
         hostIp = raw_input("Enter the FQDN or host IP [%s]:" %ip) or ip
