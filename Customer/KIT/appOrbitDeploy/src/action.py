@@ -257,6 +257,7 @@ class Action:
         self.utilityobj.progressBar(1)
         self.removeRunningContainers(config_obj)
         self.utilityobj.progressBar(2)
+        self.utilityobj.createLogRoatateFile()
 
         # CLEAN or RETAIN OLD ENTRIES
         if config_obj.clean_setup == '1':

@@ -89,10 +89,10 @@ class Utility:
         return ret_val
 
     def isPreviousInstallSuccess(self):
-        ret_val = False
+        ret_val = True
         if os.path.isfile("install.tmp"):
             logging.info("Previous Installation Failed or Interrupted.")
-            ret_val = True
+            ret_val = False
         return  ret_val
 
     #Remove Temp file.
@@ -106,6 +106,25 @@ class Utility:
     def createTempFile(self):
         open("install.tmp", 'w').close()
         return True
+
+    #Create logRotate File
+
+    def createLogRoatateFile(self):
+        if not os.path.isfile("/etc/logrotate.d/apporbitLogRotate"):
+            str_to_write = "/var/log/apporbit/controller/*log /var/log/apporbit/services/*log { \n \
+            daily \n \
+            missingok \n \
+            size 50M \n \
+            rotate 20 \n \
+            compress \n \
+            copytruncate \n \
+            }"
+            fileobj = open("/etc/logrotate.d/apporbitLogRotate", "w")
+            fileobj.write(str_to_write)
+            fileobj.close()
+
+        return True
+
 
 
     #Docker Login
