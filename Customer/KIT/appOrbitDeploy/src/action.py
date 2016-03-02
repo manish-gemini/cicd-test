@@ -5,7 +5,7 @@ import multiprocessing
 import os
 import re
 import shutil
-import time
+from time import sleep
 
 import utility
 
@@ -30,6 +30,8 @@ class Action:
 
         self.utilityobj.cmdExecute(cmd_deploy_rmq, cmd_desc, True)
 
+        sleep(10)
+
         return True
 
 
@@ -45,6 +47,8 @@ class Action:
 
         self.utilityobj.cmdExecute(cmd_deploy_docs, cmd_desc, True)
 
+        sleep(10)
+
         return True
 
     def deployDB(self):
@@ -54,7 +58,7 @@ class Action:
         cmd_desc = "Deploy database container"
 
         self.utilityobj.cmdExecute(cmd_deploy_db, cmd_desc, True)
-
+        sleep(60)
         return  True
 
 
@@ -70,6 +74,7 @@ class Action:
         cmd_desc = "Deploy chef container "
 
         self.utilityobj.cmdExecute(cmd_chefDeploy, cmd_desc, True)
+        sleep(120)
 
         return True
 
@@ -121,6 +126,7 @@ class Action:
         cmd_desc = "Deploy services container"
 
         self.utilityobj.cmdExecute(cmd_deploy_services, cmd_desc, True)
+        sleep(10)
         return True
 
 
@@ -208,6 +214,8 @@ class Action:
         cmd_desc = "Deploy controller container."
 
         self.utilityobj.cmdExecute(cmd_deploy_controller, cmd_desc, True)
+
+        sleep(5)
 
         return True
 
