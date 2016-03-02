@@ -24,20 +24,21 @@ def main():
     # Hardware Requirements are not satisfied
     # Fail but not exit with Fixable Reqruiements
     print "Verifying system information."
-    utility_obj.progressBar(0)
-    utility_obj.verifySystemInfo()
-    logging.info("System info verification is completed!")
+    with utility.DotProgress("Verify"):
+        utility_obj.progressBar(0)
+        utility_obj.verifySystemInfo()
+        logging.info("System info verification is completed!")
 
-    # Will Fix all the Fixable Software Requriements
-    # Will Fix Docker startup and
-    # Seliux settings.
-    if not utility_obj.fixSysRequirements():
-        logging.error("Unable to auto fix System Requirments.")
-        # print ("Unable to auto fix systeme Requirements.\
-        #  Check Log for details and fix it")
-        exit()
-    utility_obj.progressBar(20)
-    print "   -- [Done]"
+        # Will Fix all the Fixable Software Requriements
+        # Will Fix Docker startup and
+        # Seliux settings.
+        if not utility_obj.fixSysRequirements():
+            logging.error("Unable to auto fix System Requirments.")
+            # print ("Unable to auto fix systeme Requirements.\
+            #  Check Log for details and fix it")
+            exit()
+        utility_obj.progressBar(20)
+        print "   -- [Done]"
 
     logging.info("fix System Requirements is completed!")
 
@@ -71,12 +72,13 @@ def main():
             exit()
 
     print "Deploying appOrbit management server."
-    utility_obj.progressBar(0)
-    action_obj.deployAppOrbit(config_obj)
-    utility_obj.removeTempFile()
-    utility_obj.progressBar(20)
-    print "   -- [Done]"
-    # utilityObj.deployFromFile('appobit_deploy.conf')
+    with utility.DotProgress("Deploy"):
+        utility_obj.progressBar(0)
+        action_obj.deployAppOrbit(config_obj)
+        utility_obj.removeTempFile()
+        utility_obj.progressBar(20)
+        print "   -- [Done]"
+
     print "Now login to the appOrbit management server using https://" + config_obj.hostip + " with the default password 'admin1234'"
     logging.info("END OF DEPLOYMENT")
 

@@ -12,7 +12,32 @@ import shutil
 import ConfigParser
 import sys
 import platform
+import threading
 from time import sleep
+
+# Implementation of DotProgress class
+class DotProgress(threading.Thread):
+    def __init__(self, msg):
+        threading.Thread.__init__(self)
+        self.msg = msg
+        self.event = threading.Event()
+    def __enter__(self):
+        self.start()
+    def __exit__(self, ex_type, ex_value, ex_traceback):
+        self.event.set()
+        self.join()
+    def run(self):
+        #sys.stdout.write(self.msg)
+        while not self.event.isSet():
+            for i in range(1,3):
+               sys.stdout.write(".")
+               sys.stdout.flush()
+               sleep(0.25)
+               sys.stdout.write("\b")
+               sys.stdout.flush()
+               sleep(0.25)
+            self.event.wait(1)
+
 
 class Utility:
 
