@@ -38,7 +38,7 @@ def main():
             #  Check Log for details and fix it")
             exit()
         utility_obj.progressBar(20)
-        print "   -- [Done]"
+    print "   -- [Done]"
 
     logging.info("fix System Requirements is completed!")
 
@@ -77,7 +77,7 @@ def main():
         action_obj.deployAppOrbit(config_obj)
         utility_obj.removeTempFile()
         utility_obj.progressBar(20)
-        print "   -- [Done]"
+    print "   -- [Done]"
 
     print "Now login to the appOrbit management server using https://" + config_obj.hostip + " with the default password 'admin1234'"
     logging.info("END OF DEPLOYMENT")

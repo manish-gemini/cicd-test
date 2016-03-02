@@ -29,13 +29,9 @@ class DotProgress(threading.Thread):
     def run(self):
         #sys.stdout.write(self.msg)
         while not self.event.isSet():
-            for i in range(1,3):
-               sys.stdout.write(".")
-               sys.stdout.flush()
-               sleep(0.25)
-               sys.stdout.write("\b")
-               sys.stdout.flush()
-               sleep(0.25)
+            sys.stdout.write(".")
+            sys.stdout.flush()
+            sleep(15)
             self.event.wait(1)
 
 
