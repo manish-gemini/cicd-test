@@ -26,7 +26,7 @@ class Action:
         cmd_deploy_rmq = "docker run -m 2g -d --hostname rmq --restart=always \
         --name apporbit-rmq -d " + rmq_image_name
 
-        cmd_desc = "Deploy message service"
+        cmd_desc = "Deploying message service"
 
         self.utilityobj.cmdExecute(cmd_deploy_rmq, cmd_desc, True)
 
@@ -43,7 +43,7 @@ class Action:
 
         cmd_deploy_docs = "docker run --name apporbit-docs --restart=always -p 9080:80 -d " + rmq_image_name
 
-        cmd_desc = "Deploy document service"
+        cmd_desc = "Deploying document service"
 
         self.utilityobj.cmdExecute(cmd_deploy_docs, cmd_desc, True)
 
@@ -55,7 +55,7 @@ class Action:
         cmd_deploy_db = "docker run --name db --restart=always -e MYSQL_ROOT_PASSWORD=admin \
         -e MYSQL_USER=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller \
         -v /var/dbstore:/var/lib/mysql -d mysql:5.6.24"
-        cmd_desc = "Deploy database container"
+        cmd_desc = "Deploying database container"
 
         self.utilityobj.cmdExecute(cmd_deploy_db, cmd_desc, True)
         sleep(60)
@@ -71,7 +71,7 @@ class Action:
         cmd_chefDeploy = "docker run -m 2g -it --restart=always -p 9443:9443  \
         -v /etc/chef-server/ --name apporbit-chef -h "+ host_ip + " -d " + chef_image_name
 
-        cmd_desc = "Deploy chef container "
+        cmd_desc = "Deploying chef container "
 
         self.utilityobj.cmdExecute(cmd_chefDeploy, cmd_desc, True)
         sleep(120)
@@ -123,7 +123,7 @@ class Action:
         cmd_deploy_services = cmd_deploy_services + " -v /var/log/apporbit/services:/var/log/apporbit" + vol_mount_str + " -d  \
         " + image_name
 
-        cmd_desc = "Deploy services container"
+        cmd_desc = "Deploying services container"
 
         self.utilityobj.cmdExecute(cmd_deploy_services, cmd_desc, True)
         sleep(10)
@@ -211,7 +211,7 @@ class Action:
         -v /var/lib/apporbit/sslkeystore/:/home/apporbit/apporbit-controller/sslkeystore \
         -d " + cntrlimageName
 
-        cmd_desc = "Deploy controller container."
+        cmd_desc = "Deploying controller container."
 
         self.utilityobj.cmdExecute(cmd_deploy_controller, cmd_desc, True)
 
@@ -227,7 +227,7 @@ class Action:
         -keyout /var/lib/apporbit/sslkeystore/apporbitserver.key \
         -out /var/lib/apporbit/sslkeystore/apporbitserver.crt'
 
-        cmd_desc = "SSL Certificate Create."
+        cmd_desc = "Creating SSL Certificate."
         self.utilityobj.cmdExecute(cmd_sslcert, cmd_desc, True)
 
         return True
@@ -250,11 +250,11 @@ class Action:
         cmd_cpysslkey = "cp -f " + dir +"/apporbitserver.key /var/lib/apporbit/sslkeystore/apporbitserver.key"
         cmd_cpysslcrt = "cp -f " + dir +"/apporbitserver.crt /var/lib/apporbit/sslkeystore/apporbitserver.crt"
 
-        cmd_desc = "SSL key copy"
+        cmd_desc = "Copying SSL key"
 
         self.utilityobj.cmdExecute(cmd_cpysslkey, cmd_desc, True)
 
-        cmd_desc = "SSL certificate copy"
+        cmd_desc = "Copying SSL certificate"
 
         self.utilityobj.cmdExecute(cmd_cpysslcrt, cmd_desc, True)
 
@@ -321,43 +321,43 @@ class Action:
 
     def removeRunningContainers(self, config_obj):
         cmd_dockerps = "docker ps -a "
-        cmd_desc = "Docker ps"
+        cmd_desc = "Checking Docker ps"
         code, out, err = self.utilityobj.cmdExecute(cmd_dockerps, cmd_desc, True)
 
         if config_obj.clean_setup == '1':
             if "apporbit-chef" in out:
                 logging.info( "apporbit-chef exist remove it")
                 cmd_chef_rm = "docker rm -f apporbit-chef"
-                cmd_desc = "Remove chef container "
+                cmd_desc = "Removing chef container "
                 self.utilityobj.cmdExecute(cmd_chef_rm, cmd_desc, True)
 
         if "apporbit-controller" in out:
             logging.info("apporbit-controller exist remove it")
             cmd_controller_rm = "docker rm -f apporbit-controller"
-            cmd_desc = "Remove controller container "
+            cmd_desc = "Removing controller container "
             self.utilityobj.cmdExecute(cmd_controller_rm, cmd_desc, True)
 
         if "apporbit-services" in out:
             logging.info( "apporbit-rmq-services exist remove it")
             cmd_services_rm = "docker rm -f apporbit-services"
-            cmd_desc = "Remove services container "
+            cmd_desc = "Removing services container "
             self.utilityobj.cmdExecute(cmd_services_rm, cmd_desc, True)
 
         if  "db" in out:
             logging.info( "db container exist remove it")
             cmd_db_rm = "docker rm -f db"
-            cmd_desc = "Remove database container."
+            cmd_desc = "Removing database container."
             self.utilityobj.cmdExecute(cmd_db_rm, cmd_desc, True)
 
         if "apporbit-rmq" in out:
             logging.info( "rmq container exist remove it")
             cmd_rmq_rm = "docker rm -f apporbit-rmq"
-            cmd_desc = "Remove message service container."
+            cmd_desc = "Removing message service container."
             self.utilityobj.cmdExecute(cmd_rmq_rm, cmd_desc, True)
 
         if "apporbit-docs" in out:
             cmd_docs_rm = "docker rm -f apporbit-docs"
-            cmd_desc = "Remove document container."
+            cmd_desc = "Removing document container."
             self.utilityobj.cmdExecute(cmd_docs_rm, cmd_desc)
 
         return True
