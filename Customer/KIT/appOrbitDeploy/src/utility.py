@@ -12,7 +12,28 @@ import shutil
 import ConfigParser
 import sys
 import platform
+import threading
 from time import sleep
+
+# Implementation of DotProgress class
+class DotProgress(threading.Thread):
+    def __init__(self, msg):
+        threading.Thread.__init__(self)
+        self.msg = msg
+        self.event = threading.Event()
+    def __enter__(self):
+        self.start()
+    def __exit__(self, ex_type, ex_value, ex_traceback):
+        self.event.set()
+        self.join()
+    def run(self):
+        #sys.stdout.write(self.msg)
+        while not self.event.isSet():
+            sys.stdout.write(".")
+            sys.stdout.flush()
+            sleep(15)
+            self.event.wait(1)
+
 
 class Utility:
 
@@ -25,6 +46,37 @@ class Utility:
         return
 
 
+    def cmdExecute(self, cmd_str, cmd_desc = '', bexit = False):
+        try:
+            process = subprocess.Popen(cmd_str, shell=True, stdout=subprocess.PIPE, \
+                                   stderr=subprocess.PIPE)
+            out, err =  process.communicate()
+            if process.returncode == 0:
+                logging.info("Success - %s",cmd_desc)
+                logging.info(out)
+            else:
+                if bexit :
+                    logging.error("FAILED - %s", cmd_desc)
+                    logging.error(err)
+                    print "FAILED - " + cmd_desc
+                    print "Check log for details."
+                    exit()
+                else:
+                    logging.warning("WARNING - %s", cmd_desc)
+                    logging.warning(err)
+                    return False, out, err
+        except Exception as exp:
+            if bexit :
+                    logging.error("FAILED - %s", cmd_desc)
+                    logging.error("Exception: %d : %s", exp.errno, exp.strerror)
+                    print "[FAILED] - " + cmd_desc
+                    print "Check log for details."
+                    exit()
+            else:
+                    logging.warning("WARNING - %s", cmd_desc)
+                    logging.warning("Exception: %d : %s", exp.errno, exp.strerror)
+        return True, out, err
+
 
     # Progress Bar Impleementaion
     def progressBar(self, i):
@@ -33,6 +85,81 @@ class Utility:
         sys.stdout.write("[%-20s] %d%%" % ('='*i, 5*i))
         sys.stdout.flush()
         sleep(0.25)
+
+
+    #Check if this Machine already runs apporbit management servers .
+    def isFreshInstall(self):
+        ret_val = True
+        cmd_dockerps = "docker ps -a "
+        cmd_desc = "Docker ps"
+        code, out, err = self.cmdExecute(cmd_dockerps, cmd_desc, True)
+        if "apporbit-controller" in out or "apporbit-services" in out:
+            logging.info("Not Fresh Install")
+            ret_val = False
+        return ret_val
+
+    #Check if this Machine already runs apporbit-chef container.
+    def isChefDeployed(self):
+        ret_val = False
+        cmd_dockerps = "docker ps"
+        cmd_desc = "Docker ps"
+        code, out, err = self.cmdExecute(cmd_dockerps, cmd_desc, True)
+        if "apporbit-chef" in out:
+            logging.info("Chef server is deployed in this host")
+            ret_val = True
+        return ret_val
+
+    def isPreviousInstallSuccess(self):
+        ret_val = True
+        if os.path.isfile("install.tmp"):
+            logging.info("Previous Installation Failed or Interrupted.")
+            ret_val = False
+        return  ret_val
+
+    #Remove Temp file.
+    def removeTempFile(self):
+        if os.path.isfile("install.tmp"):
+            os.remove("install.tmp")
+            logging.info("Removed tmp file created during installation.")
+        return True
+
+    # Create Temp file
+    def createTempFile(self):
+        open("install.tmp", 'w').close()
+        return True
+
+    #Create logRotate File
+
+    def createLogRoatateFile(self):
+        if not os.path.isfile("/etc/logrotate.d/apporbitLogRotate"):
+            str_to_write = "/var/log/apporbit/controller/*log /var/log/apporbit/services/*log { \n \
+            daily \n \
+            missingok \n \
+            size 50M \n \
+            rotate 20 \n \
+            compress \n \
+            copytruncate \n \
+            }"
+            fileobj = open("/etc/logrotate.d/apporbitLogRotate", "w")
+            fileobj.write(str_to_write)
+            fileobj.close()
+
+        return True
+
+
+
+    #Docker Login
+    def loginDockerRegistry(self, uname, passwd, repo_str = "secure-registry.gsintlab.com" ):
+        # print "Login to Docker Registry " + repo_str
+        if passwd:
+            cmd_str = 'docker login -e=admin@apporbit.com -u=' + uname + ' -p=' + passwd +' '+ repo_str
+            self.cmdExecute(cmd_str, "Docker login ", True)
+        else:
+            logging.error("Docker Login Failed ")
+            print 'Docker login -[Failed!]'
+            exit()
+
+        return True
 
     # Check for System Information if it satisfy all Pre Deploy Requirements
     # If not fixable errors found exit the process and log the errors.
@@ -132,27 +259,11 @@ class Utility:
 
         if "red hat" in osname:
             logging.info("Verifying Subscription Details.")
-            try:
-                subscription_cmd = "subscription-manager version"
-                process = subprocess.Popen(subscription_cmd, shell=True, stdout=subprocess.PIPE, \
-                                   stderr=subprocess.PIPE)
-                out, err =  process.communicate()
-
-                if process.returncode == 0:
-                    # print out
-                    logging.info("subscription manager version. %s", out)
-                    if "currently not registered" in out:
-                        logging.error("Red Hat Subscription : This system is not Registered. Register and retry installation.")
-                        self.redhat_subscription = False
-
-                else:
-                    # print err
-                    logging.error("Error in finding subscription details. %s", err)
-
-            except Exception as exp:
-                logging.error("subscription manager version command failed.")
-                logging.error("Unable to find subscription details..")
-
+            subscription_cmd = "subscription-manager version"
+            code, out, err = self.cmdExecute(subscription_cmd, "Check Red Hat Subscription", False)
+            if code:
+                if "currently not registered" in out:
+                    self.redhat_subscription = False
 
         return True
 
@@ -163,7 +274,6 @@ class Utility:
         logging.info("started verifying software requirements")
         # Check for Operating System compatibility.
         self.verifyOSRequirement()
-
         if os.path.isfile('apporbit.repo'):
             logging.info('copying apporbit.repo to yum.repos.d directory.')
             shutil.copyfile('apporbit.repo', '/etc/yum.repos.d/apporbit.repo')
@@ -176,61 +286,19 @@ class Utility:
 
         logging.info ("Verifying docker installation")
 
-        try:
-            docker_cmd = "docker -v > /dev/null"
-            process = subprocess.Popen(docker_cmd, shell=True, stdout=subprocess.PIPE, \
-                                   stderr=subprocess.PIPE)
-
-            out, err =  process.communicate()
-
-            if process.returncode == 0:
-                # print out
-                logging.info("docker is already installed. %s", out)
-
-            else:
-                # print err
-                logging.warning("docker needs to be installed. %s", err)
-                self.do_dockerinstall = 1
-
-        except Exception as exp:
-            logging.error("Docker is not installed.")
+        docker_cmd = "docker -v > /dev/null"
+        if not self.cmdExecute(docker_cmd, "Docker Install", False):
             self.do_dockerinstall = 1
 
         logging.info ("Verify NTP Installation!")
-        try:
-            ntp_cmd = "ntpdate time.nist.gov > /dev/null"
-            process = subprocess.Popen(ntp_cmd, shell=True, stdout=subprocess.PIPE, \
-                                   stderr=subprocess.PIPE)
-
-            out, err =  process.communicate()
-
-            if process.returncode == 0:
-                logging.info("ntp is already installed. %s", out)
-
-            else:
-                logging.warning("ntp needs to be installed. %s", err)
-                self.do_ntpinstall = 1
-        except Exception as exp:
-            logging.warning("Exception:ntp needs to be installed! %d : %s", exp.errno, exp.strerror)
+        ntp_cmd = "ntpdate time.nist.gov > /dev/null"
+        if not self.cmdExecute(ntp_cmd, "ntp Install", False):
             self.do_ntpinstall = 1
 
         logging.info("Verify wget installation")
-        try:
-            wget_cmd = "wget --version > /dev/null"
-            process = subprocess.Popen(wget_cmd, shell=True, stdout=subprocess.PIPE, \
-                                   stderr=subprocess.PIPE)
+        wget_cmd = "wget --version > /dev/null"
 
-            out, err =  process.communicate()
-
-            if process.returncode == 0:
-                logging.info("wget is already installed. %s", out)
-
-            else:
-                logging.info("wget needs to be installed. %s", err)
-                self.do_wgetinstall = 1
-
-        except OSError as e:
-            logging.error("wget needs to be installed! %d : %s", e.errno, e.strerror)
+        if not self.cmdExecute(wget_cmd, "wget Install", False):
             self.do_wgetinstall = 1
 
         return True
@@ -278,13 +346,11 @@ class Utility:
              Check Network settings and Enable connection to http://repos.gsintlab.com")
             return False
 
-
-
     def fixSysRequirements(self):
         cmd_upgradelvm = "yum -y upgrade lvm2"
+        if not self.cmdExecute(cmd_upgradelvm, "lvm upgrade", False):
+            return False
 
-        process = subprocess.Popen(cmd_upgradelvm, shell=True, stdout=subprocess.PIPE, \
-                                   stderr=subprocess.PIPE)
 
         out, err =  process.communicate()
 
@@ -299,169 +365,55 @@ class Utility:
 
         if self.do_wgetinstall:
             cmd_wgetInstall = "yum install -y wget"
-
-            process = subprocess.Popen(cmd_wgetInstall, shell=True, stdout=subprocess.PIPE, \
-                                   stderr=subprocess.PIPE)
-
-            out, err =  process.communicate()
-
-            if process.returncode == 0:
-                # print out
-                logging.info("Install wget success. %s", out)
-
-            else:
-                logging.warning("Install wget failed. %s", err)
+            code, out, err = self.cmdExecute(cmd_wgetInstall, "Wget Install", False)
+            if not code:
                 if self.redhat_subscription:
-                    print "Installing wget failed!. Check log for details."
-                else:
                     print "FAILED- Red Hat is not having a valid subscription. Get a valid subscription and retry installation."
                 return False
 
         self.progressBar(12)
         if self.do_ntpinstall:
             cmd_ntpInstall = "yum install -y ntp"
-
-            process = subprocess.Popen(cmd_ntpInstall, shell=True, stdout=subprocess.PIPE, \
-                                   stderr=subprocess.PIPE)
-
-            out, err =  process.communicate()
-
-            if process.returncode == 0:
-                logging.info("Install ntp success. %s", out)
-
-            else:
-                logging.warning("Install ntp failed. %s", err)
-                print "Installing ntp failed!. check log for details."
+            if not self.cmdExecute(cmd_ntpInstall, "Ntp Install", False):
                 return False
+
         self.progressBar(14)
 
         if self.do_dockerinstall:
             cmd_dockerInstall = "yum install -y docker-1.7.1"
-
-            process = subprocess.Popen(cmd_dockerInstall, shell=True, stdout=subprocess.PIPE, \
-                                   stderr=subprocess.PIPE)
-
-            out, err =  process.communicate()
-
-            if process.returncode == 0:
-                logging.info("Install docker success. %s", out)
-
-            else:
-                logging.warning("Install docker failed. %s", err)
-                print "Installing docker failed!. check log for details."
+            if not self.cmdExecute(cmd_dockerInstall, "Docker Install", False):
                 return False
-
         self.progressBar(16)
+
         if self.do_sesettings:
-            # print ("Info: Setting SElinux status to permissive")
             cmd_sesettings = "setenforce 0"
-
-            process = subprocess.Popen(cmd_sesettings, shell=True, stdout=subprocess.PIPE, \
-                                   stderr=subprocess.PIPE)
-
-            out, err =  process.communicate()
-
-            if process.returncode == 0:
-                logging.info("setting sestatus success. %s", out)
-
-            else:
-                logging.warning("setting sestatus Failed. %s", out)
-                print "setting sestatus failed!. check log for details."
+            if not self.cmdExecute(cmd_sesettings, "Setenforce to permissive", False):
                 return False
+
         self.progressBar(17)
-        # Enable Docker Service
         cmd_dockerservice = "systemctl enable docker.service"
-        process_doc = subprocess.Popen(cmd_dockerservice, shell=True, stdout=subprocess.PIPE, \
-        stderr=subprocess.PIPE)
-        out_doc, err_doc =  process_doc.communicate()
-        if process_doc.returncode == 0:
-            logging.info("service docker enabled on startup  -success. %s", out_doc)
+        self.cmdExecute(cmd_dockerservice, "Enable Docker service on restart", False)
 
-        else:
-            logging.warning("service docker enabled on startup - Failed. %s", err_doc)
-
-
-        #Enable Docker service on restart
         cmd_dockerservice = "systemctl start docker.service"
-        process_doc = subprocess.Popen(cmd_dockerservice, shell=True, stdout=subprocess.PIPE, \
-                         stderr=subprocess.PIPE)
-
-        out_doc, err_doc =  process_doc.communicate()
-        if process_doc.returncode == 0:
-            logging.info("service docker start  -success. %s", out_doc)
-
-        else:
-            logging.error("service docker start  -Failed. %s", err_doc)
-            print "service docker start failed. check log for details."
+        if not self.cmdExecute(cmd_dockerservice, " Docker service start", False):
             return False
         self.progressBar(18)
-        # Sync Network Time
+
         cmd_ntpupdate = "ntpdate -b -u time.nist.gov"
-
-        process = subprocess.Popen(cmd_ntpupdate, shell=True, stdout=subprocess.PIPE, \
-                                   stderr=subprocess.PIPE)
-
-        out, err =  process.communicate()
-
-        if process.returncode == 0:
-            logging.info("ntp update  -success. %s", out_doc)
-        else:
-            logging.info("ntp update  -Failed. %s", err_doc)
-
+        self.cmdExecute(cmd_ntpupdate, "Sync network time", False)
 
         #Setup IPTableRules
         cmd_iptablerule1 = "iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited "
         cmd_iptablerule2 = "iptables -D  FORWARD -j REJECT --reject-with icmp-host-prohibited"
         cmd_iptablesaverule = "/sbin/service iptables save"
 
-        process = subprocess.Popen(cmd_iptablerule1, shell=True, stdout=subprocess.PIPE, \
-                                   stderr=subprocess.PIPE)
-
-        out, err =  process.communicate()
-
-        if process.returncode == 0:
-            logging.info("iptable rule1 - success %s", out)
-        else:
-            logging.warning("iptable rule1 - Failed %s", err)
-
-
-        process = subprocess.Popen(cmd_iptablerule2, shell=True, stdout=subprocess.PIPE, \
-                                   stderr=subprocess.PIPE)
-
-        out, err =  process.communicate()
-
-        if process.returncode == 0:
-            logging.info("iptable rule2 - success. %s", out)
-        else:
-            logging.warning("iptable rule2 - Failed. %s", err)
-
-
-        process = subprocess.Popen(cmd_iptablesaverule, shell=True, stdout=subprocess.PIPE, \
-                                   stderr=subprocess.PIPE)
-
-        out, err =  process.communicate()
-
-        if process.returncode == 0:
-
-            logging.info("iptable rules saved - success %s", out)
-        else:
-            logging.warning("iptable rules saved - Failed %s", err)
-
+        self.cmdExecute(cmd_iptablerule1, "Setting iptables input rule", False)
+        self.cmdExecute(cmd_iptablerule2, "Setting iptables forward rule", False)
+        self.cmdExecute(cmd_iptablesaverule, "iptables save", False)
 
         if os.path.isfile('/usr/bin/firewall-cmd'):
-            #  Enable the port used by Chef (permanent makes it persist after reboot
-            #  Chef Port HardCoded
             cmd_firewall = "firewall-cmd --permanent --add-port=9443/tcp"
-            process = subprocess.Popen(cmd_firewall, shell=True, stdout=subprocess.PIPE, \
-                                   stderr=subprocess.PIPE)
-
-            out, err =  process.communicate()
-
-            if process.returncode == 0:
-
-                logging.info("firewall rules saved - success %s", out)
-            else:
-                logging.warning("firewall rules saved - Failed %s", err)
+            self.cmdExecute(cmd_firewall, "Setting firewall rules", False)
 
         self.progressBar(19)
 

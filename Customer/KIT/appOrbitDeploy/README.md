@@ -15,7 +15,7 @@ A private IP can be used only when the entire cloud is running in a private, on 
 
 ## Supported Operating System
 
-CentOS 7.0 or Redhat Enterprise Linux 7
+CentOS 7.0, 7.1  or Redhat Enterprise Linux 7.0, 7.1
 
 ## Ports Used
 The appOrbit Platform requires the following ports in the host firewall accessible from the internet:
@@ -48,29 +48,26 @@ bash <(curl -s http://repos.apporbit.com/install/appOrbitKit/install.sh)
 		
 * Enter the build ID, by default it is "latest".
 	
-* Enter the chef server deploy mode :
+* Re-install or upgrade
+   1. Re-install
+   2. Upgrade
+   Re-install will remove all your previous installation data.
+   Upgrade retains your previous installation data.
+   Choose the installation type from the above [2]:
+
+* Enter the chef server deployment mode :
    1. Deploy on the same host
    2. Do not deploy, will configure it later
-   choose the setup type from the above [1] :1
+   choose the deployment mode from the above [1] :1
 
-* New install or upgrade
-   1. New install
-   2. Upgrade
-   choose the setup type from the above [2] :1
-		
 * Enter the type of SSL certificate type:
-   1. Create a new ssl Certificate
+   1. Create a new SSL Certificate
    2. Use Existing Certificate
-   Choose the type of ssl Certificate [1]:1
-
-* Enter the Mode of Deployment:
-   1. Singe-Tenant
-   2. Multi-Tenant
-   Choose the type of deployment [1]:1
+   Choose the type of SSL Certificate [1]:1
 
 * Enter the user email id for single-tenant deployment [admin@apporbit.com] :
 	
-* Enter hostname or host ip [Default:YOUR-HOST-IP] :
+* Enter hostname or host-IP [Default:YOUR-HOST-IP] :
 	
 * Now, the appOrbit management server starts to deploy.
 

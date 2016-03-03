@@ -1,21 +1,28 @@
 #!/usr/bin/env python
 
-import os
-import urllib2
 import getpass
-import ConfigParser
 import logging
 
-import Config
+import urllib2
+
+from utility import Utility
 
 class UserInteract:
 
     def __init__(self):
+        self.util_obj = Utility()
         return
 
+    def proceedWithPreviousInstall(self):
+        print "There seems to be an existing installation interrupted"
+        print "1. Abort previous installation and start a new installation"
+        print "2. Continue the previous interrupted installation"
+        old_install_mode = raw_input("Choose installation option from above [1]:") or "1"
+        return old_install_mode
 
     def getUserConfigInfo(self, config_obj):
         # Used Variables Decalred
+        reg_url = "registry.apporbit.com"
         reg_user_name = ""
         reg_password = ""
         build_id = ""
@@ -25,6 +32,7 @@ class UserInteract:
         on_prem_emailid = ""
         hostIp = ""
         ssldir = ""
+        is_fresh_install = True
 
         logging.info("Starting to get user config info")
         print "Enter the user configuration information."
@@ -32,21 +40,36 @@ class UserInteract:
         print "Login to the appOrbit registry using the credentials sent to you by email, by appOrbit support team."
         reg_user_name = raw_input("Enter the user name: ")
         reg_password = getpass.getpass()
-        build_id = raw_input("Enter the build version [latest]: ") or "latest"
         # is_install_cfgmgr = raw_input("\n Do you want to deploy config manager in the same machine? [Y/n] : ") or 'y'
 
-        print 'Enter the chef server deployment mode:'
-        print '1. Deploy on the same host '
-        print '2. Do not deploy, configure it later'
-        is_install_cfgmgr = raw_input("Choose the deployment mode from the above [1]:") or '1'
-        logging.info ("Chef mode of deployment : %s", is_install_cfgmgr)
+        self.util_obj.loginDockerRegistry(reg_user_name, reg_password, reg_url)
+        build_id = raw_input("Enter the build version [latest]: ") or "latest"
+        if self.util_obj.isFreshInstall():
+            logging.info("Fresh Install")
+            is_fresh_install = True
+        else:
+            logging.info("Upgrade")
+            is_fresh_install = False
 
-        print "Install or upgrade:"
-        print "1. Install "
-        print "2. Upgrade "
-        clean_setup = raw_input("Choose the installation type from the above [2]:") or '2'
-
+        clean_setup = "1"
+        if not is_fresh_install:
+            print "Re-Install or upgrade:"
+            print "1. Re-Install "
+            print "2. Upgrade "
+            print "Re-Install will remove all your previous installation data."
+            print "Upgrade retains your previous installation data."
+            clean_setup = raw_input("Choose the installation type from the above [2]:") or '2'
         logging.info("Clean Setup : %s", clean_setup)
+
+        if clean_setup == "1":
+            print 'Enter the chef server deployment mode:'
+            print '1. Deploy on the same host '
+            print '2. Do not deploy, configure it later'
+            is_install_cfgmgr = raw_input("Choose the deployment mode from the above [1]:") or '1'
+            logging.info ("Chef mode of deployment : %s", is_install_cfgmgr)
+        else:
+            if self.util_obj.isChefDeployed():
+                is_install_cfgmgr = "1"
 
         print 'Configure the SSL certificate:'
         print '1. Create a new SSL certificate'
@@ -65,9 +88,10 @@ class UserInteract:
         #deploy_mode = raw_input("Choose the type of deployment [1]: ") or '1'
         deploy_mode = '1'
         logging.info ("Mode of deployment : %s", deploy_mode)
-        if deploy_mode == '1':
-            on_prem_emailid = raw_input("Enter the admin user email id for management console login [admin@apporbit.com]:") or "admin@apporbit.com"
-            logging.info ("Email ID : %s", on_prem_emailid )
+        if clean_setup == "1":
+            if deploy_mode == '1':
+                on_prem_emailid = raw_input("Enter the admin user email id for management console login [admin@apporbit.com]:") or "admin@apporbit.com"
+                logging.info ("Email ID : %s", on_prem_emailid )
 
         ip = urllib2.urlopen("http://whatismyip.akamai.com").read()
         hostIp = raw_input("Enter the FQDN or host IP [%s]:" %ip) or ip
@@ -81,5 +105,3 @@ class UserInteract:
         # self.createConfigFile()
         logging.info("completed collecting user config info")
         return
-
-
