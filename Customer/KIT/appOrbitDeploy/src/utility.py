@@ -211,7 +211,7 @@ class Utility:
         if multiprocessing.cpu_count() < 2:
             logging.error("No of cpu is expected to be atleast two.\
                           Increase your system cpu count and try again.")
-            # print "ERROR: Number of processor is expected to be alteast two"
+            print "ERROR: Number of processor is expected to be alteast two. Increase your system cpu count and try again."
             return False
         else:
             logging.info("verify cpu count success!")
@@ -224,7 +224,7 @@ class Utility:
         if ram_size < 3000000: #4194304:
             logging.info("RAM size is less than expected 4 GB.\
                          Upgrade your system and proceed with installation.")
-            # print "ERROR: System Memory is expected to be alteast 4GB"
+            print "ERROR: System Memory is expected to be alteast 4GB. Upgrade your system and proceed with installation."
             return False
 
         logging.info("Hardware requirement verified successfully")
@@ -350,13 +350,14 @@ class Utility:
         except StandardError:
             logging.error ("Unable to connect repositories.\
              Check Network settings and Enable connection to http://repos.gsintlab.com")
+            print ("Unable to connect to appOrbit repository. Check Network settings and Enable connection to http://repos.apporbit.com ")
             return False
 
     def fixSysRequirements(self):
         cmd_upgradelvm = "yum -y upgrade lvm2"
         return_code, out, err = self.cmdExecute(cmd_upgradelvm, "lvm upgrade", False)
         if not return_code:
-            if self.redhat_subscription:
+            if not self.redhat_subscription:
                 print "FAILED- Red Hat is not having a valid subscription. Get a valid subscription and retry installation."
             return False
 
@@ -364,7 +365,7 @@ class Utility:
             cmd_wgetInstall = "yum install -y wget"
             return_code, out, err = self.cmdExecute(cmd_wgetInstall, "Wget Install", False)
             if not return_code:
-                if self.redhat_subscription:
+                if not self.redhat_subscription:
                     print "FAILED- Red Hat is not having a valid subscription. Get a valid subscription and retry installation."
                 return False
 
