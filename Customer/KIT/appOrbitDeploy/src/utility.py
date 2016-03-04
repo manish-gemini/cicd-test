@@ -351,9 +351,6 @@ class Utility:
         if not self.cmdExecute(cmd_upgradelvm, "lvm upgrade", False):
             return False
 
-
-        out, err =  process.communicate()
-
         if process.returncode == 0:
             # print out
             logging.info("Upgrade lvm2. %s", out)
