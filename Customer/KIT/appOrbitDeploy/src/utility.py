@@ -348,19 +348,10 @@ class Utility:
 
     def fixSysRequirements(self):
         cmd_upgradelvm = "yum -y upgrade lvm2"
-        if not self.cmdExecute(cmd_upgradelvm, "lvm upgrade", False):
-            return False
-
-
-        out, err =  process.communicate()
-
-        if process.returncode == 0:
-            # print out
-            logging.info("Upgrade lvm2. %s", out)
-
-        else:
-            logging.warning("Upgrade lvm2 failed. %s", err)
-            print "Upgrade lvm2 failed!. Check log for details."
+        code, out, err = self.cmdExecute(cmd_upgradelvm, "lvm upgrade", False)
+        if not code:
+            if self.redhat_subscription:
+                print "FAILED- Red Hat is not having a valid subscription. Get a valid subscription and retry installation."
             return False
 
         if self.do_wgetinstall:
