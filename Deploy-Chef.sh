@@ -8,16 +8,13 @@
 ## Display valid Sys info and see if any value needs to consider for Minimum Requirements
 
 ##Docker Run command for Chef
+echo "Install Chef or Upgrade Chef"
+echo "1) Install Chef"
+echo "2) Upgrade Chef"
+read -p "Choose Chef Deployment Type from above [2]:" deployType
+deployType=${deployType:-2}
 if docker ps -a |grep -aq apporbit-chef; then
-  echo "Install Chef or Upgrade Chef"
-  echo "1) Install Chef"
-  echo "2) Upgrade Chef"
-  read -p "Choose Chef Deployment Type from above [2]:" deployType
-  deployType=${deployType:-2}
-  if [ $deployType -eq 2 ]
-  then
     docker rm -f apporbit-chef
-  fi
 fi
 chef_port=9443
 ip=`curl -s http://whatismyip.akamai.com; echo`
