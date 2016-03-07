@@ -75,6 +75,8 @@ class Utility:
             else:
                     logging.warning("WARNING - %s", cmd_desc)
                     logging.warning("Exception: %d : %s", exp.errno, exp.strerror)
+                    return False, out, err
+
         return True, out, err
 
 
@@ -209,7 +211,7 @@ class Utility:
         if multiprocessing.cpu_count() < 2:
             logging.error("No of cpu is expected to be atleast two.\
                           Increase your system cpu count and try again.")
-            # print "ERROR: Number of processor is expected to be alteast two"
+            print "ERROR: Number of processor is expected to be alteast two. Increase your system cpu count and try again."
             return False
         else:
             logging.info("verify cpu count success!")
@@ -222,7 +224,7 @@ class Utility:
         if ram_size < 3000000: #4194304:
             logging.info("RAM size is less than expected 4 GB.\
                          Upgrade your system and proceed with installation.")
-            # print "ERROR: System Memory is expected to be alteast 4GB"
+            print "ERROR: System Memory is expected to be alteast 4GB. Upgrade your system and proceed with installation."
             return False
 
         logging.info("Hardware requirement verified successfully")
@@ -287,18 +289,22 @@ class Utility:
         logging.info ("Verifying docker installation")
 
         docker_cmd = "docker -v > /dev/null"
-        if not self.cmdExecute(docker_cmd, "Docker Install", False):
+
+        return_code, out, err = self.cmdExecute(docker_cmd, "Docker Install", False)
+
+        if not return_code:
             self.do_dockerinstall = 1
 
         logging.info ("Verify NTP Installation!")
         ntp_cmd = "ntpdate time.nist.gov > /dev/null"
-        if not self.cmdExecute(ntp_cmd, "ntp Install", False):
+        return_code, out, err = self.cmdExecute(ntp_cmd, "ntp Install", False)
+        if not return_code:
             self.do_ntpinstall = 1
 
         logging.info("Verify wget installation")
         wget_cmd = "wget --version > /dev/null"
-
-        if not self.cmdExecute(wget_cmd, "wget Install", False):
+        return_code, out, err = self.cmdExecute(wget_cmd, "wget Install", False)
+        if not return_code:
             self.do_wgetinstall = 1
 
         return True
@@ -344,41 +350,45 @@ class Utility:
         except StandardError:
             logging.error ("Unable to connect repositories.\
              Check Network settings and Enable connection to http://repos.gsintlab.com")
+            print ("Unable to connect to appOrbit repository. Check Network settings and Enable connection to http://repos.apporbit.com ")
             return False
 
     def fixSysRequirements(self):
         cmd_upgradelvm = "yum -y upgrade lvm2"
-        code, out, err = self.cmdExecute(cmd_upgradelvm, "lvm upgrade", False)
-        if not code:
-            if self.redhat_subscription:
+        return_code, out, err = self.cmdExecute(cmd_upgradelvm, "lvm upgrade", False)
+        if not return_code:
+            if not self.redhat_subscription:
                 print "FAILED- Red Hat is not having a valid subscription. Get a valid subscription and retry installation."
             return False
 
         if self.do_wgetinstall:
             cmd_wgetInstall = "yum install -y wget"
-            code, out, err = self.cmdExecute(cmd_wgetInstall, "Wget Install", False)
-            if not code:
-                if self.redhat_subscription:
+            return_code, out, err = self.cmdExecute(cmd_wgetInstall, "Wget Install", False)
+            if not return_code:
+                if not self.redhat_subscription:
                     print "FAILED- Red Hat is not having a valid subscription. Get a valid subscription and retry installation."
                 return False
 
         self.progressBar(12)
         if self.do_ntpinstall:
             cmd_ntpInstall = "yum install -y ntp"
-            if not self.cmdExecute(cmd_ntpInstall, "Ntp Install", False):
+            return_code, out, err = self.cmdExecute(cmd_ntpInstall, "Ntp Install", False)
+            if not return_code:
                 return False
 
         self.progressBar(14)
 
         if self.do_dockerinstall:
             cmd_dockerInstall = "yum install -y docker-1.7.1"
-            if not self.cmdExecute(cmd_dockerInstall, "Docker Install", False):
+            return_code, out, err = self.cmdExecute(cmd_dockerInstall, "Docker Install", False)
+            if not return_code:
                 return False
         self.progressBar(16)
 
         if self.do_sesettings:
             cmd_sesettings = "setenforce 0"
-            if not self.cmdExecute(cmd_sesettings, "Setenforce to permissive", False):
+            return_code, out, err = self.cmdExecute(cmd_sesettings, "Setenforce to permissive", False)
+            if not return_code:
                 return False
 
         self.progressBar(17)
@@ -386,7 +396,8 @@ class Utility:
         self.cmdExecute(cmd_dockerservice, "Enable Docker service on restart", False)
 
         cmd_dockerservice = "systemctl start docker.service"
-        if not self.cmdExecute(cmd_dockerservice, " Docker service start", False):
+        return_code, out, err = self.cmdExecute(cmd_dockerservice, " Docker service start", False)
+        if not return_code:
             return False
         self.progressBar(18)
 

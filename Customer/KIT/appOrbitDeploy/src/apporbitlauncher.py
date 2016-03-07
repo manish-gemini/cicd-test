@@ -34,8 +34,7 @@ def main():
         # Seliux settings.
         if not utility_obj.fixSysRequirements():
             logging.error("Unable to auto fix System Requirments.")
-            # print ("Unable to auto fix systeme Requirements.\
-            #  Check Log for details and fix it")
+            print "Unable to auto fix system Requirements. Check Log for details and fix it"
             exit()
         utility_obj.progressBar(20)
     print "   -- [Done]"
