@@ -11,8 +11,13 @@
 echo "Install Chef or Upgrade Chef"
 echo "1) Install Chef"
 echo "2) Upgrade Chef"
-read -p "Choose Chef Deployment Type from above [2]:" deployType
-deployType=${deployType:-2}
+read -p "Choose Chef Deployment Type from above [2]:" installType
+installType=${installType:-2}
+#echo $installType
+if [ $installType == 1 ]
+then
+   rm -rf /opt/apporbit/chef-server
+fi
 if docker ps -a |grep -aq apporbit-chef; then
     docker rm -f apporbit-chef
 fi
@@ -76,7 +81,7 @@ echo "Continue to run chef ..."
 
 if [ $deployType -eq 1 ]
 then
-  docker run -m 2g -it --restart=always -e UPGRADE=$deployType -p $chef_port:$chef_port -v /opt/apporbit/chef-server:/var/opt/chef-server -v /opt/apporbit/chef-serverkey/:/var/opt/chef-server/nginx/ca/ -v /etc/chef-server/ --name apporbit-chef -h ${hostip} -d apporbit/apporbit-chef
+  docker run -m 2g -it --restart=always -e UPGRADE=$installType -p $chef_port:$chef_port -v /opt/apporbit/chef-server:/var/opt/chef-server -v /opt/apporbit/chef-serverkey/:/var/opt/chef-server/nginx/ca/ -v /etc/chef-server/ --name apporbit-chef -h ${hostip} -d apporbit/apporbit-chef
 else
   echo "Login to the Internal Registry"
   docker login https://secure-registry.gsintlab.com
@@ -84,6 +89,6 @@ else
   docker pull secure-registry.gsintlab.com/apporbit/apporbit-chef:1.0
   echo "Please change your chef password by logging into the UI."
   echo "Using hostname: ${hostip}"
-  docker run -m 2g -it --restart=always -e UPGRADE=$deployType -p $chef_port:$chef_port -v /opt/apporbit/chef-server:/var/opt/chef-server -v /opt/apporbit/chef-serverkey/:/var/opt/chef-server/nginx/ca/ -v /etc/chef-server/ --name apporbit-chef -h ${hostip} -d secure-registry.gsintlab.com/apporbit/apporbit-chef:1.0
+  docker run -m 2g -it --restart=always -e UPGRADE=$installType -p $chef_port:$chef_port -v /opt/apporbit/chef-server:/var/opt/chef-server -v /opt/apporbit/chef-serverkey/:/var/opt/chef-server/nginx/ca/ -v /etc/chef-server/ --name apporbit-chef -h ${hostip} -d secure-registry.gsintlab.com/apporbit/apporbit-chef:1.0
   echo "Please change your chef password by logging into the UI."
 fi
