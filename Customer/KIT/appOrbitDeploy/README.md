@@ -15,7 +15,7 @@ A private IP can be used only when the entire cloud is running in a private, on 
 
 ## Supported Operating System
 
-CentOS 7.0, 7.1  or Redhat Enterprise Linux 7.0, 7.1
+CentOS 7.0, 7.1, 7.2  or Redhat Enterprise Linux 7.0, 7.1, 7.2
 
 ## Ports Used
 The appOrbit Platform requires the following ports in the host firewall accessible from the internet:

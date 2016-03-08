@@ -254,6 +254,8 @@ class Utility:
             logging.info("OS Version is 7.0")
         elif "7.1" in osversion:
             logging.info("OS Version is 7.1")
+        elif "7.2" in osversion:
+            logging.info("OS Version is 7.2")
         else:
             logging.error("Incompatible Operating System Version. Check the System Requirement Documentation.")
             print "Incompatible Operating System Version. Check logs for more information"
