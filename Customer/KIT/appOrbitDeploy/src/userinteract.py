@@ -68,6 +68,7 @@ class UserInteract:
         on_prem_emailid = ""
         hostIp = ""
         ssldir = ""
+        chef_ssldir = ""
         is_fresh_install = True
 
         logging.info("Starting to get user config info")
@@ -111,7 +112,7 @@ class UserInteract:
             if self.util_obj.isChefDeployed():
                 is_install_cfgmgr = "1"
 
-        if is_install_cfgmgr == '1' and clean_setup == "1":
+        if clean_setup == "1":
             print 'Configure the SSL certificate for chef-server:'
             print '1. Create a new SSL certificate for chef-server'
             print '2. Use an existing certificate for chef-server'
