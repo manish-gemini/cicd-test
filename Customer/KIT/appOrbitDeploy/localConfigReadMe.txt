@@ -1,6 +1,10 @@
 Use this file as Read me for local config edit.
 
-NOTE: First Rename the file example.local.conf to local.conf
+
+NOTE: In general Rename the file example.local.conf to local.conf and edit the fields refering to this doc
+
+1) For Master Build Verification., use master.local.conf and rename to local.conf, Provide Hostip and modify cleansetup attribute as per requirment
+2) For Integration Build Verification, use integration.local.conf and rename to local.conf , Provide Hostip and modify cleansetup attribute as per requirement
 
 [Docker Login]
 username:
