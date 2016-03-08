@@ -5,9 +5,11 @@ import multiprocessing
 import os
 import re
 import shutil
+import ConfigParser
 from time import sleep
 
 import utility
+import userinteract
 
 
 class Action:
@@ -62,14 +64,23 @@ class Action:
         return  True
 
 
-    def deployChef(self, host_ip, reg_url = ""):
+    def deployChef(self, host_ip, clean_setup, reg_url = ""):
         if reg_url:
-            chef_image_name = reg_url + '/apporbit/apporbit-chef:1.0'
+            chef_image_name = reg_url + '/apporbit/apporbit-chef:2.0'
         else:
             chef_image_name = 'apporbit/apporbit-chef'
 
-        cmd_chefDeploy = "docker run -m 2g -it --restart=always -p 9443:9443  \
-        -v /etc/chef-server/ --name apporbit-chef -h "+ host_ip + " -d " + chef_image_name
+        if clean_setup == '1':
+            chef_upgrade = " -e UPGRADE=1 " #1 is Clean Setup
+        else:
+            chef_upgrade = " -e UPGRADE=2 " #2 is Chef Upgrade Mode
+
+        cmd_chefDeploy = "docker run -m 2g -it --restart=always "
+        cmd_chefDeploy += chef_upgrade
+        cmd_chefDeploy += "-p 9443:9443 \
+        -v /opt/apporbit/chef-server:/var/opt/chef-server  -v /opt/apporbit/chef-serverkey/:/var/opt/chef-server/nginx/ca/\
+         -v /etc/chef-server/ --name apporbit-chef -h "+ host_ip + " -d " + chef_image_name
+
 
         cmd_desc = "Deploying chef container "
 
@@ -220,22 +231,44 @@ class Action:
         return True
 
 
-    def createSelfSignedCert(self):
+    def createSelfSignedCert(self, isChef=False, hostIP = ""):
         #Generate SSL Certificate
-        cmd_sslcert = 'openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 \
-        -subj "/C=US/ST=NY/L=appOrbit/O=Dis/CN=www.apporbit.com" \
-        -keyout /var/lib/apporbit/sslkeystore/apporbitserver.key \
-        -out /var/lib/apporbit/sslkeystore/apporbitserver.crt'
+        if isChef:
+            cmd_sslcert = 'openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 \
+            -subj "/C=US/ST=NY/L=appOrbit/O=Dis/CN='+ hostIP + '"\
+            -keyout /opt/apporbit/chef-serverkey/'+ hostIP +'.key \
+            -out /opt/apporbit/chef-serverkey/'+ hostIP + '.crt'
 
-        cmd_desc = "Creating SSL Certificate."
+            cmd_desc = "Creating Chef SSL Certificate."
+
+        else:
+            cmd_sslcert = 'openssl req -new -newkey rsa:4096 -days 365 -nodes -x509\
+            -subj "/C=US/ST=NY/L=appOrbit/O=Dis/CN=www.apporbit.com" \
+            -keyout /var/lib/apporbit/sslkeystore/apporbitserver.key \
+            -out /var/lib/apporbit/sslkeystore/apporbitserver.crt'
+
+            cmd_desc = "Creating SSL Certificate."
+
         self.utilityobj.cmdExecute(cmd_sslcert, cmd_desc, True)
 
         return True
 
-    def copySSLCertificate(self, dir):
+    def copySSLCertificate(self, dir, hostIP = "", is_chef = False):
+        if is_chef == True:
+            sslkeyfile = dir + "/" + hostIP + ".key"
+            sslkeycrt = dir + "/" + hostIP + ".crt"
+            cmd_cpysslkey = "cp -f " + sslkeyfile + " /opt/apporbit/chef-serverkey/."
+            cmd_cpysslcrt = "cp -f " + sslkeycrt + " /opt/apporbit/chef-serverkey/."
+            cmd_desckey = "Copying Chef SSL key"
+            cmd_desccert = "Copying Chef SSL certificate"
 
-        sslkeyfile = dir + "/apporbitserver.key"
-        sslkeycrt = dir + "/apporbitserver.crt"
+        else:
+            sslkeyfile = dir + "/apporbitserver.key"
+            sslkeycrt = dir + "/apporbitserver.crt"
+            cmd_cpysslkey = "cp -f " + dir +"/apporbitserver.key /var/lib/apporbit/sslkeystore/apporbitserver.key"
+            cmd_cpysslcrt = "cp -f " + dir +"/apporbitserver.crt /var/lib/apporbit/sslkeystore/apporbitserver.crt"
+            cmd_desckey = "Copying SSL key"
+            cmd_desccert = "Copying SSL certificate"
 
         if not os.path.isfile(sslkeyfile):
             logging.error('%s SSL key file does not exist.', sslkeyfile)
@@ -247,16 +280,8 @@ class Action:
             print "SSL certificate file does not exist. Check logs for details."
             exit()
 
-        cmd_cpysslkey = "cp -f " + dir +"/apporbitserver.key /var/lib/apporbit/sslkeystore/apporbitserver.key"
-        cmd_cpysslcrt = "cp -f " + dir +"/apporbitserver.crt /var/lib/apporbit/sslkeystore/apporbitserver.crt"
-
-        cmd_desc = "Copying SSL key"
-
-        self.utilityobj.cmdExecute(cmd_cpysslkey, cmd_desc, True)
-
-        cmd_desc = "Copying SSL certificate"
-
-        self.utilityobj.cmdExecute(cmd_cpysslcrt, cmd_desc, True)
+        self.utilityobj.cmdExecute(cmd_cpysslkey, cmd_desckey, True)
+        self.utilityobj.cmdExecute(cmd_cpysslcrt, cmd_desccert, True)
 
         return True
 
@@ -274,6 +299,11 @@ class Action:
         # SETUP or CREATE DIRECTORIES for VOL MOUNT
         self.setupDirectoriesForVolumeMount()
 
+        if config_obj.chef_self_signed_crt == '1'  and config_obj.clean_setup == '1':
+            self.createSelfSignedCert(True, config_obj.hostip)
+        else:
+            self.copySSLCertificate(config_obj.chef_self_signed_crt_dir, config_obj.hostip, True)
+
         if config_obj.self_signed_crt == '1':
             self.createSelfSignedCert()
         else:
@@ -290,12 +320,13 @@ class Action:
         # DEPLOY CHEF CONTAINER
         if config_obj.clean_setup == '1':
             if config_obj.deploy_chef == '1' or config_obj.deploy_chef == '3':
-                self.deployChef(config_obj.hostip, config_obj.registry_url) #CUSTOMER DEPLOYMENT or Master Deployment
+                self.deployChef(config_obj.hostip, config_obj.clean_setup, config_obj.registry_url) #CUSTOMER DEPLOYMENT or Master Deployment
             elif config_obj.deploy_chef == '0':
-                self.deployChef(config_obj.hostip)                        #LOCAL DEPLOYMENT- LOCAL IMAGE
+                self.deployChef(config_obj.hostip, config_obj.clean_setup)                        #LOCAL DEPLOYMENT- LOCAL IMAGE
             else:
                 logging.info("Chef is chosen to be deployed in a different machine.")
-        
+
+
         self.utilityobj.progressBar(10)
 
         # DEPLOY DATABASE CONTAINER
@@ -317,6 +348,16 @@ class Action:
         self.utilityobj.progressBar(19)
         return True
 
+    def removeChefContainer(self):
+        cmd_dockerps = "docker ps -a "
+        cmd_desc = "Checking Docker ps"
+        code, out, err = self.utilityobj.cmdExecute(cmd_dockerps, cmd_desc, True)
+        if "apporbit-chef" in out:
+                logging.info( "apporbit-chef exist remove it")
+                cmd_chef_rm = "docker rm -f apporbit-chef"
+                cmd_desc = "Removing chef container "
+                self.utilityobj.cmdExecute(cmd_chef_rm, cmd_desc, True)
+        return
 
 
     def removeRunningContainers(self, config_obj):
@@ -362,12 +403,21 @@ class Action:
 
         return True
 
+    def clearChefData(self):
+        try:
+            shutil.rmtree('/opt/apporbit/chef-server', ignore_errors = True)
+        except OSError as e:
+            logging.warning("Failed to clean old Entries : " + e.strerror)
+        return
+
+
     def clearOldEntries(self):
         logging.info("clean old entries to create freash setup STARTED!!!")
         try:
             shutil.rmtree('/var/dbstore', ignore_errors = True)
             shutil.rmtree('/var/lib/apporbit/', ignore_errors = True)
             shutil.rmtree('/var/log/apporbit/', ignore_errors = True)
+            shutil.rmtree('/opt/apporbit/chef-server', ignore_errors = True)
         except OSError as e:
             logging.warning("Failed to clean old Entries : " + e.strerror)
 
@@ -427,3 +477,68 @@ class Action:
         self.utilityobj.cmdExecute(cmd_dbs_image , "Pull database server image",True)
 
         return True
+
+
+
+class DeployChef:
+    def __init__(self):
+        self.user_interact_obj = userinteract.UserInteract()
+        self.utility_obj = utility.Utility()
+        self.action_obj = Action()
+        self.chef_deploy_mode = '2'
+        self.hostIP = ""
+        self.chef_self_signed_crt = ""
+        self.chef_ssldir = ""
+
+
+    def deploy_chef(self):
+        if os.path.isfile('cheflocal.conf'):
+            config = ConfigParser.ConfigParser()
+            fp = open('cheflocal.conf', 'r')
+            config.readfp(fp)
+            try:
+                self.uname = config.get('Docker Login', 'username')
+                self.password = config.get('Docker Login', 'password')
+                self.reg_url = config.get('Chef Config', 'reg_url')
+                self.utility_obj.loginDockerRegistry(self.uname, self.password, self.reg_url )
+                self.chef_deploy_mode = config.get('Chef Config', 'chef_deploy_mode')
+                self.hostIP = config.get('Chef Config', 'hostIP')
+                self.chef_self_signed_crt = config.get('Chef Config', 'chef_self_signed_crt')
+                self.chef_ssldir = config.get('Chef Config', 'chef_ssldir')
+            except ConfigParser.NoSectionError, ConfigParser.NoOptionError:
+                pass
+
+            fp.close()
+
+        else:
+            # Get User Configuration for Customer CHEF Deployment
+            self.user_interact_obj.deployChefOnly(self)
+            self.reg_url = "registry.apporbit.com"
+
+        logging.info("DEPLOY CHEF ONLY")
+        logging.info("Configuration details")
+        logging.info("=====================")
+        logging.info("regurl - %s", self.reg_url)
+        logging.info("chef_deploy_mode - %s", self.chef_deploy_mode)
+        logging.info("hostIP - %s", self.hostIP)
+        logging.info("chef_self_signed_crt - %s", self.chef_self_signed_crt)
+        logging.info("chef_ssldir - %s", self.chef_ssldir)
+
+        self.action_obj.removeChefContainer()
+        if self.chef_deploy_mode == 1:
+            self.action_obj.clearChefData()
+
+        if self.chef_self_signed_crt == '1' :
+            self.action_obj.createSelfSignedCert(True, self.hostIP)
+        else:
+            self.action_obj.copySSLCertificate(self.chef_ssldir, self.hostIP, True)
+        print "Chef Server is getting deployed. This process may take some time."
+        self.action_obj.deployChef(self.hostIP, self.chef_deploy_mode, self.reg_url)
+        print "- Deployed successfully."
+        print "Now you can access the chef-server ui at https://" + self.hostIP + ":9443. It is recommended to change the default password."
+
+
+
+
+
+

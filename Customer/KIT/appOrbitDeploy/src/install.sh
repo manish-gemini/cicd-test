@@ -3,7 +3,12 @@ if [ -z "$1" ]
 then
     url='http://repos.apporbit.com/install/appOrbitKit'
 else
-    url=$1
+    if [ "$1" == "deploychef" ]
+    then
+       print "Update Chef Server"
+    else
+        url=$1
+    fi
 fi
 
 command_exists() {
@@ -47,7 +52,11 @@ done
 chmod a+x /opt/apporbit/bin/*.pyc
 # Running predeploy script
 cd /opt/apporbit/bin
-#/opt/apporbit/bin/apporbit-deploy.sh 
-python /opt/apporbit/bin/appOrbitLauncher.pyc
-
+#/opt/apporbit/bin/apporbit-deploy.sh
+if [ "$1" == "deploychef" ]
+then
+    python /opt/apporbit/bin/appOrbitLauncher.pyc deploychef
+else
+    python /opt/apporbit/bin/appOrbitLauncher.pyc
+fi
 

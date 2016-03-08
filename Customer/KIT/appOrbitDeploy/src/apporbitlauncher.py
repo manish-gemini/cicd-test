@@ -3,7 +3,7 @@
 
 import logging
 import os
-
+import sys
 # Project Modules
 import config, utility, action, userinteract
 
@@ -11,6 +11,12 @@ import config, utility, action, userinteract
 def main():
     logging.basicConfig(filename='appOrbitInstall.log', level=logging.DEBUG,
                          format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "deploychef":
+            chef_dep_obj = action.DeployChef()
+            chef_dep_obj.deploy_chef()
+            exit()
 
     print ("This installer will install the appOrbit management server in this machine")
     logging.info("Starting appOrbit Installation")
@@ -61,14 +67,15 @@ def main():
                 userinteract_obj.getUserConfigInfo(config_obj)
                 utility_obj.createTempFile()
 
-        config_obj.loadConfig('apporbit_deploy.conf')
-        logging.info("user configuration is recived SUCCESS.")
-
         # The User config file is read and processed, if not avilable exit
         if not os.path.isfile('apporbit_deploy.conf'):
             logging.error("ERROR: Deployment Configuration file not found!")
             # print "Config file is missing! check log for more details."
             exit()
+
+        config_obj.loadConfig('apporbit_deploy.conf')
+        logging.info("user configuration is recived SUCCESS.")
+
 
     print "Deploying appOrbit management server."
     with utility.DotProgress("Deploy"):
