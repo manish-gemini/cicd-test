@@ -428,8 +428,8 @@ class Action:
 
     def createDirSetSeLinuxPermission(self, dir_path):
         try:
-            os.mkdirs(dir_path)
-        except OSERROR as ose:
+            os.makedirs(dir_path)
+        except OSError as ose:
             if ose.errno == errno.EEXIST and os.path.isdir(dir_path):
                 logging.info("Dir exist - %s", dir_path)
             else:
