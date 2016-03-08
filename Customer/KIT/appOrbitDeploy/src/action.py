@@ -435,6 +435,8 @@ class Action:
             os.mkdir("/var/log/apporbit/services")
             os.mkdir("/var/lib/apporbit/sshKey_root")
             os.mkdir("/var/lib/apporbit/sslkeystore")
+            os.mkdir("/opt/apporbit/chef-serverkey")
+            os.mkdir("/opt/apporbit/chef-server")
         except OSError as ose:
             logging.warning("could not create all the required directories" \
                              + ose.strerror)
@@ -444,12 +446,16 @@ class Action:
         cmd_sslkey = "chcon -Rt svirt_sandbox_file_t /var/lib/apporbit/sslkeystore"
         cmd_services = "chcon -Rt svirt_sandbox_file_t /var/log/apporbit/services"
         cmd_controller = "chcon -Rt svirt_sandbox_file_t /var/log/apporbit/controller"
+        cmd_chefserver = "chcon -Rt svirt_sandbox_file_t /opt/apporbit/chef-server"
+        cmd_chefserverkey = "chcon -Rt svirt_sandbox_file_t /opt/apporbit/chef-serverkey"
 
         self.utilityobj.cmdExecute(cmd_db_dir, "selinux settings for db directory", False)
         self.utilityobj.cmdExecute(cmd_sshkey, "selinux settings for ssh directory", False)
         self.utilityobj.cmdExecute(cmd_sslkey, "selinux settings for ssl directory", False)
         self.utilityobj.cmdExecute(cmd_services, "selinux settings for services directory", False)
         self.utilityobj.cmdExecute(cmd_controller, "selinux settings for controller directory", False)
+        self.utilityobj.cmdExecute(cmd_chefserver, "selinux settings for chef server data", False)
+        self.utilityobj.cmdExecute(cmd_chefserverkey, "selinux settings for chef server key", False)
 
         return True
 
