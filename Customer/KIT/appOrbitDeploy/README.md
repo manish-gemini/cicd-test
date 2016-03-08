@@ -90,6 +90,6 @@ In case of Installation issues, you can refer to /opt/apporbit/bin/appOrbitInsta
 
 # Updating Chef Server
 
- In case chef server need to be update, the following command needs to be executed.
+ In case chef server need to be updated, the following command needs to be executed.
  bash <(curl -s http://repos.apporbit.com/install/appOrbitKit/install.sh deploychef)
  
