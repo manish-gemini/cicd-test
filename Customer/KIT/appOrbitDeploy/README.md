@@ -87,3 +87,9 @@ bash <(curl -s http://repos.apporbit.com/install/appOrbitKit/install.sh)
 
 In case of Installation issues, you can refer to /opt/apporbit/bin/appOrbitInstall.log .
 
+
+# Updating Chef Server
+
+ In case chef server need to be update, the following command needs to be executed.
+ bash <(curl -s http://repos.apporbit.com/install/appOrbitKit/install.sh deploychef)
+ 
