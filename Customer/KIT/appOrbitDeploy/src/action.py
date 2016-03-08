@@ -6,6 +6,7 @@ import os
 import re
 import shutil
 import ConfigParser
+import errno
 from time import sleep
 
 import utility
@@ -425,37 +426,28 @@ class Action:
         return
 
 
+    def createDirSetSeLinuxPermission(self, dir_path):
+        try:
+            os.makedirs(dir_path)
+        except OSError as ose:
+            if ose.errno == errno.EEXIST and os.path.isdir(dir_path):
+                logging.info("Dir exist - %s", dir_path)
+            else:
+                logging.error("Unable to create dir %s", dir_path)
+                print "Unable to setup volume required for the setup. Check log for details."
+                exit()
+        cmd_selinux = "chcon -Rt svirt_sandbox_file_t " + dir_path
+        self.utilityobj.cmdExecute(cmd_selinux, "selinux settings for " + dir_path , False)
+        return
+
     def setupDirectoriesForVolumeMount(self):
         logging.info("Setting up Directories for Volume Mount location  STARTED!!!")
-        try:
-            os.mkdir("/var/dbstore")
-            os.mkdir("/var/log/apporbit")
-            os.mkdir("/var/lib/apporbit")
-            os.mkdir("/var/log/apporbit/controller")
-            os.mkdir("/var/log/apporbit/services")
-            os.mkdir("/var/lib/apporbit/sshKey_root")
-            os.mkdir("/var/lib/apporbit/sslkeystore")
-            os.mkdir("/opt/apporbit/chef-serverkey")
-            os.mkdir("/opt/apporbit/chef-server")
-        except OSError as ose:
-            logging.warning("could not create all the required directories" \
-                             + ose.strerror)
+        dirList = ["/var/dbstore", "/var/log/apporbit", "/var/lib/apporbit","/var/log/apporbit/controller",
+                   "/var/log/apporbit/services", "/var/lib/apporbit/sshKey_root", "/var/lib/apporbit/sslkeystore",
+                   "/opt/apporbit/chef-serverkey", "/opt/apporbit/chef-server" ]
 
-        cmd_db_dir = "chcon -Rt svirt_sandbox_file_t /var/dbstore"
-        cmd_sshkey = "chcon -Rt svirt_sandbox_file_t /var/lib/apporbit/sshKey_root"
-        cmd_sslkey = "chcon -Rt svirt_sandbox_file_t /var/lib/apporbit/sslkeystore"
-        cmd_services = "chcon -Rt svirt_sandbox_file_t /var/log/apporbit/services"
-        cmd_controller = "chcon -Rt svirt_sandbox_file_t /var/log/apporbit/controller"
-        cmd_chefserver = "chcon -Rt svirt_sandbox_file_t /opt/apporbit/chef-server"
-        cmd_chefserverkey = "chcon -Rt svirt_sandbox_file_t /opt/apporbit/chef-serverkey"
-
-        self.utilityobj.cmdExecute(cmd_db_dir, "selinux settings for db directory", False)
-        self.utilityobj.cmdExecute(cmd_sshkey, "selinux settings for ssh directory", False)
-        self.utilityobj.cmdExecute(cmd_sslkey, "selinux settings for ssl directory", False)
-        self.utilityobj.cmdExecute(cmd_services, "selinux settings for services directory", False)
-        self.utilityobj.cmdExecute(cmd_controller, "selinux settings for controller directory", False)
-        self.utilityobj.cmdExecute(cmd_chefserver, "selinux settings for chef server data", False)
-        self.utilityobj.cmdExecute(cmd_chefserverkey, "selinux settings for chef server key", False)
+        for dirName in dirList:
+            self.createDirSetSeLinuxPermission(dirName)
 
         return True
 
