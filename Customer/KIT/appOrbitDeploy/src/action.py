@@ -300,7 +300,10 @@ class Action:
         # SETUP or CREATE DIRECTORIES for VOL MOUNT
         self.setupDirectoriesForVolumeMount()
 
-        if config_obj.chef_self_signed_crt == '1'  and config_obj.clean_setup == '1':
+        if config_obj.clean_setup == '1':
+            self.clearChefData()
+
+        if config_obj.chef_self_signed_crt == '1':
             self.createSelfSignedCert(True, config_obj.hostip)
         else:
             self.copySSLCertificate(config_obj.chef_self_signed_crt_dir, config_obj.hostip, True)
@@ -523,7 +526,7 @@ class DeployChef:
         logging.info("chef_ssldir - %s", self.chef_ssldir)
 
         self.action_obj.removeChefContainer()
-        if self.chef_deploy_mode == 1:
+        if self.chef_deploy_mode == '1':
             self.action_obj.clearChefData()
 
         if self.chef_self_signed_crt == '1' :
