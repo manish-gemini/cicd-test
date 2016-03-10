@@ -133,7 +133,7 @@ class Action:
             cmd_deploy_services = cmd_deploy_services + "--volumes-from apporbit-chef "
 
         cmd_deploy_services = cmd_deploy_services + " -v /var/log/apporbit/services:/var/log/apporbit \
-         -v /var/lib/apporbit/chefconf:/opt/apporbit/chef/conf/" + vol_mount_str + " -d  \
+         -v /var/lib/apporbit/chefconf:/opt/apporbit/chef" + vol_mount_str + " -d  \
         " + image_name
 
         cmd_desc = "Deploying services container"
