@@ -119,25 +119,66 @@ class Action:
             logging.info("volume mount str" + vol_mount_str)
 
 
-        cmd_deploy_services = "docker run -t --name apporbit-services --restart=always \
+        cmd_deploy_cloud_manage = "docker run -t --name apporbit-cloud_manage --restart=always \
         -e GEMINI_INT_REPO=" + internal_repo
         if deploy_chef == "1":
-            cmd_deploy_services = cmd_deploy_services + " -e CHEF_URL=https://" + host_ip +":9443 "
+            cmd_deploy_cloud_manage = cmd_deploy_cloud_manage + " -e CHEF_URL=https://" + host_ip +":9443 "
 
-        cmd_deploy_services = cmd_deploy_services + " -e MYSQL_HOST=db \
+        cmd_deploy_cloud_manage = cmd_deploy_cloud_manage + " -e MYSQL_HOST=db \
         -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist \
-        -e GEMINI_STACK_IPANEMA=1 --link db:db --link apporbit-rmq:rmq \
+        -e GEMINI_STACK_IPANEMA=1 -e cloud_manage --link db:db --link apporbit-rmq:rmq \
         -v /var/lib/apporbit/sshKey_root:/root "
 
         if deploy_chef == "1":
-            cmd_deploy_services = cmd_deploy_services + "--volumes-from apporbit-chef "
+            cmd_deploy_cloud_manage = cmd_deploy_cloud_manage + "--volumes-from apporbit-chef "
 
-        cmd_deploy_services = cmd_deploy_services + " -v /var/log/apporbit/services:/var/log/apporbit" + vol_mount_str + " -d  \
+        cmd_deploy_cloud_manage = cmd_deploy_cloud_manage + " -v /var/log/apporbit/services:/var/log/apporbit" + vol_mount_str + " -d  \
         " + image_name
 
-        cmd_desc = "Deploying services container"
+        cmd_desc = "Deploying cloud_manage container"
 
-        self.utilityobj.cmdExecute(cmd_deploy_services, cmd_desc, True)
+        self.utilityobj.cmdExecute(cmd_deploy_cloud_manage, cmd_desc, True)
+
+        cmd_deploy_data = "docker run -t --name apporbit-data --restart=always \
+        -e GEMINI_INT_REPO=" + internal_repo
+        if deploy_chef == "1":
+            cmd_deploy_data = cmd_deploy_data + " -e CHEF_URL=https://" + host_ip +":9443 "
+
+        cmd_deploy_data = cmd_deploy_data + " -e MYSQL_HOST=db \
+        -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist \
+        -e GEMINI_STACK_IPANEMA=1 -e data --link db:db --link apporbit-rmq:rmq \
+        -v /var/lib/apporbit/sshKey_root:/root "
+
+        if deploy_chef == "1":
+            cmd_deploy_data = cmd_deploy_data + "--volumes-from apporbit-chef "
+
+        cmd_deploy_data = cmd_deploy_data + " -v /var/log/apporbit/services:/var/log/apporbit" + vol_mount_str + " -d  \
+        " + image_name
+
+        cmd_desc = "Deploying data container"
+
+        self.utilityobj.cmdExecute(cmd_deploy_data, cmd_desc, True)
+
+        cmd_deploy_cluster = "docker run -t --name apporbit-cluster --restart=always \
+        -e GEMINI_INT_REPO=" + internal_repo
+        if deploy_chef == "1":
+            cmd_deploy_cluster = cmd_deploy_cluster + " -e CHEF_URL=https://" + host_ip +":9443 "
+
+        cmd_deploy_cluster = cmd_deploy_cluster + " -e MYSQL_HOST=db \
+        -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist \
+        -e GEMINI_STACK_IPANEMA=1 -e cloud_manage --link db:db --link apporbit-rmq:rmq \
+        -v /var/lib/apporbit/sshKey_root:/root "
+
+        if deploy_chef == "1":
+            cmd_deploy_cluster = cmd_deploy_cluster + "--volumes-from apporbit-chef "
+
+        cmd_deploy_cluster = cmd_deploy_cluster + " -v /var/log/apporbit/services:/var/log/apporbit" + vol_mount_str + " -d  \
+        " + image_name
+
+        cmd_desc = "Deploying cluster container"
+
+        self.utilityobj.cmdExecute(cmd_deploy_cluster, cmd_desc, True)
+
         sleep(10)
         return True
 
