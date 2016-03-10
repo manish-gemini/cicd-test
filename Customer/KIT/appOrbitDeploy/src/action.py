@@ -180,6 +180,28 @@ class Action:
         self.utilityobj.cmdExecute(cmd_deploy_cluster, cmd_desc, True)
 
         sleep(10)
+        cmd_deploy_mist = "docker run -t --name apporbit-mist --restart=always \
+        -e GEMINI_INT_REPO=" + internal_repo
+        if deploy_chef == "1":
+            cmd_deploy_mist = cmd_deploy_mist + " -e CHEF_URL=https://" + host_ip +":9443 "
+
+        cmd_deploy_mist = cmd_deploy_mist + " -e MYSQL_HOST=db \
+        -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist \
+        -e GEMINI_STACK_IPANEMA=1 -e cloud_manage --link db:db --link apporbit-rmq:rmq \
+        -v /var/lib/apporbit/sshKey_root:/root "
+
+        if deploy_chef == "1":
+            cmd_deploy_mist = cmd_deploy_mist + "--volumes-from apporbit-chef "
+
+        cmd_deploy_mist = cmd_deploy_mist + " -v /var/log/apporbit/services:/var/log/apporbit" + vol_mount_str + " -d  \
+        " + image_name
+
+        cmd_desc = "Deploying cluster container"
+
+        self.utilityobj.cmdExecute(cmd_deploy_mist, cmd_desc, True)
+
+        sleep(10)
+
         return True
 
 
