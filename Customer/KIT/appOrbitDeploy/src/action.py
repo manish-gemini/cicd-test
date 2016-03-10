@@ -132,7 +132,8 @@ class Action:
         if deploy_chef == "1":
             cmd_deploy_services = cmd_deploy_services + "--volumes-from apporbit-chef "
 
-        cmd_deploy_services = cmd_deploy_services + " -v /var/log/apporbit/services:/var/log/apporbit" + vol_mount_str + " -d  \
+        cmd_deploy_services = cmd_deploy_services + " -v /var/log/apporbit/services:/var/log/apporbit \
+         -v /var/lib/apporbit/chefconf:/opt/apporbit/chef/conf/" + vol_mount_str + " -d  \
         " + image_name
 
         cmd_desc = "Deploying services container"
@@ -447,7 +448,7 @@ class Action:
         logging.info("Setting up Directories for Volume Mount location  STARTED!!!")
         dirList = ["/var/dbstore", "/var/log/apporbit", "/var/lib/apporbit","/var/log/apporbit/controller",
                    "/var/log/apporbit/services", "/var/lib/apporbit/sshKey_root", "/var/lib/apporbit/sslkeystore",
-                   "/opt/apporbit/chef-serverkey", "/opt/apporbit/chef-server" ]
+                   "/var/lib/apporbit/chefconf","/opt/apporbit/chef-serverkey", "/opt/apporbit/chef-server" ]
 
         for dirName in dirList:
             self.createDirSetSeLinuxPermission(dirName)
