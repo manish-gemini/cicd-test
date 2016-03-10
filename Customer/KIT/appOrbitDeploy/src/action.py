@@ -442,11 +442,30 @@ class Action:
             cmd_desc = "Removing controller container "
             self.utilityobj.cmdExecute(cmd_controller_rm, cmd_desc, True)
 
-        if "apporbit-services" in out:
-            logging.info( "apporbit-rmq-services exist remove it")
-            cmd_services_rm = "docker rm -f apporbit-services"
-            cmd_desc = "Removing services container "
+        if "apporbit-cluster" in out:
+            logging.info( "apporbit-cluster exist remove it")
+            cmd_services_rm = "docker rm -f apporbit-cluster"
+            cmd_desc = "Removing cluster container "
             self.utilityobj.cmdExecute(cmd_services_rm, cmd_desc, True)
+
+        if "apporbit-cloud_manage" in out:
+            logging.info( "apporbit-cloud_manage exist remove it")
+            cmd_services_rm = "docker rm -f apporbit-cloud_manage"
+            cmd_desc = "Removing apporbit-cloud_manage "
+            self.utilityobj.cmdExecute(cmd_services_rm, cmd_desc, True)
+
+        if "apporbit-data" in out:
+            logging.info( "apporbit-data exist remove it")
+            cmd_services_rm = "docker rm -f apporbit-data"
+            cmd_desc = "Removing apporbit-data "
+            self.utilityobj.cmdExecute(cmd_services_rm, cmd_desc, True)
+
+        if "apporbit-mist" in out:
+            logging.info( "apporbit-mist exist remove it")
+            cmd_services_rm = "docker rm -f apporbit-mist"
+            cmd_desc = "Removing apporbit-data "
+            self.utilityobj.cmdExecute(cmd_services_rm, cmd_desc, True)
+
 
         if  "db" in out:
             logging.info( "db container exist remove it")
