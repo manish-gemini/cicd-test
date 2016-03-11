@@ -126,7 +126,7 @@ class Action:
 
         cmd_deploy_cloud_manage = cmd_deploy_cloud_manage + " -e MYSQL_HOST=db \
         -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist \
-        -e GEMINI_STACK_IPANEMA=1 -e cloud_manage --link db:db --link apporbit-rmq:rmq \
+        -e GEMINI_STACK_IPANEMA=1 -e cloud_manage=1 --link db:db --link apporbit-rmq:rmq \
         -v /var/lib/apporbit/sshKey_root:/root "
 
         if deploy_chef == "1":
@@ -146,7 +146,7 @@ class Action:
 
         cmd_deploy_data = cmd_deploy_data + " -e MYSQL_HOST=db \
         -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist \
-        -e GEMINI_STACK_IPANEMA=1 -e data --link db:db --link apporbit-rmq:rmq \
+        -e GEMINI_STACK_IPANEMA=1 -e data=1 --link db:db --link apporbit-rmq:rmq \
         -v /var/lib/apporbit/sshKey_root:/root "
 
         if deploy_chef == "1":
@@ -166,7 +166,7 @@ class Action:
 
         cmd_deploy_cluster = cmd_deploy_cluster + " -e MYSQL_HOST=db \
         -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist \
-        -e GEMINI_STACK_IPANEMA=1 -e cluster --link db:db --link apporbit-rmq:rmq \
+        -e GEMINI_STACK_IPANEMA=1 -e cluster=1 --link db:db --link apporbit-rmq:rmq \
         -v /var/lib/apporbit/sshKey_root:/root "
 
         if deploy_chef == "1":
@@ -187,7 +187,7 @@ class Action:
 
         cmd_deploy_mist = cmd_deploy_mist + " -e MYSQL_HOST=db \
         -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist \
-        -e GEMINI_STACK_IPANEMA=1 -e mist --link db:db --link apporbit-rmq:rmq \
+        -e GEMINI_STACK_IPANEMA=1 -e mist=1 --link db:db --link apporbit-rmq:rmq \
         -v /var/lib/apporbit/sshKey_root:/root "
 
         if deploy_chef == "1":
