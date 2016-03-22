@@ -92,7 +92,6 @@ class Action:
 
 
     def deployServices(self, config_obj):
-
         internal_repo = config_obj.internal_repo
         host_ip = config_obj.hostip
         repo_str = config_obj.registry_url
@@ -117,7 +116,8 @@ class Action:
             voloncontainer = "/home/apporbit/apporbit-services"
             vol_mount_str = " -v " + volonhost + ":" + voloncontainer
             logging.info("volume mount str" + vol_mount_str)
-
+            pull_mist_binary = "wget -P " + volonhost + "/mist-cgp http://repos.gsintlab.com/repos/mist/integration/run.jar"
+            self.utilityobj.cmdExecute(pull_mist_binary, 'pull mist binary ', True)
 
         cmd_deploy_services = "docker run -t --name apporbit-services --restart=always \
         -e GEMINI_INT_REPO=" + internal_repo
@@ -206,6 +206,11 @@ class Action:
             volonhost = vol_mount + "/Gemini-poc-mgnt"
             voloncontainer = "/home/apporbit/apporbit-controller"
             vol_mount_str = " -v " + volonhost + ":" + voloncontainer
+            gemfile = volonhost + "/Gemfile"
+            if not os.path.isfile(gemfile):
+                rename_gemfile = "cp -f " + gemfile + "-master " + gemfile
+                self.utilityobj.cmdExecute(rename_gemfile, 'copy Gemfile-master as Gemfile ', True)
+
 
         cmd_deploy_controller = "docker run -t --name apporbit-controller --restart=always \
         -p 80:80 -p 443:443 -e ONPREM_EMAIL_ID="+ onprem_emailID + " \
