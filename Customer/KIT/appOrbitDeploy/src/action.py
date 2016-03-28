@@ -311,8 +311,10 @@ class Action:
 
         if config_obj.chef_self_signed_crt == '1':
             self.createSelfSignedCert(True, config_obj.hostip)
-        else:
+        elif config_obj.chef_self_signed_crt == '2':
             self.copySSLCertificate(config_obj.chef_self_signed_crt_dir, config_obj.hostip, True)
+        else:
+            logging.info("Skipping chef certificate creation on upgrade.")
 
         if config_obj.self_signed_crt == '1':
             self.createSelfSignedCert()

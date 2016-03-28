@@ -70,6 +70,7 @@ class UserInteract:
         ssldir = ""
         chef_ssldir = ""
         is_fresh_install = True
+        chef_self_signed_crt = '0'
 
         logging.info("Starting to get user config info")
         print "Enter the user configuration information."
@@ -112,6 +113,7 @@ class UserInteract:
             if self.util_obj.isChefDeployed():
                 is_install_cfgmgr = "1"
 
+
         if clean_setup == "1":
             print 'Configure the SSL certificate for chef-server:'
             print '1. Create a new SSL certificate for chef-server'
@@ -151,7 +153,7 @@ class UserInteract:
         logging.info("Creating config file...")
         config_obj.createConfigFile(reg_user_name, reg_password,\
                                      build_id, is_install_cfgmgr,\
-                                     self_signed_crt,chef_self_signed_crt, clean_setup,\
+                                     self_signed_crt, chef_self_signed_crt, clean_setup,\
                                         deploy_mode, hostIp, on_prem_emailid, ssldir, chef_ssldir)
         # self.createConfigFile()
         logging.info("completed collecting user config info")
