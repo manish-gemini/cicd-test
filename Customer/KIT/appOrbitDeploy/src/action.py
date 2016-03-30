@@ -366,14 +366,15 @@ class Action:
         code, out, err = self.utilityobj.cmdExecute(cmd_dockerps, cmd_desc, True)
         if "apporbit-chef" in out:
                 logging.info( "apporbit-chef exist remove it")
-                cmd_chef_rm = "docker rm -f apporbit-chef"
-                cmd_desc = "Removing chef container "
-                self.utilityobj.cmdExecute(cmd_chef_rm, cmd_desc, True)
+                self.removeContainer("apporbit-chef")
         return
 
 
     def removeContainer(self, container_name):
-        cmd_remove = "docker rm -f " + container_name
+        cmd_stop = "docker stop " + container_name
+        cmd_desc = "Stop docker container " + container_name
+        self.utilityobj.cmdExecute(cmd_stop, cmd_desc, True)
+        cmd_remove = "docker rm " + container_name
         cmd_desc = "Removing container: " + container_name
         self.utilityobj.cmdExecute(cmd_remove, cmd_desc, True)
         return True
