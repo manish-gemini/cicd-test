@@ -379,19 +379,11 @@ class Action:
         return True
 
     def removeRunningContainers(self, config_obj):
-        if config_obj.clean_setup == '1':
-            container_name = "apporbit-chef"
-            cmd_dockerps = "docker ps -a -q -f name=" + container_name
-            cmd_desc = "Checking container existence." + container_name
-            return_code, out, err = self.utilityobj.cmdExecute(cmd_dockerps, cmd_desc, False)
-            if return_code and out:
-                container_id_list = re.split("\n+", out)
-                for container_id in container_id_list:
-                    if container_id:
-                        self.removeContainer(container_id)
-
         container_name_list = ["db","apporbit-db", "apporbit-controller", "apporbit-services",
                           "apporbit-docs", "apporbit-rmq"]
+        if config_obj.clean_setup == '1':
+            container_name_list.append("apporbit-chef")
+
         for container_name in container_name_list:
             cmd_dockerps = "docker ps -a -q -f name=" + container_name
             cmd_desc = "Checking container existence." + container_name
@@ -401,7 +393,6 @@ class Action:
                 for container_id in container_id_list:
                     if container_id:
                         self.removeContainer(container_id)
-
         return True
 
     def clearChefData(self):
