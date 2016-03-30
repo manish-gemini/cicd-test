@@ -16,9 +16,20 @@ password :
 	User Config Information.
 build_deploy_mode:
     # This sets up Mode of Deploy
-    # 0 - QA Deploy for Master/Integration Build
+    # 0 - QA/Dev Deploy for Master/Integration Build
     # 1 - Dev Deploy for local volume mount build
     # 2 - QA/DEV local deploy.
+    [NOTE: For any build mode, if you specify volume_mount attribute,
+    the specified volume will be mounted to the image chosen for deployment.
+
+    Example:
+    build_deploy_mode = 0
+    reg_url = secure-registry.gsintlab.com
+    volume_mount = /opt
+
+    In this case, controller and service will be lauched using Master Images and will be volume mounted to
+    /opt/Gemini-poc-stack and /opt/Gemini-poc-mgnt respectively.
+    ]
 	
 build_id :
 	latest
@@ -27,7 +38,7 @@ clean_setup :
     # 2 - Upgrade
 self_signed_crt :
     # 1 - Create new SSL
-    #2 - Use Existing SSL
+    # 2 - Use Existing SSL
 self_signed_crt_dir :
     In case you are using Use Existing SSL, Provide the Directory where to pick apporbitserver.key apporbitserver.crt files
 
@@ -39,10 +50,11 @@ chef_ssl_crt_dir :
     HOSTIP is to be replaced with what you provide as the value of hostip below.
 
 deploy_chef :
-    # 0 - Deploy Chef in the same machine using Local Chef Image.
-    # 1 - Deploy Chef in the same machine Using Customer Repo
+    # 0 - Deploy Chef in the same machine using Locally Build Chef Image
+     [Note: Chef Image can be build locally using Build-chef.sh in cicd root dir ].
+    # 1 - Deploy Chef in the same machine Using Repo, repo is as specified in registry_url parameter
     # 2 - Dont Deploy Chef in the same machine
-    # 3 - Deploy Chef in the same Macine using  Master/Jenkins Repo.
+    # 3 - Option Same as [1]
 deploy_mode :
     # 1 - Single Tenanat
     # 2 - Multi Tenanat

@@ -55,7 +55,7 @@ class Action:
         return True
 
     def deployDB(self):
-        cmd_deploy_db = "docker run --name db --restart=always -e MYSQL_ROOT_PASSWORD=admin \
+        cmd_deploy_db = "docker run --name apporbit-db --restart=always -e MYSQL_ROOT_PASSWORD=admin \
         -e MYSQL_USER=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller \
         -v /var/dbstore:/var/lib/mysql -d mysql:5.6.24"
         cmd_desc = "Deploying database container"
@@ -92,7 +92,6 @@ class Action:
 
 
     def deployServices(self, config_obj):
-
         internal_repo = config_obj.internal_repo
         host_ip = config_obj.hostip
         repo_str = config_obj.registry_url
@@ -117,7 +116,8 @@ class Action:
             voloncontainer = "/home/apporbit/apporbit-services"
             vol_mount_str = " -v " + volonhost + ":" + voloncontainer
             logging.info("volume mount str" + vol_mount_str)
-
+            pull_mist_binary = "wget -P " + volonhost + "/mist-cgp http://repos.gsintlab.com/repos/mist/integration/run.jar"
+            self.utilityobj.cmdExecute(pull_mist_binary, 'pull mist binary ', True)
 
         cmd_deploy_services = "docker run -t --name apporbit-services --restart=always \
         -e GEMINI_INT_REPO=" + internal_repo
@@ -126,7 +126,7 @@ class Action:
 
         cmd_deploy_services = cmd_deploy_services + " -e MYSQL_HOST=db \
         -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist \
-        -e GEMINI_STACK_IPANEMA=1 --link db:db --link apporbit-rmq:rmq \
+        -e GEMINI_STACK_IPANEMA=1 --link apporbit-db:db --link apporbit-rmq:rmq \
         -v /var/lib/apporbit/sshKey_root:/root "
 
         if deploy_chef == "1":
@@ -206,6 +206,11 @@ class Action:
             volonhost = vol_mount + "/Gemini-poc-mgnt"
             voloncontainer = "/home/apporbit/apporbit-controller"
             vol_mount_str = " -v " + volonhost + ":" + voloncontainer
+            gemfile = volonhost + "/Gemfile"
+            if not os.path.isfile(gemfile):
+                rename_gemfile = "cp -f " + gemfile + "-master " + gemfile
+                self.utilityobj.cmdExecute(rename_gemfile, 'copy Gemfile-master as Gemfile ', True)
+
 
         cmd_deploy_controller = "docker run -t --name apporbit-controller --restart=always \
         -p 80:80 -p 443:443 -e ONPREM_EMAIL_ID="+ onprem_emailID + " \
@@ -216,7 +221,7 @@ class Action:
 
         cmd_deploy_controller = cmd_deploy_controller + " -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller \
         -e ON_PREM_MODE=" + onpremmode + " -e THEME_NAME="+ theme_name + "\
-        -e CURRENT_API_VERSION=" + api_version + " --link db:db --link apporbit-rmq:rmq "
+        -e CURRENT_API_VERSION=" + api_version + " --link apporbit-db:db --link apporbit-rmq:rmq "
         if deploy_chef == "1":
             cmd_deploy_controller = cmd_deploy_controller + "--volumes-from apporbit-chef "
 
@@ -306,8 +311,10 @@ class Action:
 
         if config_obj.chef_self_signed_crt == '1':
             self.createSelfSignedCert(True, config_obj.hostip)
-        else:
+        elif config_obj.chef_self_signed_crt == '2':
             self.copySSLCertificate(config_obj.chef_self_signed_crt_dir, config_obj.hostip, True)
+        else:
+            logging.info("Skipping chef certificate creation on upgrade.")
 
         if config_obj.self_signed_crt == '1':
             self.createSelfSignedCert()
@@ -359,53 +366,34 @@ class Action:
         code, out, err = self.utilityobj.cmdExecute(cmd_dockerps, cmd_desc, True)
         if "apporbit-chef" in out:
                 logging.info( "apporbit-chef exist remove it")
-                cmd_chef_rm = "docker rm -f apporbit-chef"
-                cmd_desc = "Removing chef container "
-                self.utilityobj.cmdExecute(cmd_chef_rm, cmd_desc, True)
+                self.removeContainer("apporbit-chef")
         return
 
 
+    def removeContainer(self, container_name):
+        cmd_stop = "docker stop " + container_name
+        cmd_desc = "Stop docker container " + container_name
+        self.utilityobj.cmdExecute(cmd_stop, cmd_desc, True)
+        cmd_remove = "docker rm " + container_name
+        cmd_desc = "Removing container: " + container_name
+        self.utilityobj.cmdExecute(cmd_remove, cmd_desc, True)
+        return True
+
     def removeRunningContainers(self, config_obj):
-        cmd_dockerps = "docker ps -a "
-        cmd_desc = "Checking Docker ps"
-        code, out, err = self.utilityobj.cmdExecute(cmd_dockerps, cmd_desc, True)
-
+        container_name_list = ["db","apporbit-db", "apporbit-controller", "apporbit-services",
+                          "apporbit-docs", "apporbit-rmq"]
         if config_obj.clean_setup == '1':
-            if "apporbit-chef" in out:
-                logging.info( "apporbit-chef exist remove it")
-                cmd_chef_rm = "docker rm -f apporbit-chef"
-                cmd_desc = "Removing chef container "
-                self.utilityobj.cmdExecute(cmd_chef_rm, cmd_desc, True)
+            container_name_list.append("apporbit-chef")
 
-        if "apporbit-controller" in out:
-            logging.info("apporbit-controller exist remove it")
-            cmd_controller_rm = "docker rm -f apporbit-controller"
-            cmd_desc = "Removing controller container "
-            self.utilityobj.cmdExecute(cmd_controller_rm, cmd_desc, True)
-
-        if "apporbit-services" in out:
-            logging.info( "apporbit-rmq-services exist remove it")
-            cmd_services_rm = "docker rm -f apporbit-services"
-            cmd_desc = "Removing services container "
-            self.utilityobj.cmdExecute(cmd_services_rm, cmd_desc, True)
-
-        if  "db" in out:
-            logging.info( "db container exist remove it")
-            cmd_db_rm = "docker rm -f db"
-            cmd_desc = "Removing database container."
-            self.utilityobj.cmdExecute(cmd_db_rm, cmd_desc, True)
-
-        if "apporbit-rmq" in out:
-            logging.info( "rmq container exist remove it")
-            cmd_rmq_rm = "docker rm -f apporbit-rmq"
-            cmd_desc = "Removing message service container."
-            self.utilityobj.cmdExecute(cmd_rmq_rm, cmd_desc, True)
-
-        if "apporbit-docs" in out:
-            cmd_docs_rm = "docker rm -f apporbit-docs"
-            cmd_desc = "Removing document container."
-            self.utilityobj.cmdExecute(cmd_docs_rm, cmd_desc)
-
+        for container_name in container_name_list:
+            cmd_dockerps = "docker ps -a -q -f name=" + container_name
+            cmd_desc = "Checking container existence." + container_name
+            return_code, out, err = self.utilityobj.cmdExecute(cmd_dockerps, cmd_desc, False)
+            if return_code and out:
+                container_id_list = re.split("\n+", out)
+                for container_id in container_id_list:
+                    if container_id:
+                        self.removeContainer(container_id)
         return True
 
     def clearChefData(self):
