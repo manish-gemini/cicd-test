@@ -114,7 +114,7 @@ class UserInteract:
                 is_install_cfgmgr = "1"
 
 
-        if clean_setup == "1":
+        if clean_setup == "1" and is_install_cfgmgr == "1":
             print 'Configure the SSL certificate for chef-server:'
             print '1. Create a new SSL certificate for chef-server'
             print '2. Use an existing certificate for chef-server'
