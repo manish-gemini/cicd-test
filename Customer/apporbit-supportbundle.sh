@@ -156,7 +156,7 @@ docker logs apporbit-services >>  /var/log/apporbit/host/stack.log
 
 write_header "Read Mysql DB container log from /var/log/apporbit/host/db.log"
 
-docker logs db >>  /var/log/apporbit/host/db.log
+docker logs apporbit-db >>  /var/log/apporbit/host/db.log
 
 write_header "Read Chef container log from /var/log/apporbit/host/chef.log"
 

@@ -1,9 +1,14 @@
 #!/bin/bash
 if [ -z "$1" ]
 then
-    url='http://repos.gsintlab.com/install/appOrbitKit'
+    url='http://repos.apporbit.com/install/appOrbitKit'
 else
-    url=$1
+    if [ "$1" == "deploychef" ]
+    then
+       print "Update Chef Server"
+    else
+        url=$1
+    fi
 fi
 
 command_exists() {
@@ -27,7 +32,7 @@ else
   cproxy=""
 fi
 
-FILES="Action.pyc  Config.pyc  README.txt  UserInteract.pyc  Utility.pyc  appOrbitLauncher.pyc  apporbit.repo"
+FILES="Action.pyc  Config.pyc  README.md  UserInteract.pyc  Utility.pyc  appOrbitLauncher.pyc  apporbit.repo apporbit-supportbundle.sh"
 
 echo "Downloading apporbit installer"
 for i in $FILES
@@ -47,7 +52,11 @@ done
 chmod a+x /opt/apporbit/bin/*.pyc
 # Running predeploy script
 cd /opt/apporbit/bin
-#/opt/apporbit/bin/apporbit-deploy.sh 
-python /opt/apporbit/bin/appOrbitLauncher.pyc
-
+#/opt/apporbit/bin/apporbit-deploy.sh
+if [ "$1" == "deploychef" ]
+then
+    python /opt/apporbit/bin/appOrbitLauncher.pyc deploychef
+else
+    python /opt/apporbit/bin/appOrbitLauncher.pyc
+fi
 

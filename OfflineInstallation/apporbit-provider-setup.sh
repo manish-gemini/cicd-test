@@ -95,6 +95,8 @@ function install_docker {
         if [ "x$platform_id" == "xcentos" ]; then
             yum -y update
         fi
+        # BUG: https://bugzilla.redhat.com/show_bug.cgi?id=1294128
+        yum -y --disablerepo="*" --enablerepo="apporbit-local" upgrade lvm2
         yum -y --disablerepo="*" --enablerepo="apporbit-local" install docker-1.7.1
         systemctl enable docker.service
         systemctl start docker.service
