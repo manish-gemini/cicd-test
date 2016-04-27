@@ -185,14 +185,14 @@ class Utility:
         self.progressBar(5)
 
         # print "Security Requirement Check  - STARTED"
-        logging.info("Security Requirement Check   -STARTED")
-        if not self.verifySecuirtyIssues():
-            logging.error('security requirements not satisfied')
-            # print "ERROR: Security Requirements not satified."
-            exit()
-        logging.info("Security Requirement Check   -COMPLETED")
+        # logging.info("Security Requirement Check   -STARTED")
+        # if not self.verifySecuirtyIssues():
+        #     logging.error('security requirements not satisfied')
+        #     # print "ERROR: Security Requirements not satified."
+        #     exit()
+        # logging.info("Security Requirement Check   -COMPLETED")
         # print "Security Requirement Check  - COMPLETED"
-        self.progressBar(8)
+        # self.progressBar(8)
         # print "Repo Connectivity Requirement Check  - STARTED"
         logging.info("Repo Connectivity Requirement Check   -STARTED")
         if not self.verifyRepoConnection():
