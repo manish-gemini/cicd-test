@@ -306,8 +306,8 @@ class Action:
         # SETUP or CREATE DIRECTORIES for VOL MOUNT
         self.setupDirectoriesForVolumeMount()
 
-        if config_obj.clean_setup == '1':
-            self.clearChefData()
+        # if config_obj.clean_setup == '1':
+        #     self.clearChefData()
 
         if config_obj.chef_self_signed_crt == '1':
             self.createSelfSignedCert(True, config_obj.hostip)
