@@ -80,7 +80,7 @@ class Action:
         cmd_chefDeploy += chef_upgrade
         cmd_chefDeploy += "-p 9443:9443 \
         -v /opt/apporbit/chef-server:/var/opt/chef-server:z  -v /opt/apporbit/chef-serverkey/:/var/opt/chef-server/nginx/ca/:z\
-         -v /etc/chef-server/:z --name apporbit-chef -h "+ host_ip + " -d " + chef_image_name
+         -v /etc/chef-server/ --name apporbit-chef -h "+ host_ip + " -d " + chef_image_name
 
 
         cmd_desc = "Deploying chef container "
