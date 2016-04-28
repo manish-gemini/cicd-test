@@ -312,26 +312,26 @@ class Utility:
         return True
 
     # Verify Sestatus
-    def verifySecuirtyIssues(self):
-        securitysettings = True
-        selinux_status = os.popen("getenforce").read()
-        selinux_status = selinux_status.lower().strip()
-        logging.info ("selinux status is %s", selinux_status)
-        permissive_str = 'permissive'
-        disabled_str = 'disabled'
-        enforcing_str = 'enforcing'
-        if selinux_status == permissive_str:
-            securitysettings = True
-        elif selinux_status == disabled_str:
-            securitysettings = True
-        elif selinux_status == enforcing_str:
-            securitysettings = False
-            self.do_sesettings = 1
-        else:
-            logging.warning("Not able to get selinux status")
-            # print ("Not able to get selinux status. ")
-
-        return True
+    # def verifySecuirtyIssues(self):
+    #     securitysettings = True
+    #     selinux_status = os.popen("getenforce").read()
+    #     selinux_status = selinux_status.lower().strip()
+    #     logging.info ("selinux status is %s", selinux_status)
+    #     permissive_str = 'permissive'
+    #     disabled_str = 'disabled'
+    #     enforcing_str = 'enforcing'
+    #     if selinux_status == permissive_str:
+    #         securitysettings = True
+    #     elif selinux_status == disabled_str:
+    #         securitysettings = True
+    #     elif selinux_status == enforcing_str:
+    #         securitysettings = False
+    #         self.do_sesettings = 1
+    #     else:
+    #         logging.warning("Not able to get selinux status")
+    #         # print ("Not able to get selinux status. ")
+    #
+    #     return True
 
     # Verify RepoConnection
     def verifyRepoConnection(self):
