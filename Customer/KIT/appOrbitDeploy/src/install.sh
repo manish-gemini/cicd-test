@@ -55,8 +55,8 @@ cd /opt/apporbit/bin
 #/opt/apporbit/bin/apporbit-deploy.sh
 if [ "$1" == "deploychef" ]
 then
-    python /opt/apporbit/bin/appOrbitLauncher.pyc deploychef
+    python /opt/apporbit/bin/apporbitlauncher.pyc deploychef
 else
-    python /opt/apporbit/bin/appOrbitLauncher.pyc
+    python /opt/apporbit/bin/apporbitlauncher.pyc
 fi
 
