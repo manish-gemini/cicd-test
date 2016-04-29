@@ -57,7 +57,7 @@ class Action:
     def deployDB(self):
         cmd_deploy_db = "docker run --name apporbit-db --restart=always -e MYSQL_ROOT_PASSWORD=admin \
         -e MYSQL_USER=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller \
-        -v /var/dbstore:/var/lib/mysql -d mysql:5.6.24"
+        -v /var/dbstore:/var/lib/mysql:Z -d mysql:5.6.24"
         cmd_desc = "Deploying database container"
 
         self.utilityobj.cmdExecute(cmd_deploy_db, cmd_desc, True)
@@ -79,7 +79,7 @@ class Action:
         cmd_chefDeploy = "docker run -m 2g -it --restart=always "
         cmd_chefDeploy += chef_upgrade
         cmd_chefDeploy += "-p 9443:9443 \
-        -v /opt/apporbit/chef-server:/var/opt/chef-server  -v /opt/apporbit/chef-serverkey/:/var/opt/chef-server/nginx/ca/\
+        -v /opt/apporbit/chef-server:/var/opt/chef-server:Z  -v /opt/apporbit/chef-serverkey/:/var/opt/chef-server/nginx/ca/:Z\
          -v /etc/chef-server/ --name apporbit-chef -h "+ host_ip + " -d " + chef_image_name
 
 
@@ -114,7 +114,7 @@ class Action:
         if vol_mount:
             volonhost = vol_mount + "/Gemini-poc-stack"
             voloncontainer = "/home/apporbit/apporbit-services"
-            vol_mount_str = " -v " + volonhost + ":" + voloncontainer
+            vol_mount_str = " -v " + volonhost + ":" + voloncontainer + ":Z"
             logging.info("volume mount str" + vol_mount_str)
             pull_mist_binary = "wget -P " + volonhost + "/mist-cgp http://repos.gsintlab.com/repos/mist/integration/run.jar"
             self.utilityobj.cmdExecute(pull_mist_binary, 'pull mist binary ', True)
@@ -127,13 +127,13 @@ class Action:
         cmd_deploy_services = cmd_deploy_services + " -e MYSQL_HOST=db \
         -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist \
         -e GEMINI_STACK_IPANEMA=1 --link apporbit-db:db --link apporbit-rmq:rmq \
-        -v /var/lib/apporbit/sshKey_root:/root "
+        -v /var/lib/apporbit/sshKey_root:/root:Z "
 
         if deploy_chef == "1":
             cmd_deploy_services = cmd_deploy_services + "--volumes-from apporbit-chef "
 
-        cmd_deploy_services = cmd_deploy_services + " -v /var/log/apporbit/services:/var/log/apporbit \
-         -v /var/lib/apporbit/chefconf:/opt/apporbit/chef" + vol_mount_str + " -d  \
+        cmd_deploy_services = cmd_deploy_services + " -v /var/log/apporbit/services:/var/log/apporbit:Z \
+         -v /var/lib/apporbit/chefconf:/opt/apporbit/chef:Z" + vol_mount_str + " -d  \
         " + image_name
 
         cmd_desc = "Deploying services container"
@@ -205,7 +205,7 @@ class Action:
         if vol_mount:
             volonhost = vol_mount + "/Gemini-poc-mgnt"
             voloncontainer = "/home/apporbit/apporbit-controller"
-            vol_mount_str = " -v " + volonhost + ":" + voloncontainer
+            vol_mount_str = " -v " + volonhost + ":" + voloncontainer + ":Z"
             gemfile = volonhost + "/Gemfile"
             if not os.path.isfile(gemfile):
                 rename_gemfile = "cp -f " + gemfile + "-master " + gemfile
@@ -225,8 +225,8 @@ class Action:
         if deploy_chef == "1":
             cmd_deploy_controller = cmd_deploy_controller + "--volumes-from apporbit-chef "
 
-        cmd_deploy_controller = cmd_deploy_controller + vol_mount_str + " -v /var/log/apporbit/controller:/var/log/apporbit \
-        -v /var/lib/apporbit/sslkeystore/:/home/apporbit/apporbit-controller/sslkeystore \
+        cmd_deploy_controller = cmd_deploy_controller + vol_mount_str + " -v /var/log/apporbit/controller:/var/log/apporbit:Z \
+        -v /var/lib/apporbit/sslkeystore/:/home/apporbit/apporbit-controller/sslkeystore:Z \
         -d " + cntrlimageName
 
         cmd_desc = "Deploying controller container."
@@ -305,9 +305,6 @@ class Action:
 
         # SETUP or CREATE DIRECTORIES for VOL MOUNT
         self.setupDirectoriesForVolumeMount()
-
-        if config_obj.clean_setup == '1':
-            self.clearChefData()
 
         if config_obj.chef_self_signed_crt == '1':
             self.createSelfSignedCert(True, config_obj.hostip)
@@ -428,8 +425,6 @@ class Action:
                 logging.error("Unable to create dir %s", dir_path)
                 print "Unable to setup volume required for the setup. Check log for details."
                 exit()
-        cmd_selinux = "chcon -Rt svirt_sandbox_file_t " + dir_path
-        self.utilityobj.cmdExecute(cmd_selinux, "selinux settings for " + dir_path , False)
         return
 
     def setupDirectoriesForVolumeMount(self):
