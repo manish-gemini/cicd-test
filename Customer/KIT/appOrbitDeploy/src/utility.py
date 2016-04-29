@@ -178,26 +178,13 @@ class Utility:
         logging.info("Software Requirement Check   -STARTED")
         if not self.verifySoftwareRequirement():
             logging.error("Software requirements are not satisfied !")
-            #print ("ERROR : Software requirement check failed! \
-            # Check log for details.")
             exit()
         logging.info("Software Requirement Check   -COMPLETED")
         self.progressBar(5)
 
-        # print "Security Requirement Check  - STARTED"
-        # logging.info("Security Requirement Check   -STARTED")
-        # if not self.verifySecuirtyIssues():
-        #     logging.error('security requirements not satisfied')
-        #     # print "ERROR: Security Requirements not satified."
-        #     exit()
-        # logging.info("Security Requirement Check   -COMPLETED")
-        # print "Security Requirement Check  - COMPLETED"
-        # self.progressBar(8)
-        # print "Repo Connectivity Requirement Check  - STARTED"
         logging.info("Repo Connectivity Requirement Check   -STARTED")
         if not self.verifyRepoConnection():
             logging.error("Network requirement not satisfied !")
-            # print " ERROR: Network requirement not satisfied !"
             exit()
         logging.info("Repo Connectivity Requirement Check   -COMPLETED")
         # print "Repo Connectivity Requirement Check  - COMPLETED"
@@ -311,27 +298,6 @@ class Utility:
 
         return True
 
-    # Verify Sestatus
-    # def verifySecuirtyIssues(self):
-    #     securitysettings = True
-    #     selinux_status = os.popen("getenforce").read()
-    #     selinux_status = selinux_status.lower().strip()
-    #     logging.info ("selinux status is %s", selinux_status)
-    #     permissive_str = 'permissive'
-    #     disabled_str = 'disabled'
-    #     enforcing_str = 'enforcing'
-    #     if selinux_status == permissive_str:
-    #         securitysettings = True
-    #     elif selinux_status == disabled_str:
-    #         securitysettings = True
-    #     elif selinux_status == enforcing_str:
-    #         securitysettings = False
-    #         self.do_sesettings = 1
-    #     else:
-    #         logging.warning("Not able to get selinux status")
-    #         # print ("Not able to get selinux status. ")
-    #
-    #     return True
 
     # Verify RepoConnection
     def verifyRepoConnection(self):

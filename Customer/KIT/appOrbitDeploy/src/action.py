@@ -306,9 +306,6 @@ class Action:
         # SETUP or CREATE DIRECTORIES for VOL MOUNT
         self.setupDirectoriesForVolumeMount()
 
-        # if config_obj.clean_setup == '1':
-        #     self.clearChefData()
-
         if config_obj.chef_self_signed_crt == '1':
             self.createSelfSignedCert(True, config_obj.hostip)
         elif config_obj.chef_self_signed_crt == '2':
@@ -428,8 +425,6 @@ class Action:
                 logging.error("Unable to create dir %s", dir_path)
                 print "Unable to setup volume required for the setup. Check log for details."
                 exit()
-        # cmd_selinux = "chcon -Rt svirt_sandbox_file_t " + dir_path
-        # self.utilityobj.cmdExecute(cmd_selinux, "selinux settings for " + dir_path , False)
         return
 
     def setupDirectoriesForVolumeMount(self):
