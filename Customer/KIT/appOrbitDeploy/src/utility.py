@@ -395,7 +395,7 @@ class Utility:
 
     def validateHostIP(self, hostip):
         result = False
-        logging.info('validating host ip or hostname' )
+        logging.info('validating host ip or hostname for public accesibility' )
         try:
             external_host_ip = urllib2.urlopen("http://myip.dnsdynamic.org/").read()
         except urllib2.HTTPError, e:
@@ -423,6 +423,13 @@ class Utility:
                 break
             else:
                 continue
+
+        #Check if the hostip is a private accessible ip of the machine.
+        if not result:
+            logging.info('validating host ip or hostname for private accesibility' )
+            b_return, out, err = self.cmdExecute("hostname -I", "Checking Hostname -I for local ip of the machine", False)
+            if b_return and hostip in out :
+                result = True
 
         return result
 
