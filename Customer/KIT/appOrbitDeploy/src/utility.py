@@ -13,6 +13,9 @@ import ConfigParser
 import sys
 import platform
 import threading
+import urllib2
+import socket
+import traceback
 from time import sleep
 
 # Implementation of DotProgress class
@@ -388,4 +391,38 @@ class Utility:
         self.progressBar(19)
 
         return True
+
+
+    def validateHostIP(self, hostip):
+        result = False
+        logging.info('validating host ip or hostname' )
+        try:
+            external_host_ip = urllib2.urlopen("http://myip.dnsdynamic.org/").read()
+        except urllib2.HTTPError, e:
+            logging.error('HTTPError = %s', e.strerror)
+        except urllib2.URLError, e:
+            logging.error ('URLError = %s', e.strerror)
+        except httplib.HTTPException, e:
+            logging.error ('HTTPException %s', e.strerror)
+        except:
+            logging.error("Exception %s", str(sys.exc_info()[0]))
+            logging.error(str(traceback.format_exc()))
+
+        try:
+            logging.info(external_host_ip)
+            hostip_name_tup = socket.gethostbyaddr(external_host_ip)
+        except socket.herror as e:
+            logging.error( "Socket Error" + e.strerror)
+
+        logging.info(str(hostip_name_tup))
+
+        for elem in hostip_name_tup:
+            if hostip in elem:
+                logging.info("VALID HOSTIP %s" + hostip)
+                result = True
+                break
+            else:
+                continue
+
+        return result
 

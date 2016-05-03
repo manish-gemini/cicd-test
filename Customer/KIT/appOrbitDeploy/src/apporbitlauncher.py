@@ -53,6 +53,8 @@ def main():
     if os.path.isfile('local.conf'):
         logging.info('Using local.conf file for deployment')
         config_obj.loadConfig('local.conf')
+        if not utility_obj.validateHostIP(config_obj.hostip):
+            print "Host IP or Hostname not valid check log for details."
 
     else:
         logging.info("Starting to get user configuration.")
