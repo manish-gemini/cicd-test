@@ -53,9 +53,6 @@ def main():
     if os.path.isfile('local.conf'):
         logging.info('Using local.conf file for deployment')
         config_obj.loadConfig('local.conf')
-        if not utility_obj.validateHostIP(config_obj.hostip):
-            print "Host IP or Hostname not valid check log for details."
-            exit()
     else:
         logging.info("Starting to get user configuration.")
         # Get User Configuration for Customer Deployment
@@ -74,10 +71,13 @@ def main():
             logging.error("ERROR: Deployment Configuration file not found!")
             # print "Config file is missing! check log for more details."
             exit()
-
         config_obj.loadConfig('apporbit_deploy.conf')
         logging.info("user configuration is recived SUCCESS.")
 
+    # Validate that the Hostip chosen during configuration belongs to the current host machine.
+    if not utility_obj.validateHostIP(config_obj.hostip):
+            print "Host IP or Hostname not valid check log for details."
+            exit()
 
     print "Deploying appOrbit management server."
     with utility.DotProgress("Deploy"):
