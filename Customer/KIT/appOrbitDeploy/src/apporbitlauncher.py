@@ -76,7 +76,7 @@ def main():
 
     # Validate that the Hostip chosen during configuration belongs to the current host machine.
     if not utility_obj.validateHostIP(config_obj.hostip):
-            print "Host IP or Hostname not valid check log for details."
+            print "ERROR: Host-IP or Host-Name entered is not valid. Check log for details."
             exit()
 
     print "Deploying appOrbit management server."

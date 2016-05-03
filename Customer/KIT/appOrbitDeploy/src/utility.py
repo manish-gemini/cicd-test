@@ -426,10 +426,14 @@ class Utility:
 
         #Check if the hostip is a private accessible ip of the machine.
         if not result:
+            logging.warning("Given Ip is not public accessible %s" , hostip)
             logging.info('validating host ip or hostname for private accesibility' )
             b_return, out, err = self.cmdExecute("hostname -I", "Checking Hostname -I for local ip of the machine", False)
             if b_return and hostip in out :
                 result = True
+            else:
+                logging.error("Hostip given is not Private accessible and Public accesible, Check \
+                the hostip value entered in the configuration ")
 
         return result
 
