@@ -63,7 +63,7 @@ class Utility:
                     logging.error(err)
                     print "FAILED - " + cmd_desc
                     print "Check log for details."
-                    exit()
+                    sys.exit(1)
                 else:
                     logging.warning("WARNING - %s", cmd_desc)
                     logging.warning(err)
@@ -74,7 +74,7 @@ class Utility:
                     logging.error("Exception: %d : %s", exp.errno, exp.strerror)
                     print "[FAILED] - " + cmd_desc
                     print "Check log for details."
-                    exit()
+                    sys.exit(1)
             else:
                     logging.warning("WARNING - %s", cmd_desc)
                     logging.warning("Exception: %d : %s", exp.errno, exp.strerror)
@@ -162,7 +162,7 @@ class Utility:
         else:
             logging.error("Docker Login Failed ")
             print 'Docker login -[Failed!]'
-            exit()
+            sys.exit(1)
 
         return True
 
@@ -174,21 +174,21 @@ class Utility:
         if not self.verifyHardwareRequirement():
             logging.error("Hardware requirements are not satisfied !")
             print "ERROR : Hardware requirement verification failed! Check log for details."
-            exit()
+            sys.exit(1)
         logging.info("Hardware Requirement Check   -COMPLETED")
         self.progressBar(2)
 
         logging.info("Software Requirement Check   -STARTED")
         if not self.verifySoftwareRequirement():
             logging.error("Software requirements are not satisfied !")
-            exit()
+            sys.exit(1)
         logging.info("Software Requirement Check   -COMPLETED")
         self.progressBar(5)
 
         logging.info("Repo Connectivity Requirement Check   -STARTED")
         if not self.verifyRepoConnection():
             logging.error("Network requirement not satisfied !")
-            exit()
+            sys.exit(1)
         logging.info("Repo Connectivity Requirement Check   -COMPLETED")
         # print "Repo Connectivity Requirement Check  - COMPLETED"
         self.progressBar(10)
@@ -238,7 +238,7 @@ class Utility:
         else:
             logging.error("Incompatible Operating System. Only Redhat and Centos are supported.")
             print "Incompatible Operating System. Check logs for more information."
-            exit()
+            sys.exit(1)
 
         if "7.0" in osversion:
             logging.info("OS Version is 7.0")
@@ -249,7 +249,7 @@ class Utility:
         else:
             logging.error("Incompatible Operating System Version. Check the System Requirement Documentation.")
             print "Incompatible Operating System Version. Check logs for more information"
-            exit()
+            sys.exit(1)
 
         if "red hat" in osname:
             logging.info("Verifying Subscription Details.")

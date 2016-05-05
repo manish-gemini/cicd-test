@@ -3,6 +3,7 @@
 import logging
 import multiprocessing
 import os
+import sys
 import re
 import shutil
 import ConfigParser
@@ -280,12 +281,12 @@ class Action:
         if not os.path.isfile(sslkeyfile):
             logging.error('%s SSL key file does not exist.', sslkeyfile)
             print "SSL key file does not exist. Check logs for details."
-            exit()
+            sys.exit(1)
 
         if not os.path.isfile(sslkeycrt):
             logging.error('%s SSL certificate file does not exist.', sslkeycrt)
             print "SSL certificate file does not exist. Check logs for details."
-            exit()
+            sys.exit(1)
 
         self.utilityobj.cmdExecute(cmd_cpysslkey, cmd_desckey, True)
         self.utilityobj.cmdExecute(cmd_cpysslcrt, cmd_desccert, True)
@@ -424,7 +425,7 @@ class Action:
             else:
                 logging.error("Unable to create dir %s", dir_path)
                 print "Unable to setup volume required for the setup. Check log for details."
-                exit()
+                sys.exit(1)
         return
 
     def setupDirectoriesForVolumeMount(self):
