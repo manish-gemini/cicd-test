@@ -165,6 +165,7 @@ function deploy_chef {
     echo    # (optional) move to a new line
     if [[ $REPLY =~ ^[Yy]$ ]]
     then
+        echo "Installing Configuration Manager..."
         chef_port=9443
 
         # Enable the port used by Chef (permanent makes it persist after reboot)
@@ -179,21 +180,23 @@ function deploy_chef {
         docker load < $tmp_dir/appOrbitPackages/apporbit-chef.tar
 
         if docker ps -a |grep -aq apporbit-chef; then
-            echo "apporbit Chef Container is already runnning. The container will first be removed."
-            read -r -p "Do you want to continue? y or n " -n 1 -r installChef
-            echo    # (optional) move to a new line
-            if [[ $installChef =~ ^[Yy]$ ]]
+            echo "apporbit Chef Container is already runnning."
+            echo "Do you want clean setup or upgrade?"
+            echo "1. Clean"
+            echo "2. Upgrade(default)"
+            read -r -p "Enter your choice: " -n 1 -r chef_choice
+            chef_choice=${chef_choice:-2}
+            if [[ $chef_choice -eq 1 ]]
             then
-                echo "Removing existing Chef Server container"
+                echo "Removng Chef container..."
                 docker rm -f apporbit-chef
-            else
-                echo "Exiting without installing Chef Server"
-                return 0
+                echo "Cleaning Chef data..."
+                rm -rf /opt/apporbit/chef-server /opt/apporbit/chef-serverkey
             fi
         fi
         read -r -p "Enter internal ip of this host: " -r internal_ip
         echo "Starting Chef service.."
-        docker run -m 2g -it --restart=always -p $chef_port:$chef_port -v /etc/chef-server/ --name apporbit-chef -h $internal_ip -d apporbit/apporbit-chef:1.0
+        docker run -m 2g -it --restart=always -p $chef_port:$chef_port -v /opt/apporbit/chef-server:/var/opt/chef-server:Z  -v /opt/apporbit/chef-serverkey/:/var/opt/chef-server/nginx/ca/:Z -v /etc/chef-server/ --name apporbit-chef -h $internal_ip -d apporbit/apporbit-chef:2.0
     fi
 }
 
@@ -314,12 +317,16 @@ function clean_setup_maybe {
     mkdir -p "/var/log/apporbit/services"
     mkdir -p "/var/lib/apporbit/sshKey_root"
     mkdir -p "/var/lib/apporbit/sslkeystore"
+    mkdir -p "/opt/apporbit/chef-server"
+    mkdir -p "/opt/apporbit/chef-serverkey"
 
     chcon -Rt svirt_sandbox_file_t /var/dbstore
     chcon -Rt svirt_sandbox_file_t /var/lib/apporbit/sshKey_root
     chcon -Rt svirt_sandbox_file_t /var/lib/apporbit/sslkeystore
     chcon -Rt svirt_sandbox_file_t /var/log/apporbit/services
     chcon -Rt svirt_sandbox_file_t /var/log/apporbit/controller
+    chcon -Rt svirt_sandbox_file_t /opt/apporbit/chef-server
+    chcon -Rt svirt_sandbox_file_t /opt/apporbit/chef-serverkey
 
 }
 
