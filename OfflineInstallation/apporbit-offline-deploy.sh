@@ -188,7 +188,7 @@ function deploy_chef {
             chef_choice=${chef_choice:-2}
             if [[ $chef_choice -eq 1 ]]
             then
-                echo "Removng Chef container..."
+                echo "Removing Chef container..."
                 docker rm -f apporbit-chef
                 echo "Cleaning Chef data..."
                 rm -rf /opt/apporbit/chef-server /opt/apporbit/chef-serverkey
@@ -325,8 +325,6 @@ function clean_setup_maybe {
     chcon -Rt svirt_sandbox_file_t /var/lib/apporbit/sslkeystore
     chcon -Rt svirt_sandbox_file_t /var/log/apporbit/services
     chcon -Rt svirt_sandbox_file_t /var/log/apporbit/controller
-    chcon -Rt svirt_sandbox_file_t /opt/apporbit/chef-server
-    chcon -Rt svirt_sandbox_file_t /opt/apporbit/chef-serverkey
 
 }
 
