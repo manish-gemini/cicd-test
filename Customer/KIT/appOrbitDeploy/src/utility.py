@@ -395,9 +395,9 @@ class Utility:
 
     def validateHostIP(self, hostip):
         result = False
-        logging.info('validating host ip or hostname for public accesibility' )
+        logging.info('Validating host IP/hostname for public accessibility' )
         try:
-            external_host_ip = urllib2.urlopen("http://myip.dnsdynamic.org/").read()
+            external_host_ip = urllib2.urlopen("http://whatismyip.akamai.com/").read()
         except urllib2.HTTPError, e:
             logging.error('HTTPError = %s', e.strerror)
         except urllib2.URLError, e:
@@ -426,14 +426,14 @@ class Utility:
 
         #Check if the hostip is a private accessible ip of the machine.
         if not result:
-            logging.warning("Given Ip is not public accessible %s" , hostip)
-            logging.info('validating host ip or hostname for private accesibility' )
+            logging.warning("Given IP is not publicly accessible %s" , hostip)
+            logging.info('Validating host IP/hostname for private accessibility' )
             b_return, out, err = self.cmdExecute("hostname -I", "Checking Hostname -I for local ip of the machine", False)
             if b_return and hostip in out :
                 result = True
             else:
-                logging.error("Hostip given is not Private accessible and Public accesible, Check \
-                the hostip value entered in the configuration ")
+                logging.error("Given IP is not accessible publicly or on private network. \
+                Please check network configuration or host IP entered.")
 
         return result
 
