@@ -16,7 +16,7 @@ def main():
         if sys.argv[1] == "deploychef":
             chef_dep_obj = action.DeployChef()
             chef_dep_obj.deploy_chef()
-            exit()
+            sys.exit(1)
 
     print ("This installer will install the appOrbit management server in this machine")
     logging.info("Starting appOrbit Installation")
@@ -41,7 +41,7 @@ def main():
         if not utility_obj.fixSysRequirements():
             logging.error("Unable to auto fix System Requirments.")
             print "Unable to auto fix system Requirements. Check Log for details and fix it"
-            exit()
+            sys.exit(1)
         utility_obj.progressBar(20)
     print "   -- [Done]"
 
@@ -53,7 +53,6 @@ def main():
     if os.path.isfile('local.conf'):
         logging.info('Using local.conf file for deployment')
         config_obj.loadConfig('local.conf')
-
     else:
         logging.info("Starting to get user configuration.")
         # Get User Configuration for Customer Deployment
@@ -71,11 +70,14 @@ def main():
         if not os.path.isfile('apporbit_deploy.conf'):
             logging.error("ERROR: Deployment Configuration file not found!")
             # print "Config file is missing! check log for more details."
-            exit()
-
+            sys.exit(1)
         config_obj.loadConfig('apporbit_deploy.conf')
         logging.info("user configuration is recived SUCCESS.")
 
+    # Validate that the Hostip chosen during configuration belongs to the current host machine.
+    if not utility_obj.validateHostIP(config_obj.hostip):
+            print "ERROR: Host-IP or Host-Name entered is not valid. Check log for details."
+            sys.exit(1)
 
     print "Deploying appOrbit management server."
     with utility.DotProgress("Deploy"):
