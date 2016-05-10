@@ -186,15 +186,19 @@ function deploy_chef {
             echo "2. Upgrade(default)"
             read -r -p "Enter your choice: " -n 1 -r chef_choice
             chef_choice=${chef_choice:-2}
+            echo
+            # Remove existing apporbit-chef for upgrade but not data
+            echo "Removing Chef container..."
+            docker rm -f apporbit-chef
             if [[ $chef_choice -eq 1 ]]
             then
-                echo "Removing Chef container..."
-                docker rm -f apporbit-chef
                 echo "Cleaning Chef data..."
                 rm -rf /opt/apporbit/chef-server /opt/apporbit/chef-serverkey
+                mkdir -p /opt/apporbit/chef-server /opt/apporbit/chef-serverkey
             fi
         fi
         read -r -p "Enter internal ip of this host: " -r internal_ip
+        echo
         echo "Starting Chef service.."
         docker run -m 2g -it --restart=always -p $chef_port:$chef_port -v /opt/apporbit/chef-server:/var/opt/chef-server:Z  -v /opt/apporbit/chef-serverkey/:/var/opt/chef-server/nginx/ca/:Z -v /etc/chef-server/ --name apporbit-chef -h $internal_ip -d apporbit/apporbit-chef:2.0
     fi
