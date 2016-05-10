@@ -99,6 +99,11 @@ class Action:
         mode = config_obj.build_deploy_mode
         vol_mount = config_obj.volume_mount
         deploy_chef = config_obj.deploy_chef
+        upgrade = config_obj.clean_setup
+
+        if upgrade == '1':
+            cmd_str = "touch /var/log/apporbit/services/apporbit.ini"
+            self.utilityobj.cmdExecute(cmd_str, 'create apporbit stack config file.', True)
 
         # Varaiable Declaration
         image_name = ""
@@ -125,7 +130,7 @@ class Action:
         if deploy_chef == "1":
             cmd_deploy_services = cmd_deploy_services + " -e CHEF_URL=https://" + host_ip +":9443 "
 
-        cmd_deploy_services = cmd_deploy_services + " -e MYSQL_HOST=db \
+        cmd_deploy_services = cmd_deploy_services + " -e UPGRADE=" + upgrade + " -e MYSQL_HOST=db \
         -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist \
         -e GEMINI_STACK_IPANEMA=1 --link apporbit-db:db --link apporbit-rmq:rmq \
         -v /var/lib/apporbit/sshKey_root:/root:Z "
@@ -133,7 +138,8 @@ class Action:
         if deploy_chef == "1":
             cmd_deploy_services = cmd_deploy_services + "--volumes-from apporbit-chef "
 
-        cmd_deploy_services = cmd_deploy_services + " -v /var/log/apporbit/services:/var/log/apporbit:Z \
+        cmd_deploy_services = cmd_deploy_services + " -v /var/log/apporbit/services/apporbit.ini:/etc/apporbit.ini:Z \
+         -v /var/log/apporbit/services:/var/log/apporbit:Z \
          -v /var/lib/apporbit/chefconf:/opt/apporbit/chef:Z" + vol_mount_str + " -d  \
         " + image_name
 
