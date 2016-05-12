@@ -197,17 +197,19 @@ function deploy_chef {
                 echo "Cleaning Chef data..."
                 rm -rf /opt/apporbit/chef-server /opt/apporbit/chef-serverkey
             fi
+        else
+            rm -rf /opt/apporbit/chef-server /opt/apporbit/chef-serverkey
         fi
+
         read -r -p "Enter internal ip of this host: " -r internal_ip
         echo
         echo "Starting Chef service.."
         # In case of upgrade, these directories may not exist, make sure to create them
         # Chef dir creation should be handled here and not in cleanup_maybe which is invoked after this
-        if [[ ! -d "/opt/apporbit/chef-server" ]]
-        then
-            mkdir -p /opt/apporbit/chef-server /opt/apporbit/chef-serverkey
-        fi
+        mkdir -p /opt/apporbit/chef-server /opt/apporbit/chef-serverkey
+
         docker run -m 2g -it --restart=always $chef_upgrade -p $chef_port:$chef_port -v /opt/apporbit/chef-server:/var/opt/chef-server:Z  -v /opt/apporbit/chef-serverkey/:/var/opt/chef-server/nginx/ca/:Z -v /etc/chef-server/ --name apporbit-chef -h $internal_ip -d apporbit/apporbit-chef:2.0
+        
     fi
 }
 
@@ -420,6 +422,8 @@ function main {
 
     uncompress_resources
 
+    remove_conflicting_containers
+
     deploy_chef
 
     set_config_info
@@ -435,8 +439,6 @@ function main {
     get_host_ip
 
     load_containers
-
-    remove_conflicting_containers
 
     start_services
 }
