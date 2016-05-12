@@ -196,12 +196,17 @@ function deploy_chef {
                 chef_upgrade=" -e UPGRADE=1 "
                 echo "Cleaning Chef data..."
                 rm -rf /opt/apporbit/chef-server /opt/apporbit/chef-serverkey
-                mkdir -p /opt/apporbit/chef-server /opt/apporbit/chef-serverkey
             fi
         fi
         read -r -p "Enter internal ip of this host: " -r internal_ip
         echo
         echo "Starting Chef service.."
+        # In case of upgrade, these directories may not exist, make sure to create them
+        # Chef dir creation should be handled here and not in cleanup_maybe which is invoked after this
+        if [[ ! -d "/opt/apporbit/chef-server" ]]
+        then
+            mkdir -p /opt/apporbit/chef-server /opt/apporbit/chef-serverkey
+        fi
         docker run -m 2g -it --restart=always $chef_upgrade -p $chef_port:$chef_port -v /opt/apporbit/chef-server:/var/opt/chef-server:Z  -v /opt/apporbit/chef-serverkey/:/var/opt/chef-server/nginx/ca/:Z -v /etc/chef-server/ --name apporbit-chef -h $internal_ip -d apporbit/apporbit-chef:2.0
     fi
 }
@@ -323,8 +328,6 @@ function clean_setup_maybe {
     mkdir -p "/var/log/apporbit/services"
     mkdir -p "/var/lib/apporbit/sshKey_root"
     mkdir -p "/var/lib/apporbit/sslkeystore"
-    mkdir -p "/opt/apporbit/chef-server"
-    mkdir -p "/opt/apporbit/chef-serverkey"
 
     chcon -Rt svirt_sandbox_file_t /var/dbstore
     chcon -Rt svirt_sandbox_file_t /var/lib/apporbit/sshKey_root
