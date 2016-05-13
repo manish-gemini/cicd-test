@@ -13,6 +13,9 @@ import ConfigParser
 import sys
 import platform
 import threading
+import urllib2
+import socket
+import traceback
 from time import sleep
 
 # Implementation of DotProgress class
@@ -60,7 +63,7 @@ class Utility:
                     logging.error(err)
                     print "FAILED - " + cmd_desc
                     print "Check log for details."
-                    exit()
+                    sys.exit(1)
                 else:
                     logging.warning("WARNING - %s", cmd_desc)
                     logging.warning(err)
@@ -71,7 +74,7 @@ class Utility:
                     logging.error("Exception: %d : %s", exp.errno, exp.strerror)
                     print "[FAILED] - " + cmd_desc
                     print "Check log for details."
-                    exit()
+                    sys.exit(1)
             else:
                     logging.warning("WARNING - %s", cmd_desc)
                     logging.warning("Exception: %d : %s", exp.errno, exp.strerror)
@@ -159,7 +162,7 @@ class Utility:
         else:
             logging.error("Docker Login Failed ")
             print 'Docker login -[Failed!]'
-            exit()
+            sys.exit(1)
 
         return True
 
@@ -171,34 +174,21 @@ class Utility:
         if not self.verifyHardwareRequirement():
             logging.error("Hardware requirements are not satisfied !")
             print "ERROR : Hardware requirement verification failed! Check log for details."
-            exit()
+            sys.exit(1)
         logging.info("Hardware Requirement Check   -COMPLETED")
         self.progressBar(2)
 
         logging.info("Software Requirement Check   -STARTED")
         if not self.verifySoftwareRequirement():
             logging.error("Software requirements are not satisfied !")
-            #print ("ERROR : Software requirement check failed! \
-            # Check log for details.")
-            exit()
+            sys.exit(1)
         logging.info("Software Requirement Check   -COMPLETED")
         self.progressBar(5)
 
-        # print "Security Requirement Check  - STARTED"
-        logging.info("Security Requirement Check   -STARTED")
-        if not self.verifySecuirtyIssues():
-            logging.error('security requirements not satisfied')
-            # print "ERROR: Security Requirements not satified."
-            exit()
-        logging.info("Security Requirement Check   -COMPLETED")
-        # print "Security Requirement Check  - COMPLETED"
-        self.progressBar(8)
-        # print "Repo Connectivity Requirement Check  - STARTED"
         logging.info("Repo Connectivity Requirement Check   -STARTED")
         if not self.verifyRepoConnection():
             logging.error("Network requirement not satisfied !")
-            # print " ERROR: Network requirement not satisfied !"
-            exit()
+            sys.exit(1)
         logging.info("Repo Connectivity Requirement Check   -COMPLETED")
         # print "Repo Connectivity Requirement Check  - COMPLETED"
         self.progressBar(10)
@@ -248,7 +238,7 @@ class Utility:
         else:
             logging.error("Incompatible Operating System. Only Redhat and Centos are supported.")
             print "Incompatible Operating System. Check logs for more information."
-            exit()
+            sys.exit(1)
 
         if "7.0" in osversion:
             logging.info("OS Version is 7.0")
@@ -259,7 +249,7 @@ class Utility:
         else:
             logging.error("Incompatible Operating System Version. Check the System Requirement Documentation.")
             print "Incompatible Operating System Version. Check logs for more information"
-            exit()
+            sys.exit(1)
 
         if "red hat" in osname:
             logging.info("Verifying Subscription Details.")
@@ -311,27 +301,6 @@ class Utility:
 
         return True
 
-    # Verify Sestatus
-    def verifySecuirtyIssues(self):
-        securitysettings = True
-        selinux_status = os.popen("getenforce").read()
-        selinux_status = selinux_status.lower().strip()
-        logging.info ("selinux status is %s", selinux_status)
-        permissive_str = 'permissive'
-        disabled_str = 'disabled'
-        enforcing_str = 'enforcing'
-        if selinux_status == permissive_str:
-            securitysettings = True
-        elif selinux_status == disabled_str:
-            securitysettings = True
-        elif selinux_status == enforcing_str:
-            securitysettings = False
-            self.do_sesettings = 1
-        else:
-            logging.warning("Not able to get selinux status")
-            # print ("Not able to get selinux status. ")
-
-        return True
 
     # Verify RepoConnection
     def verifyRepoConnection(self):
@@ -422,4 +391,49 @@ class Utility:
         self.progressBar(19)
 
         return True
+
+
+    def validateHostIP(self, hostip):
+        result = False
+        logging.info('Validating host IP/hostname for public accessibility' )
+        try:
+            external_host_ip = urllib2.urlopen("http://whatismyip.akamai.com/").read()
+        except urllib2.HTTPError, e:
+            logging.error('HTTPError = %s', e.strerror)
+        except urllib2.URLError, e:
+            logging.error ('URLError = %s', e.strerror)
+        except httplib.HTTPException, e:
+            logging.error ('HTTPException %s', e.strerror)
+        except:
+            logging.error("Exception %s", str(sys.exc_info()[0]))
+            logging.error(str(traceback.format_exc()))
+
+        try:
+            logging.info(external_host_ip)
+            hostip_name_tup = socket.gethostbyaddr(external_host_ip)
+        except socket.herror as e:
+            logging.error( "Socket Error" + e.strerror)
+
+        logging.info(str(hostip_name_tup))
+
+        for elem in hostip_name_tup:
+            if hostip in elem:
+                logging.info("VALID HOSTIP %s" + hostip)
+                result = True
+                break
+            else:
+                continue
+
+        #Check if the hostip is a private accessible ip of the machine.
+        if not result:
+            logging.warning("Given IP is not publicly accessible %s" , hostip)
+            logging.info('Validating host IP/hostname for private accessibility' )
+            b_return, out, err = self.cmdExecute("hostname -I", "Checking Hostname -I for local ip of the machine", False)
+            if b_return and hostip in out :
+                result = True
+            else:
+                logging.error("Given IP is not accessible publicly or on private network. \
+                Please check network configuration or host IP entered.")
+
+        return result
 

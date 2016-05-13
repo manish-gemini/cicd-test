@@ -139,8 +139,8 @@ function download_images {
     docker pull ${INTERNAL_REGISTRY}/apporbit/apporbit-docs
     docker tag ${INTERNAL_REGISTRY}/apporbit/apporbit-docs apporbit/apporbit-docs
     echo "Downloading CM..."
-    docker pull ${INTERNAL_REGISTRY}/apporbit/apporbit-chef:1.0
-    docker tag ${INTERNAL_REGISTRY}/apporbit/apporbit-chef:1.0 apporbit/apporbit-chef:1.0
+    docker pull ${INTERNAL_REGISTRY}/apporbit/apporbit-chef:2.0
+    docker tag ${INTERNAL_REGISTRY}/apporbit/apporbit-chef:2.0 apporbit/apporbit-chef:2.0
 
     echo "Downloading infra containers..."
 
@@ -165,7 +165,7 @@ function save_images {
     echo "Saving image Docs..."
     docker save apporbit/apporbit-docs > apporbit-docs.tar
     echo "Saving image CM..."
-    docker save apporbit/apporbit-chef:1.0 > apporbit-chef.tar
+    docker save apporbit/apporbit-chef:2.0 > apporbit-chef.tar
     echo "Saving image MySQL..."
     docker save mysql:5.6.24 > mysql.tar
     cd ..

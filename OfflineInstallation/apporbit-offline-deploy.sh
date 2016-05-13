@@ -165,6 +165,7 @@ function deploy_chef {
     echo    # (optional) move to a new line
     if [[ $REPLY =~ ^[Yy]$ ]]
     then
+        echo "Installing Configuration Manager..."
         chef_port=9443
 
         # Enable the port used by Chef (permanent makes it persist after reboot)
@@ -179,21 +180,36 @@ function deploy_chef {
         docker load < $tmp_dir/appOrbitPackages/apporbit-chef.tar
 
         if docker ps -a |grep -aq apporbit-chef; then
-            echo "apporbit Chef Container is already runnning. The container will first be removed."
-            read -r -p "Do you want to continue? y or n " -n 1 -r installChef
-            echo    # (optional) move to a new line
-            if [[ $installChef =~ ^[Yy]$ ]]
+            echo "apporbit Chef Container is already runnning."
+            echo "Do you want clean setup or upgrade?"
+            echo "1. Clean"
+            echo "2. Upgrade(default)"
+            read -r -p "Enter your choice: " -n 1 -r chef_choice
+            chef_choice=${chef_choice:-2}
+            chef_upgrade=" -e UPGRADE=2 "
+            echo
+            # Remove existing apporbit-chef for upgrade but not data
+            echo "Removing Chef container..."
+            docker rm -f apporbit-chef
+            if [[ $chef_choice -eq 1 ]]
             then
-                echo "Removing existing Chef Server container"
-                docker rm -f apporbit-chef
-            else
-                echo "Exiting without installing Chef Server"
-                return 0
+                chef_upgrade=" -e UPGRADE=1 "
+                echo "Cleaning Chef data..."
+                rm -rf /opt/apporbit/chef-server /opt/apporbit/chef-serverkey
             fi
+        else
+            rm -rf /opt/apporbit/chef-server /opt/apporbit/chef-serverkey
         fi
+
         read -r -p "Enter internal ip of this host: " -r internal_ip
+        echo
         echo "Starting Chef service.."
-        docker run -m 2g -it --restart=always -p $chef_port:$chef_port -v /etc/chef-server/ --name apporbit-chef -h $internal_ip -d apporbit/apporbit-chef:1.0
+        # In case of upgrade, these directories may not exist, make sure to create them
+        # Chef dir creation should be handled here and not in cleanup_maybe which is invoked after this
+        mkdir -p /opt/apporbit/chef-server /opt/apporbit/chef-serverkey
+
+        docker run -m 2g -it --restart=always $chef_upgrade -p $chef_port:$chef_port -v /opt/apporbit/chef-server:/var/opt/chef-server:Z  -v /opt/apporbit/chef-serverkey/:/var/opt/chef-server/nginx/ca/:Z -v /etc/chef-server/ --name apporbit-chef -h $internal_ip -d apporbit/apporbit-chef:2.0
+        
     fi
 }
 
@@ -406,6 +422,8 @@ function main {
 
     uncompress_resources
 
+    remove_conflicting_containers
+
     deploy_chef
 
     set_config_info
@@ -421,8 +439,6 @@ function main {
     get_host_ip
 
     load_containers
-
-    remove_conflicting_containers
 
     start_services
 }

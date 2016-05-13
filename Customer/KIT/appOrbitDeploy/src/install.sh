@@ -32,7 +32,7 @@ else
   cproxy=""
 fi
 
-FILES="Action.pyc  Config.pyc  README.md  UserInteract.pyc  Utility.pyc  appOrbitLauncher.pyc  apporbit.repo apporbit-supportbundle.sh"
+FILES="action.pyc  config.pyc  README.md  userinteract.pyc  utility.pyc  apporbitlauncher.pyc  apporbit.repo apporbit-supportbundle.sh"
 
 echo "Downloading apporbit installer"
 for i in $FILES
@@ -55,8 +55,8 @@ cd /opt/apporbit/bin
 #/opt/apporbit/bin/apporbit-deploy.sh
 if [ "$1" == "deploychef" ]
 then
-    python /opt/apporbit/bin/appOrbitLauncher.pyc deploychef
+    python /opt/apporbit/bin/apporbitlauncher.pyc deploychef
 else
-    python /opt/apporbit/bin/appOrbitLauncher.pyc
+    python /opt/apporbit/bin/apporbitlauncher.pyc
 fi
 
