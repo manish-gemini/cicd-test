@@ -101,9 +101,8 @@ class Action:
         deploy_chef = config_obj.deploy_chef
         upgrade = config_obj.clean_setup
 
-        if upgrade == '1':
-            cmd_str = "touch /var/log/apporbit/services/apporbit.ini"
-            self.utilityobj.cmdExecute(cmd_str, 'create apporbit stack config file.', True)
+        cmd_str = "touch /var/log/apporbit/services/apporbit.ini"
+        self.utilityobj.cmdExecute(cmd_str, 'create apporbit stack config file.', True)
 
         # Varaiable Declaration
         image_name = ""
