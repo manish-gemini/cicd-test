@@ -101,7 +101,7 @@ class Action:
         deploy_chef = config_obj.deploy_chef
         upgrade = config_obj.clean_setup
 
-        cmd_str = "touch /var/log/apporbit/services/apporbit.ini"
+        cmd_str = "touch /var/lib/apporbit/apporbit.ini"
         self.utilityobj.cmdExecute(cmd_str, 'create apporbit stack config file.', True)
 
         # Varaiable Declaration
@@ -137,7 +137,7 @@ class Action:
         if deploy_chef == "1":
             cmd_deploy_services = cmd_deploy_services + "--volumes-from apporbit-chef "
 
-        cmd_deploy_services = cmd_deploy_services + " -v /var/log/apporbit/services/apporbit.ini:/etc/apporbit.ini:Z \
+        cmd_deploy_services = cmd_deploy_services + " -v /var/lib/apporbit/apporbit.ini:/etc/apporbit.ini:Z \
          -v /var/log/apporbit/services:/var/log/apporbit:Z \
          -v /var/lib/apporbit/chefconf:/opt/apporbit/chef:Z" + vol_mount_str + " -d  \
         " + image_name
