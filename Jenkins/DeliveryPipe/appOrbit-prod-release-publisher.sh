@@ -31,7 +31,6 @@ docker push registry.apporbit.com/apporbit/apporbit-controller-base
 docker push registry.apporbit.com/apporbit/apporbit-services-base
 docker push registry.apporbit.com/apporbit/apporbit-base
 
-cp Customer/apporbit-supportbundle.sh Customer/KIT/appOrbitDeploy/src/apporbit-supportbundle.sh
 cp Customer/KIT/appOrbitDeploy/README.md Customer/KIT/appOrbitDeploy/src/.
 cd Customer/KIT/appOrbitDeploy/src/
 python -m compileall .
