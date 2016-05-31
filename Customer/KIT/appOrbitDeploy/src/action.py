@@ -65,6 +65,24 @@ class Action:
         sleep(60)
         return  True
 
+    def deployConsul(self):
+        cmd_deploy_consul = "sudo docker run -d -p 8400:8400 -p 8500:8500 -p 8600:53/udp --restart=always --name consul -h consul apporbit/consul_ui -server -bootstrap-expect 1"
+        cmd_desc = "Deploying Consul container"
+
+        self.utilityobj.cmdExecute(cmd_deploy_consul, cmd_desc, True)
+        sleep(10)
+        return  True
+
+    def deployLocator(self, consul_ip_port):
+        cmd_deploy_locator = "sudo docker run -d --name locator --restart=always -t -p 8080:8080 -e CONSUL_IP_PORT="+ consul_ip_port +" -t -i apporbit/locator"
+        cmd_desc = "Deploying Locator container"
+
+        self.utilityobj.cmdExecute(cmd_deploy_locator, cmd_desc, True)
+        sleep(10)
+        return  True
+
+
+
 
     def deployChef(self, host_ip, clean_setup, reg_url = ""):
         if reg_url:
@@ -357,9 +375,17 @@ class Action:
 
         self.deployServices(config_obj)
 
-        self.utilityobj.progressBar(17)
+        self.utilityobj.progressBar(16)
         # DEPLOY PLATFORM
         self.deployController(config_obj)
+        self.utilityobj.progressBar(17)
+
+        #DEPLOY CONSUL
+        self.deployConsul()
+        self.utilityobj.progressBar(18)
+
+        #DEPLOY LOCATOR
+        self.deployLocator(config_obj.consul_ip_port)
         self.utilityobj.progressBar(19)
         return True
 
@@ -384,7 +410,7 @@ class Action:
 
     def removeRunningContainers(self, config_obj):
         container_name_list = ["db","apporbit-db", "apporbit-controller", "apporbit-services",
-                          "apporbit-docs", "apporbit-rmq"]
+                          "apporbit-docs", "apporbit-rmq", "consul", "locator"]
         if config_obj.clean_setup == '1':
             container_name_list.append("apporbit-chef")
 
