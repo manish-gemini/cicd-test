@@ -1,7 +1,7 @@
 #!/bin/bash
 GithubUser=$USER
 GEMINI_HOME=$HOME/Gemini-sys
-GEMINI_REPOS="Gemini-poc-mgnt Gemini-poc-stack cicd docs Gemini-CLI"
+GEMINI_REPOS="Gemini-poc-mgnt Gemini-poc-stack cicd docs Gemini-CLI deta"
 #Override the above variables in your personal config in following order
 #Current directory
 #Home directory
