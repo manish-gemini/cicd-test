@@ -35,7 +35,7 @@ fi
 
 if [ $sourceType -eq 2 ]
 then
-	echo "Enter the directory where Gemini-poc-mgnt and Gemini-poc-stack exist :"
+	echo "Enter the directory where Gemini-poc-mgnt, Gemini-poc-stack and deta exist :"
 	echo "Example: /opt/Mydir/"
 	read -p "Default(${PWD}):" dirToCheckOut
         dirToCheckOut=${dirToCheckOut:-${PWD}}
@@ -46,9 +46,9 @@ then
 		exit
 	fi
 	cd $dirToCheckOut
-	if [ ! -d Gemini-poc-mgnt ] || [ ! -d Gemini-poc-stack ]
+	if [ ! -d Gemini-poc-mgnt ] || [ ! -d Gemini-poc-stack ] || [ ! -d deta ]
 	then
-		echo "Check if both Gemini-poc-mgnt and Gemini-poc-stack exist.... Quitting..."
+		echo "Check if Gemini-poc-mgnt, Gemini-poc-stack and deta exist.... Quitting..."
 		exit
 	fi
 		
@@ -125,6 +125,27 @@ else
 		git checkout tags/$commitID
 		echo "git checkout completed..."
 	fi
+
+        cd $dirToCheckOut
+        if [ -d deta ]
+        then
+                echo "pull..."
+                # pull instead of clone
+                cd deta
+                git checkout integration
+                git reset --hard
+                git fetch --all
+                git pull
+                if [ ! -z "$commitID" ]
+                then
+                        echo "git checkout ...."
+                        git checkout tags/$commitID
+                        echo "git checkout completed..."
+                fi
+        else
+                echo "clone..."
+                git clone -b integration "https://$gituserName@github.com/Gemini-sys/deta.git"
+        fi
 fi
 echo -n "Enter the SECRET_KEY:"
 read -p "Default(71Z2LBKnRr6EzVsGcvysQYhqAHgEcm1e8oF/xCZdhbw=):" secretkey
@@ -313,3 +334,14 @@ then
 	docker tag -f apporbit/apporbit-controller:$commitID secure-registry.gsintlab.com/apporbit/apporbit-controller:$commitID
 	docker push secure-registry.gsintlab.com/apporbit/apporbit-controller:$commitID
 fi
+
+cd $dirToCheckOut/deta
+echo "Compiling deta.."
+make setup
+make 
+
+cd ..
+
+
+
+

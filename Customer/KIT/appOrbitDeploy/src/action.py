@@ -65,8 +65,13 @@ class Action:
         sleep(60)
         return  True
 
-    def deployConsul(self):
-        cmd_deploy_consul = "docker run -d -p 8400:8400 -p 8500:8500 -p 8600:53/udp --restart=always --name apporbit-consul -h consul apporbit/consul_ui -server -bootstrap-expect 1"
+    def deployConsul(self, reg_url):
+        
+        if not reg_url:
+            reg_url = "secure-registry.gsintlab.com"
+        consul_image_name = reg_url + "/apporbit/consul"
+
+        cmd_deploy_consul = "docker run -d -p 8400:8400 -p 8500:8500 -p 8600:53/udp --restart=always --name apporbit-consul -h consul "+ consul_image_name +" -server -bootstrap-expect 1"
         cmd_desc = "Deploying Consul container"
 
         self.utilityobj.cmdExecute(cmd_deploy_consul, cmd_desc, True)
@@ -386,7 +391,7 @@ class Action:
         self.utilityobj.progressBar(17)
 
         #DEPLOY CONSUL
-        self.deployConsul()
+        self.deployConsul(config_obj.registry_url)
         self.utilityobj.progressBar(18)
 
         #DEPLOY LOCATOR
