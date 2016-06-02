@@ -335,11 +335,13 @@ then
 	docker push secure-registry.gsintlab.com/apporbit/apporbit-controller:$commitID
 fi
 
-cd $dirToCheckOut/deta
-echo "Compiling deta.."
-make setup
-make 
-
+if [ $buildType -eq 4 ]
+then
+        cd $dirToCheckOut/deta
+        echo "Compiling deta.."
+        make setup
+        make 
+fi
 cd ..
 
 
