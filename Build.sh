@@ -35,7 +35,7 @@ fi
 
 if [ $sourceType -eq 2 ]
 then
-	echo "Enter the directory where Gemini-poc-mgnt and Gemini-poc-stack exist :"
+	echo "Enter the directory where Gemini-poc-mgnt, Gemini-poc-stack and deta exist :"
 	echo "Example: /opt/Mydir/"
 	read -p "Default(${PWD}):" dirToCheckOut
         dirToCheckOut=${dirToCheckOut:-${PWD}}
@@ -46,9 +46,9 @@ then
 		exit
 	fi
 	cd $dirToCheckOut
-	if [ ! -d Gemini-poc-mgnt ] || [ ! -d Gemini-poc-stack ]
+	if [ ! -d Gemini-poc-mgnt ] || [ ! -d Gemini-poc-stack ] || [ ! -d deta ]
 	then
-		echo "Check if both Gemini-poc-mgnt and Gemini-poc-stack exist.... Quitting..."
+		echo "Check if Gemini-poc-mgnt, Gemini-poc-stack and deta exist.... Quitting..."
 		exit
 	fi
 		
@@ -62,6 +62,13 @@ else
 	echo -n "(if left empty will pull the latest code.)"
 	read commitID
 	echo $commitID
+        if [ ! -z "$commitID" ]
+        then
+           commitIDstr=":${commitID}"
+        else
+           commitIDstr=""
+        fi
+	
 
 	#STEP 1:GET A DESTINATION DIR TO CHECKOUT CODE AND CREATE DIR
 
@@ -125,7 +132,27 @@ else
 		git checkout tags/$commitID
 		echo "git checkout completed..."
 	fi
-fi
+  cd $dirToCheckOut
+  if [ -d deta ]
+    then
+      echo "pull..."
+      # pull instead of clone
+      cd deta
+      git checkout master
+      git reset --hard
+      git fetch --all
+      git pull
+      if [ ! -z "$commitID" ]
+        then
+          echo "git checkout ...."
+          git checkout tags/$commitID
+          echo "git checkout completed..."
+      fi
+      else
+        echo "clone..."
+        git clone -b integration "https://$gituserName@github.com/Gemini-sys/deta.git"
+      fi
+  fi
 echo -n "Enter the SECRET_KEY:"
 read -p "Default(71Z2LBKnRr6EzVsGcvysQYhqAHgEcm1e8oF/xCZdhbw=):" secretkey
 secretkey=${secretkey:-"71Z2LBKnRr6EzVsGcvysQYhqAHgEcm1e8oF/xCZdhbw="}
@@ -145,12 +172,12 @@ read -p "Default(2):" repoType
 repoType=${repoType:-"2"}
 echo $repoType
 
-if docker images |grep -a apporbit/apporbit-services; then
-	echo "apporbit-services exists.,"
+if docker images |grep -a apporbit/apporbit-services-base; then
+	echo "apporbit-services-base exists.,"
 	quickBuildStack=1
 
 else
-	echo "apporbit-services does not exist"
+	echo "apporbit-services-base does not exist"
 	quickBuildStack=2
 fi
 
@@ -243,9 +270,9 @@ fi
 if [ $quickBuild != 1 ]
 then
   echo "Build Base Image..."
-  docker build -t apporbit/apporbit-base:$commitID -f apporbitBase .
+  docker build -t apporbit/apporbit-base$commitIDstr -f apporbitBase .
   echo "Build Stack Base Image..."
-  docker build -t apporbit/apporbit-services-base:$commitID -f apporbitservicesBase .
+  docker build -t apporbit/apporbit-services-base$commitIDstr -f apporbitservicesBase .
 fi 
 
 cd ..
@@ -254,7 +281,7 @@ cp apporbit.config.ini Dockerfiles/
 tar cf Dockerfiles/apporbit-services.tar -T Dockerfiles/apporbitservices.lst
 cd Dockerfiles
 echo "Build apporbit services Image..."
-docker build -t apporbit/apporbit-services:$commitID -f apporbitservices .
+docker build -t apporbit/apporbit-services$commitIDstr -f apporbitservices .
 rm apporbit-services.tar apporbit.config.ini apporbit*.repo CentOS-Base.repo
 
 #PLATFORM CODE :
@@ -289,27 +316,36 @@ fi
 if [ $quickBuild != 1 ]
 then
   # echo "apporbit Base Image..."
-  # docker build -t apporbit/apporbit-base:$commitID -f apporbitBase .
+  # docker build -t apporbit/apporbit-base$commitIDstr -f apporbitBase .
   echo "apporbit Platform Base Image..."
-  docker build -t apporbit/apporbit-controller-base:$commitID -f apporbit-controller-base .
+  docker build -t apporbit/apporbit-controller-base$commitIDstr -f apporbit-controller-base .
 fi
 rm Gemfile apporbit*.repo
 cd ..
 
 echo "apporbit controller Image..."
-docker build -t apporbit/apporbit-controller:$commitID -f Dockerfiles/apporbit-controller .
+docker build -t apporbit/apporbit-controller$commitIDstr -f Dockerfiles/apporbit-controller .
 
 if [ $buildType -eq 1 ] || [ $buildType -eq 3 ]
 then
 	mkdir -p $dirToCheckOut/$commitID
-	docker save apporbit/apporbit-controller:$commitID > $dirToCheckOut/$commitID/apporbit-controller.tar
-	docker save apporbit/apporbit-services:$commitID > $dirToCheckOut/$commitID/apporbit-services.tar
+	docker save apporbit/apporbit-controller$commitIDstr > $dirToCheckOut/$commitID/apporbit-controller.tar
+	docker save apporbit/apporbit-services$commitIDstr > $dirToCheckOut/$commitID/apporbit-services.tar
 fi
 
 if [ $buildType -eq 2 ] || [ $buildType -eq 3 ]
 then
-	docker tag -f apporbit/apporbit-services:$commitID secure-registry.gsintlab.com/apporbit/apporbit-services:$commitID
-	docker push secure-registry.gsintlab.com/apporbit/apporbit-services:$commitID
-	docker tag -f apporbit/apporbit-controller:$commitID secure-registry.gsintlab.com/apporbit/apporbit-controller:$commitID
-	docker push secure-registry.gsintlab.com/apporbit/apporbit-controller:$commitID
+	docker tag -f apporbit/apporbit-services$commitIDstr secure-registry.gsintlab.com/apporbit/apporbit-services$commitIDstr
+	docker push secure-registry.gsintlab.com/apporbit/apporbit-services$commitIDstr
+	docker tag -f apporbit/apporbit-controller$commitIDstr secure-registry.gsintlab.com/apporbit/apporbit-controller$commitIDstr
+	docker push secure-registry.gsintlab.com/apporbit/apporbit-controller$commitIDstr
 fi
+
+if [ $buildType -eq 4 ]
+then
+        cd $dirToCheckOut/deta
+        echo "Compiling deta.."
+        make setup
+        make 
+fi
+cd ..

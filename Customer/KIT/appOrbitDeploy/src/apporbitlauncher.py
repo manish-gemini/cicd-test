@@ -83,7 +83,7 @@ def main():
     with utility.DotProgress("Deploy"):
         utility_obj.progressBar(0)
         action_obj.deployAppOrbit(config_obj)
-        utility_obj.removeTempFile()
+	utility_obj.removeTempFile()
         utility_obj.progressBar(20)
     print "   -- [Done]"
 
