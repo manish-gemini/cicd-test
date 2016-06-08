@@ -81,9 +81,10 @@ class Action:
 
     def deployLocator(self, consul_ip_port, reg_url):
         if not reg_url:
-            reg_url = "secure-registry.gsintlab.com"
+            locator_image_name = "apporbit/locator"
+        else:
+            locator_image_name = reg_url + "/apporbit/locator"
 
-        locator_image_name = reg_url + "/apporbit/locator"
         cmd_deploy_locator = ("docker run -d --name apporbit-locator "
                               "--restart=always -p 8080:8080 "
                               "-e CONSUL_IP_PORT=" + consul_ip_port +
@@ -120,17 +121,17 @@ class Action:
         return True
 
     def deploySvcd(self, config_obj):
-        reg_url = config_obj.registry_url 
+        reg_url = config_obj.registry_url
         if not (config_obj.registry_url):
-            reg_url = "secure-registry.gsintlab.com"
+            svcd_image = "apporbit/svcd"
+        else:
+            svcd_image = reg_url + "/apporbit/svcd"
 
-        svcd_image = reg_url + "/apporbit/svcd"
-        locator_ip = ""
         cmd_deploy_svcd = ("docker run -d --name apporbit-svcd "
-                              "--restart=always" + " -p 8888:8080 "
-                              "--link apporbit-db:db "
-                              "--link apporbit-locator:locator " +
-                              svcd_image)
+                           "--restart=always" + " -p 8888:8080 "
+                           "--link apporbit-db:db "
+                           "--link apporbit-locator:locator " +
+                           svcd_image)
         cmd_desc = "Deploying svcd container"
 
         self.utilityobj.cmdExecute(cmd_deploy_svcd, cmd_desc, True)
@@ -440,8 +441,10 @@ class Action:
         return True
 
     def removeRunningContainers(self, config_obj):
-        container_name_list = ["db","apporbit-db", "apporbit-controller", "apporbit-services",
-                          "apporbit-docs", "apporbit-rmq", "consul", "locator"]
+        container_name_list = ["db","apporbit-db", "apporbit-controller",
+                               "apporbit-services","apporbit-docs",
+                               "apporbit-rmq", "apporbit-consul",
+                               "apporbit-locator", "apporbit-svcd"]
         if config_obj.clean_setup == '1':
             container_name_list.append("apporbit-chef")
 
