@@ -132,28 +132,27 @@ else
 		git checkout tags/$commitID
 		echo "git checkout completed..."
 	fi
-
-        cd $dirToCheckOut
-        if [ -d deta ]
+  cd $dirToCheckOut
+  if [ -d deta ]
+    then
+      echo "pull..."
+      # pull instead of clone
+      cd deta
+      git checkout master
+      git reset --hard
+      git fetch --all
+      git pull
+      if [ ! -z "$commitID" ]
         then
-                echo "pull..."
-                # pull instead of clone
-                cd deta
-                git checkout integration
-                git reset --hard
-                git fetch --all
-                git pull
-                if [ ! -z "$commitID" ]
-                then
-                        echo "git checkout ...."
-                        git checkout tags/$commitID
-                        echo "git checkout completed..."
-                fi
-        else
-                echo "clone..."
-                git clone -b integration "https://$gituserName@github.com/Gemini-sys/deta.git"
-        fi
-fi
+          echo "git checkout ...."
+          git checkout tags/$commitID
+          echo "git checkout completed..."
+      fi
+      else
+        echo "clone..."
+        git clone -b integration "https://$gituserName@github.com/Gemini-sys/deta.git"
+      fi
+  fi
 echo -n "Enter the SECRET_KEY:"
 read -p "Default(71Z2LBKnRr6EzVsGcvysQYhqAHgEcm1e8oF/xCZdhbw=):" secretkey
 secretkey=${secretkey:-"71Z2LBKnRr6EzVsGcvysQYhqAHgEcm1e8oF/xCZdhbw="}
@@ -350,7 +349,3 @@ then
         make 
 fi
 cd ..
-
-
-
-

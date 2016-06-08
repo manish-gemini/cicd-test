@@ -66,33 +66,33 @@ class Action:
         return  True
 
     def deployConsul(self, reg_url):
-        
         if not reg_url:
             reg_url = "secure-registry.gsintlab.com"
         consul_image_name = reg_url + "/apporbit/consul"
 
-        cmd_deploy_consul = "docker run -d -p 8400:8400 -p 8500:8500 -p 8600:53/udp --restart=always --name apporbit-consul -h consul "+ consul_image_name +" -server -bootstrap-expect 1"
+        cmd_deploy_consul = ("docker run -d -p 8400:8400 -p 8500:8500 -p 8600:53/udp "
+                             "--restart=always --name apporbit-consul -h consul " +
+                             consul_image_name + " -server -bootstrap-expect 1")
         cmd_desc = "Deploying Consul container"
 
         self.utilityobj.cmdExecute(cmd_deploy_consul, cmd_desc, True)
         sleep(10)
-        return  True
+        return True
 
     def deployLocator(self, consul_ip_port, reg_url):
-        
-	if not reg_url:
+        if not reg_url:
             reg_url = "secure-registry.gsintlab.com"
 
         locator_image_name = reg_url + "/apporbit/locator"
-	cmd_deploy_locator = "docker run -d --name apporbit-locator --restart=always -p 8080:8080 -e CONSUL_IP_PORT="+ consul_ip_port +" "+ locator_image_name
+        cmd_deploy_locator = ("docker run -d --name apporbit-locator "
+                              "--restart=always -p 8080:8080 "
+                              "-e CONSUL_IP_PORT=" + consul_ip_port +
+                              " " + locator_image_name)
         cmd_desc = "Deploying Locator container"
 
         self.utilityobj.cmdExecute(cmd_deploy_locator, cmd_desc, True)
         sleep(10)
-        return  True
-
-
-
+        return True
 
     def deployChef(self, host_ip, clean_setup, reg_url = ""):
         if reg_url:
@@ -119,6 +119,23 @@ class Action:
 
         return True
 
+    def deploySvcd(self, config_obj):
+        reg_url = config_obj.registry_url 
+        if not (config_obj.registry_url):
+            reg_url = "secure-registry.gsintlab.com"
+
+        svcd_image = reg_url + "/apporbit/svcd"
+        locator_ip = ""
+        cmd_deploy_svcd = ("docker run -d --name apporbit-svcd "
+                              "--restart=always" + " -p 8888:8080 "
+                              "--link apporbit-db:db "
+                              "--link apporbit-locator:locator " +
+                              svcd_image)
+        cmd_desc = "Deploying svcd container"
+
+        self.utilityobj.cmdExecute(cmd_deploy_svcd, cmd_desc, True)
+        sleep(10)
+        return True
 
     def deployServices(self, config_obj):
         internal_repo = config_obj.internal_repo
@@ -382,22 +399,25 @@ class Action:
         self.deployRMQ(config_obj.registry_url)
         self.utilityobj.progressBar(15)
         # DEPLOY SERVICES
-
         self.deployServices(config_obj)
-
         self.utilityobj.progressBar(16)
-        # DEPLOY PLATFORM
-        self.deployController(config_obj)
-        self.utilityobj.progressBar(17)
 
         #DEPLOY CONSUL
         self.deployConsul(config_obj.registry_url)
-        self.utilityobj.progressBar(18)
+        self.utilityobj.progressBar(17)
 
         #DEPLOY LOCATOR
-
         self.deployLocator(config_obj.consul_ip_port, config_obj.registry_url)
+        self.utilityobj.progressBar(18)
+
+        # DEPLOY SVCD
+        self.deploySvcd(config_obj)
         self.utilityobj.progressBar(19)
+
+        # DEPLOY PLATFORM
+        self.deployController(config_obj)
+        self.utilityobj.progressBar(20)
+
         return True
 
     def removeChefContainer(self):
