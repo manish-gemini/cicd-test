@@ -24,6 +24,7 @@ class Config():
         self.chef_self_signed_crt_dir = ''
         self.volume_mount = ''
         self.registry_url = 'registry.apporbit.com'
+        self.consul_ip_port = ''
         return
 
     def loadConfig(self, fileName="local.conf"):
@@ -52,6 +53,7 @@ class Config():
             self.registry_url = config.get('User Config', 'registry_url')
             self.internal_repo = config.get('User Config', 'internal_repo')
             self.volume_mount = config.get('User Config', 'volume_mount')
+            self.consul_ip_port = config.get('User Config', 'consul_ip_port')
 
         except ConfigParser.NoSectionError, ConfigParser.NoOptionError:
             logging.warning("warning No section or No option error occured...")
@@ -70,7 +72,8 @@ class Config():
                                      api_version = 'v2',\
                                      build_deploy_mode = '3', reg_url='registry.apporbit.com',\
                                      internal_repo = 'http://repos.gsintlab.com/repos',\
-                                     volume_mount = '' ):
+                                     volume_mount = '',\
+                                     consul_ip_port = '' ):
 
         logging.info("Create Config file")
         config = ConfigParser.ConfigParser()
@@ -95,6 +98,7 @@ class Config():
         config.set('User Config', 'registry_url', reg_url)
         config.set('User Config', 'internal_repo', internal_repo)
         config.set('User Config', 'volume_mount', volume_mount)
+        config.set('User Config', 'consul_ip_port', consul_ip_port)
 
         config.write(cfg_file)
 

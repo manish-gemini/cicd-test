@@ -16,7 +16,7 @@ git pull
 
 }
 
-array=( Gemini-poc-stack Gemini-poc-mgnt Gemini-CLI docs cicd mist-cgp )
+array=( Gemini-poc-stack Gemini-poc-mgnt Gemini-CLI docs cicd mist-cgp deta )
 for i in "${array[@]}"
 do
     cd ${cpwd}/$i
