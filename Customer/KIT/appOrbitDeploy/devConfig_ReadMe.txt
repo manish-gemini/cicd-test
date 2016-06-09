@@ -69,3 +69,6 @@ registry_url :
 internal_repo = http://repos.gsintlab.com/repos
 volume_mount : 
 Location for Code of Controller and Services to be volume mounted.
+consul_ip_port = http://<HOST_IP>:8500
+Locates consul
+
