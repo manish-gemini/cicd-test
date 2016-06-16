@@ -70,5 +70,6 @@ internal_repo = http://repos.gsintlab.com/repos
 volume_mount : 
 Location for Code of Controller and Services to be volume mounted.
 consul_ip_port = http://<HOST_IP>:8500
-Locates consul
+ 	Consul is a distributed service discovery tool and key value store
+	The variable "consul_ip_port" is used to locate consul and is used by Locator
 
