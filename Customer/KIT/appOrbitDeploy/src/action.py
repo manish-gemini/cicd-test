@@ -346,6 +346,12 @@ class Action:
 
 
     def deployAppOrbit(self, config_obj):
+        # LOGIN to DOCKER REGISTRY
+        if config_obj.build_deploy_mode == '3' or config_obj.build_deploy_mode == '0':
+            self.utilityobj.loginDockerRegistry(config_obj.docker_uname, config_obj.docker_passwd, config_obj.registry_url)
+            self.pullImagesformRepos(config_obj.registry_url, config_obj.buildid)
+
+	# CLEAN EXISTING RUNNING CONTAINE
         self.utilityobj.progressBar(1)
         self.removeRunningContainers(config_obj)
         self.utilityobj.progressBar(2)
@@ -372,11 +378,6 @@ class Action:
             self.copySSLCertificate(config_obj.self_signed_crt_dir)
 
         self.utilityobj.progressBar(3)
-        # LOGIN to DOCKER REGISTRY
-        if config_obj.build_deploy_mode == '3' or config_obj.build_deploy_mode == '0':
-            self.utilityobj.loginDockerRegistry(config_obj.docker_uname, config_obj.docker_passwd, config_obj.registry_url)
-            self.pullImagesformRepos(config_obj.registry_url, config_obj.buildid)
-
 
         # DEPLOY CHEF CONTAINER
         if config_obj.clean_setup == '1':
