@@ -1,5 +1,4 @@
 #!/bin/bash
-set -x 
 # Purpose - Display header message
 # $1 - message
 function write_header(){
