@@ -12,7 +12,7 @@ def main():
     if not os.path.exists("/var/log/apporbit"):
        os.makedirs("/var/log/apporbit")
 
-    logging.basicConfig(filename='/var/log/apporbit/appOrbitInstall.log', level=logging.DEBUG,
+    logging.basicConfig(filename='/var/log/apporbit/Install.log', level=logging.DEBUG,
                          format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
 
     if len(sys.argv) > 1:
