@@ -72,5 +72,8 @@ Location for Code of Controller and Services to be volume mounted.
 consul_ip_port = http://<HOST_IP>:8500
  	Consul is a distributed service discovery tool and key value store
 	The variable "consul_ip_port" is used to locate consul and is used by Locator
+domain_host = 
+	The consul will configure its domain using the value specified in "consul_domain"
+        (mentioned below) only if 'domain_host' is routable.
 consul_domain = 
-	This variable is used by Consul to configure its domain name. If the domain name 		   specified in 'consul_domain' is routable, it is configured else the default configuration 	      is used.
+	This variable is used by Consul to configure its domain name. If the host name 		   	   specified in 'domain_host' is routable, it is configured else the default configuration 	      is used.
