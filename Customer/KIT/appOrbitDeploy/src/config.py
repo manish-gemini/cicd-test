@@ -26,7 +26,7 @@ class Config():
         self.registry_url = 'registry.apporbit.com'
         self.consul_ip_port = ''
 	self.consul_domain = ''
-	self.domain_host = ''
+	self.consul_host = ''
         return
 
     def loadConfig(self, fileName="local.conf"):
@@ -57,7 +57,7 @@ class Config():
             self.volume_mount = config.get('User Config', 'volume_mount')
             self.consul_ip_port = config.get('User Config', 'consul_ip_port')
             self.consul_domain = config.get('User Config', 'consul_domain')
-	    self.domain_host = config.get('User Config', 'domain_host')
+	    self.consul_host = config.get('User Config', 'consul_host')
 
         except ConfigParser.NoSectionError, ConfigParser.NoOptionError:
             logging.warning("warning No section or No option error occured...")
@@ -79,7 +79,7 @@ class Config():
                                      volume_mount = '',\
                                      consul_ip_port = '',\
                                      consul_domain = '',\
-				     domain_host = ''):
+				     consul_host = ''):
 
         logging.info("Create Config file")
         config = ConfigParser.ConfigParser()
@@ -106,7 +106,7 @@ class Config():
         config.set('User Config', 'volume_mount', volume_mount)
         config.set('User Config', 'consul_ip_port', consul_ip_port)
 	config.set('User Config', 'consul_domain', consul_domain)
-	config.set('User Config', 'domain_host', domain_host)
+	config.set('User Config', 'consul_host', consul_host)
 
         config.write(cfg_file)
 
