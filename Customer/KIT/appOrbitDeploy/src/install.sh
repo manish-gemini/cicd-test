@@ -51,12 +51,23 @@ do
 done
 chmod a+x /opt/apporbit/bin/*.pyc
 # Running predeploy script
+
 cd /opt/apporbit/bin
 #/opt/apporbit/bin/apporbit-deploy.sh
-if [ "$1" == "deploychef" ]
+if [ "$1" == "deploychef" -a "$#" -eq 1 ]
 then
     python /opt/apporbit/bin/apporbitlauncher.pyc deploychef
+elif [ "$1" == "skipipvalidity" -a "$#" -eq 1 ]
+then
+    python /opt/apporbit/bin/apporbitlauncher.pyc skipipvalidity
+elif [ "$#" -eq 2 ]
+then
+     if [ "$1" == "deploychef" -a "$2" == "skipipvalidity" ] || [ "$2" == "deploychef" -a "$1" == "skipipvalidity" ]
+     then
+          python /opt/apporbit/bin/apporbitlauncher.pyc deploychef skipipvalidity
+     else
+	  print "Invalid arguments..!!"
+     fi
 else
     python /opt/apporbit/bin/apporbitlauncher.pyc
 fi
-
