@@ -21,11 +21,9 @@ def main():
             sys.exit(1)
         if sys.argv[1] == "skipipcheck":
 	   ip_validity_flag=0
-     	   logging.info("Skipped IP host validity..")
     if len(sys.argv) == 3:
 	if sys.argv[2] == "skipipcheck":
            ip_validity_flag=0
-           logging.info("Skipped IP host validity..")
 
     print ("This installer will install the appOrbit management server in this machine")
     logging.info("Starting appOrbit Installation")
