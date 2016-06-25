@@ -12,7 +12,7 @@ from time import sleep
 
 import utility
 import userinteract
-
+import subprocess
 
 class Action:
 
@@ -65,15 +65,53 @@ class Action:
         sleep(60)
         return  True
 
-    def deployConsul(self, reg_url):
-        if not reg_url:
+    def routableDomain(self, consul_host):
+        process = subprocess.Popen(["nslookup", consul_host], stdout=subprocess.PIPE)
+        output = process.communicate()[0].split('\n')
+        #print output
+
+        routable = 'false'
+
+        for data in output:
+                if 'Non-authoritative' in data:
+                        routable = 'true'
+
+        #print routable
+        return routable
+
+    def deployConsul(self, reg_url, consul_host, consul_domain):
+        routable = 'false'
+	if not reg_url:
             reg_url = "secure-registry.gsintlab.com"
         consul_image_name = reg_url + "/apporbit/consul"
 
-        cmd_deploy_consul = ("docker run -d -p 8400:8400 -p 8500:8500 -p 8600:53/udp "
+	if not consul_domain:
+		#print "\nconsul_domain is missing"
+		cmd_deploy_consul = ("docker run -d -p 8400:8400 -p 8500:8500 -p 53:53/udp "
                              "--restart=always --name apporbit-consul -h consul " +
                              consul_image_name + " -server -bootstrap-expect 1")
-        cmd_desc = "Deploying Consul container"
+        	cmd_desc = "Deploying Consul container"
+	elif not consul_host:
+		#print "\nconsul_host is missing"
+                cmd_deploy_consul = ("docker run -d -p 8400:8400 -p 8500:8500 -p 53:53/udp "
+                             "--restart=always --name apporbit-consul -h consul " +
+                             consul_image_name + " -server -bootstrap-expect 1")
+                cmd_desc = "Deploying Consul container"
+	else:
+		#print "\nBoth values are present"
+		#check if domain is routable
+		routable = self.routableDomain(consul_host)
+		if routable == 'true':
+			cmd_deploy_consul = ("docker run -d -p 8400:8400 -p 8500:8500 -p 53:53/udp "
+                              "--restart=always --name apporbit-consul -h consul " +
+                             consul_image_name + " -server -domain="+consul_domain +" -bootstrap-expect 1")
+                	cmd_desc = "Deploying Consul container with domain name"	
+		else:
+			cmd_deploy_consul = ("docker run -d -p 8400:8400 -p 8500:8500 -p 53:53/udp "
+                             "--restart=always --name apporbit-consul -h consul " +
+                             consul_image_name + " -server -bootstrap-expect 1")
+                	cmd_desc = "Deploying Consul container"
+		 
 
         self.utilityobj.cmdExecute(cmd_deploy_consul, cmd_desc, True)
         sleep(10)
@@ -402,9 +440,9 @@ class Action:
         # DEPLOY SERVICES
         self.deployServices(config_obj)
         self.utilityobj.progressBar(16)
-
+	
         #DEPLOY CONSUL
-        self.deployConsul(config_obj.registry_url)
+        self.deployConsul(config_obj.registry_url, config_obj.consul_host, config_obj.consul_domain)
         self.utilityobj.progressBar(17)
 
         #DEPLOY LOCATOR

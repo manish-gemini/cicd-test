@@ -25,6 +25,8 @@ class Config():
         self.volume_mount = ''
         self.registry_url = 'registry.apporbit.com'
         self.consul_ip_port = ''
+	self.consul_domain = ''
+	self.consul_host = ''
         return
 
     def loadConfig(self, fileName="local.conf"):
@@ -54,6 +56,8 @@ class Config():
             self.internal_repo = config.get('User Config', 'internal_repo')
             self.volume_mount = config.get('User Config', 'volume_mount')
             self.consul_ip_port = config.get('User Config', 'consul_ip_port')
+            self.consul_domain = config.get('User Config', 'consul_domain')
+	    self.consul_host = config.get('User Config', 'consul_host')
 
         except ConfigParser.NoSectionError, ConfigParser.NoOptionError:
             logging.warning("warning No section or No option error occured...")
@@ -73,7 +77,9 @@ class Config():
                                      build_deploy_mode = '3', reg_url='registry.apporbit.com',\
                                      internal_repo = 'http://repos.gsintlab.com/repos',\
                                      volume_mount = '',\
-                                     consul_ip_port = '' ):
+                                     consul_ip_port = '',\
+                                     consul_domain = '',\
+				     consul_host = ''):
 
         logging.info("Create Config file")
         config = ConfigParser.ConfigParser()
@@ -99,6 +105,8 @@ class Config():
         config.set('User Config', 'internal_repo', internal_repo)
         config.set('User Config', 'volume_mount', volume_mount)
         config.set('User Config', 'consul_ip_port', consul_ip_port)
+	config.set('User Config', 'consul_domain', consul_domain)
+	config.set('User Config', 'consul_host', consul_host)
 
         config.write(cfg_file)
 
