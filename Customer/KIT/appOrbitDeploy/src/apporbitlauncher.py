@@ -6,6 +6,7 @@ import os
 import sys
 # Project Modules
 import config, utility, action, userinteract
+import argparse
 
 def main():
     if not os.path.exists("/var/log/apporbit"):
@@ -13,17 +14,19 @@ def main():
 
     logging.basicConfig(filename='/var/log/apporbit/Install.log', level=logging.DEBUG,
                          format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+
+    # arguments parser
+    parser = argparse.ArgumentParser(description='Apporbitlauncher argument')
+    parser.add_argument("-d","--deploychef",action='store_true', help='Deploy chef enable flag')
+    parser.add_argument("-s","--skipipvalidity", action='store_true', help='Skip ip host validity flag')
+    args = parser.parse_args()
     ip_validity_flag=1
-    if len(sys.argv) > 1:
-        if sys.argv[1] == "deploychef":
-            chef_dep_obj = action.DeployChef()
-            chef_dep_obj.deploy_chef()
-            sys.exit(1)
-        if sys.argv[1] == "skipipcheck":
-	   ip_validity_flag=0
-    if len(sys.argv) == 3:
-	if sys.argv[2] == "skipipcheck":
-           ip_validity_flag=0
+    if args.deploychef: 
+        chef_dep_obj = action.DeployChef()
+        chef_dep_obj.deploy_chef()
+        sys.exit(1)
+    if args.skipipvalidity:  
+        ip_validity_flag=0
 
     print ("This installer will install the appOrbit management server in this machine")
     logging.info("Starting appOrbit Installation")
