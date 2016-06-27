@@ -54,20 +54,30 @@ chmod a+x /opt/apporbit/bin/*.pyc
 
 cd /opt/apporbit/bin
 #/opt/apporbit/bin/apporbit-deploy.sh
-if [ "$1" == "deploychef" -a "$#" -eq 1 ]
-then
-    python /opt/apporbit/bin/apporbitlauncher.pyc --deploychef
-elif [ "$1" == "skipipvalidity" -a "$#" -eq 1 ]
-then
-    python /opt/apporbit/bin/apporbitlauncher.pyc --skipipvalidity
-elif [ "$#" -eq 2 ]
-then
-    if [ "$1" == "deploychef" -a "$2" == "skipipvalidity" ] || [ "$2" == "deploychef" -a "$1" == "skipipvalidity" ]
-    then
-         python /opt/apporbit/bin/apporbitlauncher.pyc --deploychef --skipipvalidity
-    else
-         print "Invalid arguments..!!"
-    fi
+deploychef=0
+skipipvalidity=0
+if [ $# -eq 0 ];then
+   python /opt/apporbit/bin/apporbitlauncher.pyc
 else
-    python /opt/apporbit/bin/apporbitlauncher.pyc
+for i in "$@"; do
+  case $i in
+  "deploychef") deploychef=1
+   if [ $# -eq 1 ]; then
+      python /opt/apporbit/bin/apporbitlauncher.pyc --deploychef
+   fi
+  ;;
+  "skipipvalidity") skipipvalidity=1
+   if [ $# -eq 1 ]; then
+       python /opt/apporbit/bin/apporbitlauncher.pyc --skipipvalidity
+   fi
+  ;;
+  *) echo "Invalid options ..!!" 
+     exit
+  ;;
+  esac
+done
+if [ $deploychef -eq 1 ] && [ $skipipvalidity -eq 1 ] && [ $# -eq 2 ]; then
+   python /opt/apporbit/bin/apporbitlauncher.pyc --deploychef --skipipvalidity
 fi
+fi
+
