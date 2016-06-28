@@ -54,32 +54,21 @@ chmod a+x /opt/apporbit/bin/*.pyc
 
 cd /opt/apporbit/bin
 #/opt/apporbit/bin/apporbit-deploy.sh
-deploychef=0
-skipipvalidity=0
 cmdstr="python /opt/apporbit/bin/apporbitlauncher.pyc"
 
-if [ $# -eq 0 ];then
-   $cmdstr
-else
-   for i in "$@"; do
-   case $i in
-     "deploychef") deploychef=1
-      if [ $# -eq 1 ]; then
-          $cmdstr --deploychef
-      fi
+   for arg in "$@"; do
+   case $arg in
+     "deploychef")
+       cmdstr+=" --deploychef"
       ;;
-     "skipipvalidity") skipipvalidity=1
-     if [ $# -eq 1 ]; then
-         $cmdstr --skipipvalidity
-     fi
+     "skipipvalidity") 
+       cmdstr+=" --skipipvalidity"
      ;;
      *) echo "Invalid options ..!!" 
        exit
      ;;
    esac
    done
-   if [ $deploychef -eq 1 ] && [ $skipipvalidity -eq 1 ] && [ $# -eq 2 ]; then
-       $cmdstr --deploychef --skipipvalidity
-   fi
-fi
+
+$cmdstr
 
