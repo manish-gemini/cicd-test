@@ -20,13 +20,10 @@ def main():
     parser.add_argument("-d","--deploychef",action='store_true', help='Deploy chef enable flag')
     parser.add_argument("-s","--skipipvalidity", action='store_true', help='Skip ip host validity flag')
     args = parser.parse_args()
-    ip_validity_flag=1
     if args.deploychef: 
         chef_dep_obj = action.DeployChef()
         chef_dep_obj.deploy_chef()
         sys.exit(1)
-    if args.skipipvalidity:  
-        ip_validity_flag=0
 
     print ("This installer will install the appOrbit management server in this machine")
     logging.info("Starting appOrbit Installation")
@@ -85,7 +82,7 @@ def main():
         logging.info("user configuration is recived SUCCESS.")
        
     # Validate that the Hostip chosen during configuration belongs to the current host machine.
-    if ip_validity_flag == 1:
+    if not args.skipipvalidity:
       if not utility_obj.validateHostIP(config_obj.hostip):
          print "ERROR: Host-IP or Host-Name entered is not valid. Check log for details."
          sys.exit(1)
