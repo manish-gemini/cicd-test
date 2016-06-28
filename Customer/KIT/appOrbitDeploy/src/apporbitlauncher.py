@@ -4,9 +4,9 @@
 import logging
 import os
 import sys
+import argparse
 # Project Modules
 import config, utility, action, userinteract
-import argparse
 
 def main():
     if not os.path.exists("/var/log/apporbit"):
