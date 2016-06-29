@@ -141,6 +141,15 @@ function download_images {
     echo "Downloading CM..."
     docker pull ${INTERNAL_REGISTRY}/apporbit/apporbit-chef:2.0
     docker tag ${INTERNAL_REGISTRY}/apporbit/apporbit-chef:2.0 apporbit/apporbit-chef:2.0
+    echo "Downloading Consul..."
+    docker pull ${INTERNAL_REGISTRY}/apporbit/consul
+    docker tag ${INTERNAL_REGISTRY}/apporbit/consul apporbit/apporbit-consul
+    echo "Downloading Locator..."
+    docker pull ${INTERNAL_REGISTRY}/apporbit/locator
+    docker tag ${INTERNAL_REGISTRY}/apporbit/locator apporbit/apporbit-locator
+    echo "Downloading svcd..."
+    docker pull ${INTERNAL_REGISTRY}/apporbit/svcd
+    docker tag ${INTERNAL_REGISTRY}/apporbit/svcd apporbit/apporbit-svcd
 
     echo "Downloading infra containers..."
 
@@ -168,6 +177,12 @@ function save_images {
     docker save apporbit/apporbit-chef:2.0 > apporbit-chef.tar
     echo "Saving image MySQL..."
     docker save mysql:5.6.24 > mysql.tar
+    echo "Saving image Consul..."
+    docker save apporbit/apporbit-consul > apporbit-consul.tar
+    echo "Saving image Locator..."
+    docker save apporbit/apporbit-locator > apporbit-locator.tar
+    echo "Saving image svcd..."
+    docker save apporbit/apporbit-svcd > apporbit-svcd.tar
     cd ..
 
     echo "Saving infra containers..."
