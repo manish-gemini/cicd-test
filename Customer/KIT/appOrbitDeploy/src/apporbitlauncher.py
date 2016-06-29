@@ -5,6 +5,7 @@ import logging
 import os
 import sys
 import shutil
+import argparse
 # Project Modules
 import config, utility, action, userinteract
 
@@ -16,11 +17,16 @@ def main():
     logging.basicConfig(filename='/var/log/apporbitInstall.log', level=logging.DEBUG,
                          format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
 
-    if len(sys.argv) > 1:
-        if sys.argv[1] == "deploychef":
-            chef_dep_obj = action.DeployChef()
-            chef_dep_obj.deploy_chef()
-            sys.exit(1)
+    # arguments parser
+    parser = argparse.ArgumentParser(description='Apporbitlauncher argument')
+    parser.add_argument("-d","--deploychef",action='store_true', help='Deploy chef enable flag')
+    parser.add_argument("-s","--skipipvalidity", action='store_true', help='Skip ip host validity flag')
+    args = parser.parse_args()
+    if args.deploychef:
+        chef_dep_obj = action.DeployChef()
+        chef_dep_obj.deploy_chef()
+        sys.exit(1)
+
 
     print ("This installer will install the appOrbit management server in this machine")
     print ("Installation logging at /var/log/apporbitInstall.log")
@@ -80,9 +86,10 @@ def main():
         logging.info("user configuration is recived SUCCESS.")
 
     # Validate that the Hostip chosen during configuration belongs to the current host machine.
-    if not utility_obj.validateHostIP(config_obj.hostip):
-            print "ERROR: Host-IP or Host-Name entered is not valid. Check log for details."
-            sys.exit(1)
+    if not args.skipipvalidity:
+       if not utility_obj.validateHostIP(config_obj.hostip):
+          print "ERROR: Host-IP or Host-Name entered is not valid. Check log for details."
+          sys.exit(1)
 
     print "Deploying appOrbit management server."
     with utility.DotProgress("Deploy"):
