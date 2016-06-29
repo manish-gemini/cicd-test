@@ -4,15 +4,16 @@
 import logging
 import os
 import sys
+import shutil
 # Project Modules
 import config, utility, action, userinteract
 
 
 def main():
-    if not os.path.exists("/var/log/apporbit"):
-       os.makedirs("/var/log/apporbit")
+    if not os.path.exists("/var/log"):
+       os.makedirs("/var/log")
 
-    logging.basicConfig(filename='/var/log/apporbit/Install.log', level=logging.DEBUG,
+    logging.basicConfig(filename='/var/log/apporbitInstall.log', level=logging.DEBUG,
                          format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
 
     if len(sys.argv) > 1:
@@ -22,6 +23,7 @@ def main():
             sys.exit(1)
 
     print ("This installer will install the appOrbit management server in this machine")
+    print ("Installation logging at /var/log/apporbitInstall.log")
     logging.info("Starting appOrbit Installation")
 
     config_obj = config.Config()
@@ -92,6 +94,9 @@ def main():
 
     print "Now login to the appOrbit management server using https://" + config_obj.hostip + " with the default password 'admin1234'"
     logging.info("END OF DEPLOYMENT")
+    
+    shutil.move('/var/log/apporbitInstall.log','/var/log/apporbit/')
+    print "Installation logs moved to /var/log/apporbit"
 
     return
 
