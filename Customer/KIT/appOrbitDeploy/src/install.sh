@@ -53,10 +53,21 @@ chmod a+x /opt/apporbit/bin/*.pyc
 # Running predeploy script
 cd /opt/apporbit/bin
 #/opt/apporbit/bin/apporbit-deploy.sh
-if [ "$1" == "deploychef" ]
-then
-    python /opt/apporbit/bin/apporbitlauncher.pyc deploychef
-else
-    python /opt/apporbit/bin/apporbitlauncher.pyc
-fi
+cmdstr="python /opt/apporbit/bin/apporbitlauncher.pyc"
+
+   for arg in "$@"; do
+   case $arg in
+     "deploychef")
+       cmdstr+=" --deploychef"
+      ;;
+     "skipipvalidity")
+       cmdstr+=" --skipipvalidity"
+     ;;
+     *) echo "Invalid options ..!!" 
+       exit
+     ;;
+   esac
+   done
+
+$cmdstr
 

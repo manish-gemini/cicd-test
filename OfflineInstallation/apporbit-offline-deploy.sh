@@ -364,6 +364,15 @@ function remove_conflicting_containers {
     if docker ps -a | grep -a apporbit-docs; then
         docker rm -f apporbit-docs
     fi
+    if docker ps -a | grep -a apporbit-consul; then
+        docker rm -f apporbit-consul
+    fi
+    if docker ps -a | grep -a apporbit-locator; then
+        docker rm -f apporbit-locator
+    fi
+    if docker ps -a | grep -a apporbit-svcd; then
+        docker rm -f apporbit-svcd
+    fi
 }
 
 function load_containers {
@@ -381,6 +390,12 @@ function load_containers {
     docker load < apporbit-rmq.tar
     echo "Loading Docs..."
     docker load < apporbit-docs.tar
+    echo "Loading Consul..."
+    docker load < apporbit-consul.tar
+    echo "Loading Locator..."
+    docker load < apporbit-locator.tar
+    echo "Loading svcd..."
+    docker load < apporbit-svcd.tar
 
     cd $CWD
 }
@@ -392,15 +407,21 @@ function start_services {
     sleep 60
     docker run -m 2g -d --hostname rmq  --name apporbit-rmq --restart=always -d apporbit/apporbit-rmq
     docker run --name apporbit-docs --restart=always -p 9080:80 -d apporbit/apporbit-docs
+    echo "Deploying Consul Container"
+    docker run -d -p 8400:8400 -p 8500:8500 -p 53:53/udp --restart=always --name apporbit-consul -h consul apporbit/apporbit-consul -server --bootstrap-expect 1
+    echo "Deploying Locator Container"
+    docker run -d -p 8080:8080 --restart=always --name apporbit-locator -e CONSUL_IP_PORT=http://$hostip:8500  apporbit/apporbit-locator
+    echo "Deploying svcd Container"
+    docker run -d -p 8888:8080 --restart=always --name apporbit-svcd --link db:db --link apporbit-locator:locator  apporbit/apporbit-svcd
     echo "apporbit services run..."
     if docker ps -a |grep -aq apporbit-chef; then
         docker run -t --name apporbit-services -e GEMINI_INT_REPO=${internal_repo} -e CHEF_URL=https://$hostip:9443 -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist -e GEMINI_STACK_IPANEMA=1 -e OFFLINE_MODE=$OFFLINE_MODE --link db:db --link apporbit-rmq:rmq -v /var/lib/apporbit/sshKey_root:/root -v /var/log/apporbit/services:/var/log/apporbit --volumes-from apporbit-chef -d apporbit/apporbit-services
         echo "controller run ..."
-        docker run -t --name apporbit-controller -p 80:80 -p 443:443  -e GEMINI_INT_REPO=${internal_repo} -e LOG_LEVEL=$_LOG_LEVEL_ -e ONPREM_EMAIL_ID=$EMAILID -e MAX_POOL_SIZE=$max_app_processes -e CHEF_URL=https://$hostip:9443 -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName -e CURRENT_API_VERSION=$versionName -e OFFLINE_MODE=$OFFLINE_MODE --link db:db --link apporbit-rmq:rmq --volumes-from apporbit-chef -v /var/log/apporbit/controller:/var/log/apporbit  -v /var/lib/apporbit/sslkeystore/:/home/apporbit/apporbit-controller/sslkeystore -d apporbit/apporbit-controller
+        docker run -t --name apporbit-controller -p 80:80 -p 443:443  -e GEMINI_INT_REPO=${internal_repo} -e LOG_LEVEL=$_LOG_LEVEL_ -e ONPREM_EMAIL_ID=$EMAILID -e MAX_POOL_SIZE=$max_app_processes -e CHEF_URL=https://$hostip:9443 -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName -e CURRENT_API_VERSION=$versionName -e OFFLINE_MODE=$OFFLINE_MODE --link db:db --link apporbit-rmq:rmq --link apporbit-svcd:svcd --volumes-from apporbit-chef -v /var/log/apporbit/controller:/var/log/apporbit  -v /var/lib/apporbit/sslkeystore/:/home/apporbit/apporbit-controller/sslkeystore -d apporbit/apporbit-controller
     else
         docker run -t --name apporbit-services -e GEMINI_INT_REPO=${internal_repo} -e MYSQL_HOST=db -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_mist -e GEMINI_STACK_IPANEMA=1 -e OFFLINE_MODE=$OFFLINE_MODE --link db:db --link apporbit-rmq:rmq -v /var/log/apporbit/services:/var/log/apporbit  -v /var/lib/apporbit/sshKey_root:/root -d apporbit/apporbit-services
         echo "controller run ..."
-        docker run -t --name apporbit-controller -p 80:80 -p 443:443 -e GEMINI_INT_REPO=${internal_repo} -e LOG_LEVEL=$_LOG_LEVEL_ -e ONPREM_EMAIL_ID=$EMAILID -e MAX_POOL_SIZE=$max_app_processes -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName -e CURRENT_API_VERSION=$versionName -e OFFLINE_MODE=$OFFLINE_MODE  --link db:db --link apporbit-rmq:rmq -v /var/log/apporbit/controller:/var/log/apporbit  -v /var/lib/apporbit/sslkeystore/:/home/apporbit/apporbit-controller/sslkeystore -d apporbit/apporbit-controller
+        docker run -t --name apporbit-controller -p 80:80 -p 443:443 -e GEMINI_INT_REPO=${internal_repo} -e LOG_LEVEL=$_LOG_LEVEL_ -e ONPREM_EMAIL_ID=$EMAILID -e MAX_POOL_SIZE=$max_app_processes -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller -e ON_PREM_MODE=$onPremMode -e THEME_NAME=$themeName -e CURRENT_API_VERSION=$versionName -e OFFLINE_MODE=$OFFLINE_MODE  --link db:db --link apporbit-rmq:rmq --link apporbit-svcd:svcd -v /var/log/apporbit/controller:/var/log/apporbit  -v /var/lib/apporbit/sslkeystore/:/home/apporbit/apporbit-controller/sslkeystore -d apporbit/apporbit-controller
     fi
 
 }

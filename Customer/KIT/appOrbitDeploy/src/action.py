@@ -311,7 +311,8 @@ class Action:
 
         cmd_deploy_controller = cmd_deploy_controller + " -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller \
         -e ON_PREM_MODE=" + onpremmode + " -e THEME_NAME="+ theme_name + "\
-        -e CURRENT_API_VERSION=" + api_version + " --link apporbit-db:db --link apporbit-rmq:rmq "
+        -e CURRENT_API_VERSION=" + api_version + " --link apporbit-db:db --link apporbit-rmq:rmq " + "\
+	--link apporbit-svcd:svcd "
         if deploy_chef == "1":
             cmd_deploy_controller = cmd_deploy_controller + "--volumes-from apporbit-chef "
 
@@ -385,8 +386,14 @@ class Action:
 
     def deployAppOrbit(self, config_obj):
         self.utilityobj.progressBar(1)
+        # LOGIN to DOCKER REGISTRY
+        if config_obj.build_deploy_mode == '3' or config_obj.build_deploy_mode == '0':
+            self.utilityobj.loginDockerRegistry(config_obj.docker_uname, config_obj.docker_passwd, config_obj.registry_url)
+            self.pullImagesformRepos(config_obj.registry_url, config_obj.buildid)
+
+        self.utilityobj.progressBar(5)
         self.removeRunningContainers(config_obj)
-        self.utilityobj.progressBar(2)
+        self.utilityobj.progressBar(6)
         self.utilityobj.createLogRoatateFile()
 
         # CLEAN or RETAIN OLD ENTRIES
@@ -408,13 +415,6 @@ class Action:
         else:
             logging.info("Copying SSL Certificate from the dir %s", config_obj.self_signed_crt_dir)
             self.copySSLCertificate(config_obj.self_signed_crt_dir)
-
-        self.utilityobj.progressBar(3)
-        # LOGIN to DOCKER REGISTRY
-        if config_obj.build_deploy_mode == '3' or config_obj.build_deploy_mode == '0':
-            self.utilityobj.loginDockerRegistry(config_obj.docker_uname, config_obj.docker_passwd, config_obj.registry_url)
-            self.pullImagesformRepos(config_obj.registry_url, config_obj.buildid)
-
 
         # DEPLOY CHEF CONTAINER
         if config_obj.clean_setup == '1':
@@ -556,13 +556,13 @@ class Action:
         cmd_docs_image = 'docker pull ' + docs_image
         cmd_dbs_image = 'docker pull ' + database_image
 
-        self.utilityobj.progressBar(4)
+        self.utilityobj.progressBar(2)
         self.utilityobj.cmdExecute(cmd_ctrl_image , "Pull controller image",True)
         self.utilityobj.cmdExecute(cmd_srvc_image , "Pull services image",True)
-        self.utilityobj.progressBar(5)
+        self.utilityobj.progressBar(3)
         self.utilityobj.cmdExecute(cmd_msg_image , "Pull message server image",True)
         self.utilityobj.cmdExecute(cmd_docs_image , "Pull document server image",True)
-        self.utilityobj.progressBar(6)
+        self.utilityobj.progressBar(4)
         self.utilityobj.cmdExecute(cmd_dbs_image , "Pull database server image",True)
 
         return True
