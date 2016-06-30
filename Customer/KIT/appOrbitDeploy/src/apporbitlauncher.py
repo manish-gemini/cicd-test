@@ -6,6 +6,7 @@ import os
 import sys
 import shutil
 import argparse
+import datetime
 # Project Modules
 import config, utility, action, userinteract
 
@@ -101,9 +102,10 @@ def main():
 
     print "Now login to the appOrbit management server using https://" + config_obj.hostip + " with the default password 'admin1234'"
     logging.info("END OF DEPLOYMENT")
-    
-    shutil.move('/var/log/apporbitInstall.log','/var/log/apporbit/')
-    print "Installation logs moved to /var/log/apporbit"
+
+    logtimestamp = str(datetime.datetime.now().strftime('%Y%m%d%H%M%S'))
+    shutil.move('/var/log/apporbitInstall.log', '/var/log/apporbit/apporbitInstall-' + logtimestamp + '.log')
+    print "Installation logs moved to /var/log/apporbit/apporbitInstall-" + logtimestamp + '.log'
 
     return
 
