@@ -80,3 +80,6 @@ consul_domain =
 	This variable is used by Consul to configure its domain name. If the host name 		  specified in 'consul_host' is routable, it is configured else the default 
         configuration is used.
 	example: consul_domain=apporbit.mycompany.com
+deploy_api_docs :
+    # 0 - do not deploy REST API Documentation server
+    # 1 - deploy REST API Documentation server (default)	

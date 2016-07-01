@@ -1,1 +1,1 @@
-docker build -t apporbit/swager .
+docker build -t apporbit/apporbit-api-docs .

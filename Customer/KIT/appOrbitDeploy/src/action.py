@@ -176,6 +176,20 @@ class Action:
         sleep(10)
         return True
 
+    def deployApiDocs(self, reg_url):
+        if not reg_url:
+            reg_url = "secure-registry.gsintlab.com"
+        apidocs_image_name = reg_url + "/apporbit/apporbit-api-docs"
+
+        cmd_deploy_apidocs = ("docker run -d -p 90:8080 -p 8443:443 -v /var/www/apporbit/api-docs "
+                             "--restart=always --name apporbit-api-docs " +
+                             apidocs_image_name)
+        cmd_desc = "Deploying api docs container"
+
+        self.utilityobj.cmdExecute(cmd_deploy_apidocs, cmd_desc, True)
+        sleep(10)
+        return True
+
     def deployServices(self, config_obj):
         internal_repo = config_obj.internal_repo
         host_ip = config_obj.hostip
@@ -270,6 +284,7 @@ class Action:
         build_deploy_mode = config_obj.build_deploy_mode
         vol_mount = config_obj.volume_mount
         deploy_chef = config_obj.deploy_chef
+        deploy_api_docs = config_obj.deploy_api_docs
 
 
         log_level = 'DEBUG'
@@ -310,11 +325,13 @@ class Action:
             cmd_deploy_controller = cmd_deploy_controller + " -e CHEF_URL=https://"+ hostip +":9443"
 
         cmd_deploy_controller = cmd_deploy_controller + " -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller \
-        -e ON_PREM_MODE=" + onpremmode + " -e THEME_NAME="+ theme_name + "\
+        -e ON_PREM_MODE=" + onpremmode + " -e THEME_NAME=" + theme_name + " -e SERVER_URL=" + "https://" + hostip + "\
         -e CURRENT_API_VERSION=" + api_version + " --link apporbit-db:db --link apporbit-rmq:rmq " + "\
 	--link apporbit-svcd:svcd "
         if deploy_chef == "1":
             cmd_deploy_controller = cmd_deploy_controller + "--volumes-from apporbit-chef "
+        if deploy_api_docs == "1":
+            cmd_deploy_controller = cmd_deploy_controller + "--volumes-from apporbit-api-docs:z "
 
         cmd_deploy_controller = cmd_deploy_controller + vol_mount_str + " -v /var/log/apporbit/controller:/var/log/apporbit:Z \
         -v /var/lib/apporbit/sslkeystore/:/home/apporbit/apporbit-controller/sslkeystore:Z \
@@ -453,9 +470,13 @@ class Action:
         self.deploySvcd(config_obj)
         self.utilityobj.progressBar(19)
 
+        # DEPLOY API DOCS
+        self.deployApiDocs(config_obj.registry_url)
+        self.utilityobj.progressBar(20)
+
         # DEPLOY PLATFORM
         self.deployController(config_obj)
-        self.utilityobj.progressBar(20)
+        self.utilityobj.progressBar(21)
 
         return True
 
@@ -482,7 +503,7 @@ class Action:
         container_name_list = ["db","apporbit-db", "apporbit-controller",
                                "apporbit-services","apporbit-docs",
                                "apporbit-rmq", "apporbit-consul",
-                               "apporbit-locator", "apporbit-svcd"]
+                               "apporbit-locator", "apporbit-svcd", "apporbit-api-docs"]
         if config_obj.clean_setup == '1':
             container_name_list.append("apporbit-chef")
 

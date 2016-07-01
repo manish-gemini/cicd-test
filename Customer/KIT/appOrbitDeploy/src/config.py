@@ -27,6 +27,7 @@ class Config():
         self.consul_ip_port = ''
 	self.consul_domain = ''
 	self.consul_host = ''
+        self.deploy_api_docs = '1'
         return
 
     def loadConfig(self, fileName="local.conf"):
@@ -58,6 +59,7 @@ class Config():
             self.consul_ip_port = config.get('User Config', 'consul_ip_port')
             self.consul_domain = config.get('User Config', 'consul_domain')
 	    self.consul_host = config.get('User Config', 'consul_host')
+            self.deploy_api_docs = config.get('User Config', 'deploy_api_docs')
 
         except ConfigParser.NoSectionError, ConfigParser.NoOptionError:
             logging.warning("warning No section or No option error occured...")
@@ -107,6 +109,7 @@ class Config():
         config.set('User Config', 'consul_ip_port', consul_ip_port)
 	config.set('User Config', 'consul_domain', consul_domain)
 	config.set('User Config', 'consul_host', consul_host)
+        config.set('User Config', 'deploy_api_docs', deploy_api_docs)
 
         config.write(cfg_file)
 
