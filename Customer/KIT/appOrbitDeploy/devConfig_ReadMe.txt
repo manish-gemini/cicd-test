@@ -72,4 +72,8 @@ Location for Code of Controller and Services to be volume mounted.
 consul_ip_port = http://<HOST_IP>:8500
  	Consul is a distributed service discovery tool and key value store
 	The variable "consul_ip_port" is used to locate consul and is used by Locator
+deploy_api_docs :
+    # 0 - do not deploy REST API Documentation server
+    # 1 - deploy REST API Documentation server (default)
+	
 

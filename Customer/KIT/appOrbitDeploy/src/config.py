@@ -25,6 +25,7 @@ class Config():
         self.volume_mount = ''
         self.registry_url = 'registry.apporbit.com'
         self.consul_ip_port = ''
+        self.deploy_api_docs = '1'
         return
 
     def loadConfig(self, fileName="local.conf"):
@@ -54,6 +55,7 @@ class Config():
             self.internal_repo = config.get('User Config', 'internal_repo')
             self.volume_mount = config.get('User Config', 'volume_mount')
             self.consul_ip_port = config.get('User Config', 'consul_ip_port')
+            self.deploy_api_docs = config.get('User Config', 'deploy_api_docs')
 
         except ConfigParser.NoSectionError, ConfigParser.NoOptionError:
             logging.warning("warning No section or No option error occured...")
@@ -99,6 +101,7 @@ class Config():
         config.set('User Config', 'internal_repo', internal_repo)
         config.set('User Config', 'volume_mount', volume_mount)
         config.set('User Config', 'consul_ip_port', consul_ip_port)
+        config.set('User Config', 'deploy_api_docs', deploy_api_docs)
 
         config.write(cfg_file)
 
