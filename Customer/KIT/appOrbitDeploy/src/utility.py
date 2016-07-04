@@ -412,6 +412,7 @@ class Utility:
             logging.info(external_host_ip)
             hostip_name_tup = socket.gethostbyaddr(external_host_ip)
         except socket.herror as e:
+            hostip_name_tup = ()
             logging.error( "Socket Error" + e.strerror)
 
         logging.info(str(hostip_name_tup))
