@@ -415,11 +415,11 @@ class Utility:
             hostip_name_tup = ()
             logging.error( "Socket Error" + e.strerror)
 
-        logging.info(str(hostip_name_tup))
+        logging.info("HOST/IP found :" + str(hostip_name_tup))
 
         for elem in hostip_name_tup:
             if hostip in elem:
-                logging.info("VALID HOSTIP %s" + hostip)
+                logging.info("VALID HOSTIP %s" , hostip)
                 result = True
                 break
             else:
