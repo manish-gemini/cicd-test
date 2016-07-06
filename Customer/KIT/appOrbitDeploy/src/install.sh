@@ -1,15 +1,6 @@
 #!/bin/bash
-if [ -z "$1" ]
-then
-    url='http://repos.apporbit.com/install/appOrbitKit'
-else
-    if [ "$1" == "deploychef" ]
-    then
-       print "Update Chef Server"
-    else
-        url=$1
-    fi
-fi
+
+url='http://repos.apporbit.com/install/appOrbitKit'
 
 command_exists() {
 	command -v "$@" > /dev/null 2>&1
