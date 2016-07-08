@@ -25,6 +25,11 @@ then
    yum install -y python
 fi
 
+if  ! command_exists nslookup
+then
+   yum install -y bind-utils
+fi
+
 if [ "$http_proxy" != "" ]
 then
   cproxy="-x $http_proxy" 
