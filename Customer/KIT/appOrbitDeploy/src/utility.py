@@ -411,14 +411,15 @@ class Utility:
         try:
             logging.info(external_host_ip)
             hostip_name_tup = socket.gethostbyaddr(external_host_ip)
+            logging.info("HOST/IP found :" + str(hostip_name_tup))
         except socket.herror as e:
+            hostip_name_tup = ()
+            logging.info("HOST/IP not found")
             logging.error( "Socket Error" + e.strerror)
-
-        logging.info(str(hostip_name_tup))
 
         for elem in hostip_name_tup:
             if hostip in elem:
-                logging.info("VALID HOSTIP %s" + hostip)
+                logging.info("VALID HOSTIP %s" , hostip)
                 result = True
                 break
             else:
