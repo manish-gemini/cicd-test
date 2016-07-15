@@ -59,20 +59,20 @@ class Utility:
                 logging.info(out)
             else:
                 if bexit :
-                    logging.error("FAILED - %s", cmd_desc)
+                    logging.error("FAILED - %s [ %s ]", cmd_desc, cmd_str)
                     logging.error(err)
-                    print "FAILED - " + cmd_desc
+                    print "FAILED - " + cmd_desc + "[" + cmd_str + "]"
                     print "Check log for details."
                     sys.exit(1)
                 else:
-                    logging.warning("WARNING - %s", cmd_desc)
+                    logging.warning("WARNING - %s [ %s ]", cmd_desc, cmd_str)
                     logging.warning(err)
                     return False, out, err
         except Exception as exp:
             if bexit :
-                    logging.error("FAILED - %s", cmd_desc)
+                    logging.error("FAILED - %s [ %s ]", cmd_desci, cmd_str)
                     logging.error("Exception: %d : %s", exp.errno, exp.strerror)
-                    print "[FAILED] - " + cmd_desc
+                    print "[FAILED] - " + cmd_desc + "[" + cmd_str + "]"
                     print "Check log for details."
                     sys.exit(1)
             else:

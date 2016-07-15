@@ -16,7 +16,7 @@ def main():
        os.makedirs("/var/log")
 
     logging.basicConfig(filename='/var/log/apporbitInstall.log', level=logging.DEBUG,
-                         format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+                         format='[ %(asctime)s ] %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
 
     # arguments parser
     parser = argparse.ArgumentParser(description='Apporbitlauncher argument')
