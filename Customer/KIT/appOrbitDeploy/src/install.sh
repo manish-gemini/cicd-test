@@ -59,7 +59,10 @@ cmdstr="python /opt/apporbit/bin/apporbitlauncher.pyc"
      "skipipvalidity")
        cmdstr+=" --skipipvalidity"
      ;;
-     *) echo "Invalid options ..!!(Flags: deploychef, skipipvalidity)" 
+     "consul")
+       cmdstr+=" --consul"
+     ;;
+     *) echo "Invalid options ..!!(Flags: deploychef, skipipvalidity, consul)" 
        exit
      ;;
    esac

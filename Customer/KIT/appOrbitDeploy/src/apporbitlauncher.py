@@ -22,12 +22,16 @@ def main():
     parser = argparse.ArgumentParser(description='Apporbitlauncher argument')
     parser.add_argument("-d","--deploychef",action='store_true', help='Deploy chef enable flag')
     parser.add_argument("-s","--skipipvalidity", action='store_true', help='Skip ip host validity flag')
+    parser.add_argument("-c","--consul", action='store_true', help='Deploy consul')
     args = parser.parse_args()
     if args.deploychef:
         chef_dep_obj = action.DeployChef()
         chef_dep_obj.deploy_chef()
         sys.exit(1)
-
+    if args.consul:
+        consul_obj = action.DeployConsul()
+        consul_obj.deploy_consul()
+        sys.exit(1)
 
     print ("This installer will install the appOrbit management server in this machine")
     print ("Installation logging at /var/log/apporbitInstall.log")

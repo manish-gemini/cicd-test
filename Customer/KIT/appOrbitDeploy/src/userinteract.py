@@ -19,7 +19,7 @@ class UserInteract:
         print "2. Continue the previous interrupted installation"
         old_install_mode = raw_input("Choose installation option from above [1]:") or "1"
         return old_install_mode
-
+  
     def deployChefOnly(self, config_obj):
         print "Login to the appOrbit registry using the credentials sent to you by email, by appOrbit support team."
         reg_user_name = raw_input("Enter the user name: ")
