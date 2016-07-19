@@ -196,7 +196,7 @@ class Action:
         else:
             image_name = "apporbit/apporbit-services"
 
-        if mode == '2' or mode == '1':
+        if  mode == '1':
             image_name = "apporbit/apporbit-services"
 
         if vol_mount:
@@ -288,7 +288,7 @@ class Action:
         else:
             cntrlimageName = 'apporbit/apporbit-controller'
 
-        if build_deploy_mode == '2' or build_deploy_mode == '1':
+        if  build_deploy_mode == '1':
             cntrlimageName = 'apporbit/apporbit-controller'
 
         if vol_mount:
