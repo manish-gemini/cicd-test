@@ -13,7 +13,7 @@ import config, utility, action, userinteract
 
 def main():
     if not os.path.exists("/var/log/apporbit"):
-       os.makedirs("/var/logi/apporbit")
+       os.makedirs("/var/log/apporbit")
 
     logging.basicConfig(filename='/var/log/apporbit/apporbitInstall.log', level=logging.DEBUG,
                          format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
