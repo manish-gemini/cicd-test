@@ -6,6 +6,8 @@ import os
 import sys
 import re
 import shutil
+import glob
+import datetime
 import ConfigParser
 import errno
 from time import sleep
@@ -509,7 +511,14 @@ class Action:
         try:
             shutil.rmtree('/var/dbstore', ignore_errors = True)
             shutil.rmtree('/var/lib/apporbit/', ignore_errors = True)
-            shutil.rmtree('/var/log/apporbit/', ignore_errors = True)
+            logtimestamp = '/var/log/apporbit/oldlogs_' + str(datetime.datetime.now().strftime('%Y%m%d%H%M%S'))
+            os.makedirs(logtimestamp)
+            if os.path.exists("/var/log/apporbit/controller"):
+   	        shutil.move('/var/log/apporbit/controller/', logtimestamp )
+            if os.path.exists("/var/log/apporbit/services"):
+                shutil.move('/var/log/apporbit/services/', logtimestamp )
+            for filename in glob.glob(os.path.join('/var/log/apporbit/', 'apporbitInstall-*')):
+                shutil.move(filename, logtimestamp)
             shutil.rmtree('/opt/apporbit/chef-server', ignore_errors = True)
         except OSError as e:
             logging.warning("Failed to clean old Entries : " + e.strerror)

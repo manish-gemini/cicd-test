@@ -12,10 +12,10 @@ import config, utility, action, userinteract
 
 
 def main():
-    if not os.path.exists("/var/log"):
-       os.makedirs("/var/log")
+    if not os.path.exists("/var/log/apporbit"):
+       os.makedirs("/var/logi/apporbit")
 
-    logging.basicConfig(filename='/var/log/apporbitInstall.log', level=logging.DEBUG,
+    logging.basicConfig(filename='/var/log/apporbit/apporbitInstall.log', level=logging.DEBUG,
                          format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
 
     # arguments parser
@@ -30,7 +30,7 @@ def main():
 
 
     print ("This installer will install the appOrbit management server in this machine")
-    print ("Installation logging at /var/log/apporbitInstall.log")
+    print ("Installation logging at /var/log/apporbit/apporbitInstall.log")
     logging.info("Starting appOrbit Installation")
 
     config_obj = config.Config()
@@ -104,7 +104,7 @@ def main():
     logging.info("END OF DEPLOYMENT")
 
     logtimestamp = str(datetime.datetime.now().strftime('%Y%m%d%H%M%S'))
-    shutil.move('/var/log/apporbitInstall.log', '/var/log/apporbit/apporbitInstall-' + logtimestamp + '.log')
+    shutil.move('/var/log/apporbit/apporbitInstall.log', '/var/log/apporbit/apporbitInstall-' + logtimestamp + '.log')
     print "Installation logs moved to /var/log/apporbit/apporbitInstall-" + logtimestamp + '.log'
 
     return
