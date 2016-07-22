@@ -43,6 +43,7 @@ class Utility:
     def __init__(self):
         self.do_dockerinstall = 0
         self.do_ntpinstall = 0
+        self.do_bindutilsinstall = 0
         self.do_wgetinstall = 0
         self.do_sesettings = 0
         self.redhat_subscription = True
@@ -299,6 +300,12 @@ class Utility:
         if not return_code:
             self.do_wgetinstall = 1
 
+        logging.info("Verify nslookup installation")
+        nslookup_cmd = "which nslookup > /dev/null"
+        return_code, out, err = self.cmdExecute(nslookup_cmd, "nslookup (bind-utils) Install", False)
+        if not return_code:
+            self.do_bindutilsinstall = 1
+
         return True
 
 
@@ -344,6 +351,13 @@ class Utility:
         if self.do_ntpinstall:
             cmd_ntpInstall = "yum install -y ntp"
             return_code, out, err = self.cmdExecute(cmd_ntpInstall, "Ntp Install", False)
+            if not return_code:
+                return False
+
+        self.progressBar(13)
+        if self.do_bindutilsinstall:
+            cmd_bindutilsInstall = "yum install -y bind-utils"
+            return_code, out, err = self.cmdExecute(cmd_bindutilsInstall, "Bind Utils Install", False)
             if not return_code:
                 return False
 
