@@ -69,17 +69,14 @@ class Config():
     def createConfigFile(self, reg_user_name, reg_password,\
                                      build_id, is_install_cfgmgr,\
                                      self_signed_crt, chef_self_signed_crt, clean_setup, deploy_mode,\
-                                     hostIp, on_prem_emailid = '',\
+                                     hostIp, consul_ip_port, consul_domain, consul_host, on_prem_emailid = '',\
                                      ssldir = '',\
                                      chef_ssldir = '',\
                                      themeName = 'apporbit-v2',\
                                      api_version = 'v2',\
                                      build_deploy_mode = '3', reg_url='registry.apporbit.com',\
                                      internal_repo = 'http://repos.gsintlab.com/repos',\
-                                     volume_mount = '',\
-                                     consul_ip_port = '',\
-                                     consul_domain = '',\
-				     consul_host = ''):
+                                     volume_mount = ''):
 
         logging.info("Create Config file")
         config = ConfigParser.ConfigParser()
@@ -109,7 +106,6 @@ class Config():
 	config.set('User Config', 'consul_host', consul_host)
 
         config.write(cfg_file)
-
         cfg_file.close()
 
         logging.info("Create config file success!")
