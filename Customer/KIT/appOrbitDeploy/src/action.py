@@ -118,11 +118,14 @@ class Action:
         sleep(10)
         return True
 
-    def deployLocator(self, consul_ip_port, reg_url):
+    def deployLocator(self, consul_ip_port, reg_url, build_deploy_mode):
         if not reg_url:
             locator_image_name = "apporbit/locator"
         else:
             locator_image_name = reg_url + "/apporbit/locator"
+
+        if build_deploy_mode == '1':
+            locator_image_name = 'apporbit/locator'
 
         cmd_deploy_locator = ("docker run -d --name apporbit-locator "
                               "--restart=always -p 8080:8080 "
@@ -161,10 +164,15 @@ class Action:
 
     def deploySvcd(self, config_obj):
         reg_url = config_obj.registry_url
+        build_deploy_mode = config_obj.build_deploy_mode
+
         if not (config_obj.registry_url):
             svcd_image = "apporbit/svcd"
         else:
             svcd_image = reg_url + "/apporbit/svcd"
+
+        if build_deploy_mode == '1':
+            svcd_image = 'apporbit/svcd'
 
         cmd_deploy_svcd = ("docker run -d --name apporbit-svcd "
                            "--restart=always" + " -p 8888:8080 "
@@ -198,7 +206,7 @@ class Action:
         else:
             image_name = "apporbit/apporbit-services"
 
-        if  mode == '1':
+        if mode == '1':
             image_name = "apporbit/apporbit-services"
 
         if vol_mount:
@@ -447,7 +455,7 @@ class Action:
         self.utilityobj.progressBar(17)
 
         #DEPLOY LOCATOR
-        self.deployLocator(config_obj.consul_ip_port, config_obj.registry_url)
+        self.deployLocator(config_obj.consul_ip_port, config_obj.registry_url, config_obj.build_deploy_mode)
         self.utilityobj.progressBar(18)
 
         # DEPLOY SVCD

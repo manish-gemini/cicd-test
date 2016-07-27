@@ -71,6 +71,9 @@ class UserInteract:
         chef_ssldir = ""
         is_fresh_install = True
         chef_self_signed_crt = '0'
+        consul_ip_port= ""
+        consul_domain = ""
+        consul_host = ""
 
         logging.info("Starting to get user config info")
         print "Enter the user configuration information."
@@ -136,6 +139,13 @@ class UserInteract:
             print "Rename your SSL certificate file as apporbitserver.crt and SSL key file as apporbitserver.key"
             ssldir = raw_input("Enter the location where your certificate and the key files exist [/opt/certs]:") or "/opt/certs"
             logging.info ("SSL Certs Directory is  : %s", ssldir )
+         
+        consul_ip_port = raw_input("Enter consul IP port []:") or ''
+        logging.info ("Consul ip port : %s", consul_ip_port)
+        consul_domain = raw_input("Enter consul domain []:") or ''
+        logging.info ("Consul domain : %s", consul_domain)
+        consul_host = raw_input("Enter consul host []:") or ''
+        logging.info ("Consul host : %s", consul_host)
 
         #BELOW LINES ARE INTENTIONALLY COMMENTED TO AVOID ASKING USER.
         #print "Enter the type of deployment:"
@@ -154,7 +164,8 @@ class UserInteract:
         config_obj.createConfigFile(reg_user_name, reg_password,\
                                      build_id, is_install_cfgmgr,\
                                      self_signed_crt, chef_self_signed_crt, clean_setup,\
-                                        deploy_mode, hostIp, on_prem_emailid, ssldir, chef_ssldir)
+                                     deploy_mode, hostIp, consul_ip_port, consul_domain, consul_host,\
+				     on_prem_emailid, ssldir, chef_ssldir)
         # self.createConfigFile()
         logging.info("completed collecting user config info")
         return
