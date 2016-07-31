@@ -11,6 +11,8 @@ import datetime
 import ConfigParser
 import errno
 from time import sleep
+import getpass
+import ConfigParser
 
 import utility
 import userinteract
@@ -477,6 +479,14 @@ class Action:
                 self.removeContainer("apporbit-chef")
         return
 
+    def removeConsulContainer(self):
+        cmd_dockerps = "docker ps -a "
+        cmd_desc = "Checking Docker ps"
+        code, out, err = self.utilityobj.cmdExecute(cmd_dockerps, cmd_desc, True)
+        if "apporbit-consul" in out:
+                logging.info( "apporbit-consul exist remove it")
+                self.removeContainer("apporbit-consul")
+        return
 
     def removeContainer(self, container_name):
         cmd_stop = "docker stop " + container_name
@@ -643,7 +653,46 @@ class DeployChef:
         print "Now you can access the chef-server ui at https://" + self.hostIP + ":9443. It is recommended to change the default password."
 
 
+class DeployConsul:
+    def __init__(self):
+        self.utility_obj = utility.Utility()
+        self.action_obj = Action()
 
+    def deploy_consul(self):
+         if os.path.isfile('local.conf'):
+            config = ConfigParser.ConfigParser()
+            fp = open('local.conf', 'r')
+            config.readfp(fp)
+            try:
+                self.uname = config.get('Docker Login', 'username')
+                self.password = config.get('Docker Login', 'password')
+                self.reg_url = config.get('User Config', 'registry_url')
+                self.utility_obj.loginDockerRegistry(self.uname, self.password, self.reg_url)
+                self.consul_host = config.get('User Config', 'consul_host')
+                self.consul_domain = config.get('User Config', 'consul_domain')
+                logging.info("Consul deployment started..")
+                print "Consul deployment started.."
+                self.action_obj.removeConsulContainer()
+                self.action_obj.deployConsul(self.reg_url, self.consul_host, self.consul_domain)
+                print "Consul deployed successfully"
+            except ConfigParser.NoSectionError, ConfigParser.NoOptionError:
+                pass
 
+            fp.close()
 
+         else:
+              print "Login to the appOrbit registry using the credentials sent to you by email, by appOrbit support team."
+              reg_user_name = raw_input("Enter the user name: ")
+              reg_password = getpass.getpass()
+              self.utility_obj.loginDockerRegistry(reg_user_name, reg_password, "registry.apporbit.com")
+              consul_domain = raw_input("Enter consul domain []:") or ''
+              consul_host = raw_input("Enter consul host []:") or ''
+              logging.info("Consul deployment started.. ")
+              print "Consul deployment started.."
+              self.action_obj.removeConsulContainer()
+              self.action_obj.deployConsul("registry.apporbit.com", consul_host, consul_domain)
+
+              if self.utility_obj.isConsulDeployed():
+                  print "Consul deployed successfully"
+                  logging.info("Consul deployed successfully..")
 

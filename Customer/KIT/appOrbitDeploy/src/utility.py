@@ -115,6 +115,16 @@ class Utility:
             ret_val = True
         return ret_val
 
+    def isConsulDeployed(self):
+        ret_val = False
+        cmd_dockerps = "docker ps"
+        cmd_desc = "Docker ps"
+        code, out, err = self.cmdExecute(cmd_dockerps, cmd_desc, True)
+        if "apporbit-consul" in out:
+            logging.info("Consul server is deployed in this host")
+            ret_val = True
+        return ret_val
+
     def isPreviousInstallSuccess(self):
         ret_val = True
         if os.path.isfile("install.tmp"):
