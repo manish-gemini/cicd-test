@@ -140,11 +140,11 @@ class UserInteract:
             ssldir = raw_input("Enter the location where your certificate and the key files exist [/opt/certs]:") or "/opt/certs"
             logging.info ("SSL Certs Directory is  : %s", ssldir )
          
-        consul_ip_port = raw_input("Enter consul IP port []:") or ''
+        consul_ip_port = raw_input("Enter consul IP port [default]:") or ''
         logging.info ("Consul ip port : %s", consul_ip_port)
-        consul_domain = raw_input("Enter consul domain []:") or ''
+        consul_domain = raw_input("Enter consul domain [default]:") or ''
         logging.info ("Consul domain : %s", consul_domain)
-        consul_host = raw_input("Enter consul host []:") or ''
+        consul_host = raw_input("Enter consul host [default]:") or ''
         logging.info ("Consul host : %s", consul_host)
 
         #BELOW LINES ARE INTENTIONALLY COMMENTED TO AVOID ASKING USER.

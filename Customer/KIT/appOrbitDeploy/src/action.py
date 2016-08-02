@@ -307,11 +307,12 @@ class Action:
             volonhost = vol_mount + "/Gemini-poc-mgnt"
             voloncontainer = "/home/apporbit/apporbit-controller"
             vol_mount_str = " -v " + volonhost + ":" + voloncontainer + ":Z"
+            logging.info("volume mount str" + vol_mount_str)
             gemfile = volonhost + "/Gemfile"
             if not os.path.isfile(gemfile):
                 rename_gemfile = "cp -f " + gemfile + "-master " + gemfile
                 self.utilityobj.cmdExecute(rename_gemfile, 'copy Gemfile-master as Gemfile ', True)
-
+          
 
         cmd_deploy_controller = "docker run -t --name apporbit-controller --restart=always \
         -p 80:80 -p 443:443 -e ONPREM_EMAIL_ID="+ onprem_emailID + " \
@@ -674,7 +675,9 @@ class DeployConsul:
                 print "Consul deployment started.."
                 self.action_obj.removeConsulContainer()
                 self.action_obj.deployConsul(self.reg_url, self.consul_host, self.consul_domain)
-                print "Consul deployed successfully"
+                if self.utility_obj.isConsulDeployed():
+                    print "Consul deployed successfully.."
+                    logging.info("Consul deployed successfully..")
             except ConfigParser.NoSectionError, ConfigParser.NoOptionError:
                 pass
 
@@ -685,8 +688,8 @@ class DeployConsul:
               reg_user_name = raw_input("Enter the user name: ")
               reg_password = getpass.getpass()
               self.utility_obj.loginDockerRegistry(reg_user_name, reg_password, "registry.apporbit.com")
-              consul_domain = raw_input("Enter consul domain []:") or ''
-              consul_host = raw_input("Enter consul host []:") or ''
+              consul_domain = raw_input("Enter consul domain [default]:") or ''
+              consul_host = raw_input("Enter consul host [default]:") or ''
               logging.info("Consul deployment started.. ")
               print "Consul deployment started.."
               self.action_obj.removeConsulContainer()
