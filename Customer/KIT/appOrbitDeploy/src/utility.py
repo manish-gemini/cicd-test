@@ -398,6 +398,8 @@ class Utility:
 
         cmd_ntpupdate = "ntpdate -b -u time.nist.gov"
         self.cmdExecute(cmd_ntpupdate, "Sync network time", False)
+        cmd_sysclk_update = "hwclock --systohc"
+        self.cmdExecute(cmd_sysclk_update, "Synchronize the system clock", False)
 
         #Setup IPTableRules
         cmd_iptablerule1 = "iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited "
