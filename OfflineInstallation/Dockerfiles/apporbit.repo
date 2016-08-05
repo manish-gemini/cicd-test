@@ -1,5 +1,13 @@
-[apporbit-repo]
-name=appOrbit Repository
+[apporbit-base]
+name=apporbit base repository
 baseurl=http://repos.gsintlab.com/release/
 enabled=1
 gpgcheck=0
+protect=0
+
+[apporbit-release]
+name=apporbit release repository
+baseurl=http://repos.gsintlab.com/release/1.5.1/
+enabled=1
+gpgcheck=0
+protect=0
