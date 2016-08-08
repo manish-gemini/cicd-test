@@ -299,11 +299,14 @@ class Utility:
             self.do_dockerinstall = 1
 
         logging.info ("Verify NTP Installation!")
-        ntp_cmd = "ntpdate time.nist.gov > /dev/null"
-        return_code, out, err = self.cmdExecute(ntp_cmd, "ntp Install", False)
+        ntp_cmd = "ntpstat  > /dev/null"
+        return_code, out, err = self.cmdExecute(ntp_cmd, "verify NTP Install", False)
         if not return_code:
             self.do_ntpinstall = 1
-
+        else:
+             cmd_ntpd = "systemctl stop ntpd.service"
+             self.cmdExecute(cmd_ntpd, "Stop ntpd daemon service", False)
+        
         logging.info("Verify wget installation")
         wget_cmd = "wget --version > /dev/null"
         return_code, out, err = self.cmdExecute(wget_cmd, "wget Install", False)
@@ -396,10 +399,15 @@ class Utility:
             return False
         self.progressBar(18)
 
-        cmd_ntpupdate = "ntpdate -b -u time.nist.gov"
-        self.cmdExecute(cmd_ntpupdate, "Sync network time", False)
+        cmd_ntpdate_sync = "ntpdate -b -u time.nist.gov"
+        self.cmdExecute(cmd_ntpdate_sync, "ntpdate sync before ntpd enable", False)
         cmd_sysclk_update = "hwclock --systohc"
         self.cmdExecute(cmd_sysclk_update, "Synchronize the system clock", False)
+        
+        cmd_ntpd_enable = "systemctl enable ntpd.service"
+        self.cmdExecute(cmd_ntpd_enable, "Enable ntpd daemon service", False)
+        cmd_ntpd = "systemctl start ntpd.service"
+        self.cmdExecute(cmd_ntpd, "Start ntpd daemon service", False)
 
         #Setup IPTableRules
         cmd_iptablerule1 = "iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited "
