@@ -83,11 +83,16 @@ class Action:
         #print routable
         return routable
 
-    def deployConsul(self, reg_url, consul_host, consul_domain):
+    def deployConsul(self, reg_url, consul_host, consul_domain, build_deploy_mode):
         routable = 'false'
-	if not reg_url:
-            reg_url = "secure-registry.gsintlab.com"
-        consul_image_name = reg_url + "/apporbit/consul"
+        if not reg_url:
+            consul_image_name  = "apporbit/consul"
+        else:
+            consul_image_name = reg_url + "/apporbit/consul"
+
+        if build_deploy_mode == '1':
+            consul_image_name = 'apporbit/consul'
+
 	if not consul_domain:
 		#print "\nconsul_domain is missing"
 		cmd_deploy_consul = ("docker run -d -p 8400:8400 -p 8500:8500 -p 53:53/udp "
@@ -143,7 +148,8 @@ class Action:
         if reg_url:
             chef_image_name = reg_url + '/apporbit/apporbit-chef:2.0'
         else:
-            chef_image_name = 'apporbit/apporbit-chef'
+            print "Please check apporbit-chef:2.0 registry url"
+            sys.exit(1)
 
         if clean_setup == '1':
             chef_upgrade = " -e UPGRADE=1 " #1 is Clean Setup
@@ -454,7 +460,7 @@ class Action:
         self.utilityobj.progressBar(16)
 	
         #DEPLOY CONSUL
-        self.deployConsul(config_obj.registry_url, config_obj.consul_host, config_obj.consul_domain)
+        self.deployConsul(config_obj.registry_url, config_obj.consul_host, config_obj.consul_domain, config_obj.build_deploy_mode)
         self.utilityobj.progressBar(17)
 
         #DEPLOY LOCATOR
@@ -576,12 +582,18 @@ class Action:
         message_queue_image = repo_str + '/apporbit/apporbit-rmq'
         docs_image = repo_str + '/apporbit/apporbit-docs'
         database_image = 'mysql:5.6.24'
+        svcd_image = repo_str + '/apporbit/svcd:' + build_id
+        locator_image = repo_str + '/apporbit/locator:' + build_id
+        consul_image = repo_str + '/apporbit/consul:' + build_id
 
         cmd_ctrl_image = 'docker pull ' + controller_image
         cmd_srvc_image = 'docker pull ' + services_image
         cmd_msg_image = 'docker pull ' + message_queue_image
         cmd_docs_image = 'docker pull ' + docs_image
         cmd_dbs_image = 'docker pull ' + database_image
+        cmd_svcd_image = 'docker pull ' + svcd_image
+        cmd_locator_image = 'docker pull ' + locator_image
+        cmd_consul_image = 'docker pull ' + consul_image
 
         self.utilityobj.progressBar(2)
         self.utilityobj.cmdExecute(cmd_ctrl_image , "Pull controller image",True)
@@ -591,6 +603,9 @@ class Action:
         self.utilityobj.cmdExecute(cmd_docs_image , "Pull document server image",True)
         self.utilityobj.progressBar(4)
         self.utilityobj.cmdExecute(cmd_dbs_image , "Pull database server image",True)
+        self.utilityobj.cmdExecute(cmd_svcd_image, "pull svcd server image",True)
+        self.utilityobj.cmdExecute(cmd_locator_image, "pull locator image",True)
+        self.utilityobj.cmdExecute(cmd_consul_image, "pull consul image",True)
 
         return True
 
