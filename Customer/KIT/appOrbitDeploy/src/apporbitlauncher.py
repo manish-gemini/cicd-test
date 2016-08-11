@@ -21,7 +21,6 @@ def main():
     # arguments parser
     parser = argparse.ArgumentParser(description='Apporbitlauncher argument')
     parser.add_argument("-d","--deploychef",action='store_true', help='Deploy chef enable flag')
-    parser.add_argument("-s","--skipipvalidity", action='store_true', help='Skip ip host validity flag')
     parser.add_argument("-c","--consul", action='store_true', help='Deploy consul')
     args = parser.parse_args()
     if args.deploychef:
@@ -91,10 +90,13 @@ def main():
         logging.info("user configuration is recived SUCCESS.")
 
     # Validate that the Hostip chosen during configuration belongs to the current host machine.
-    if not args.skipipvalidity:
-       if not utility_obj.validateHostIP(config_obj.hostip):
-          print "ERROR: Host-IP or Host-Name entered is not valid. Check log for details."
-          sys.exit(1)
+    if not utility_obj.validateHostIP(config_obj.hostip):
+        print "WARNING: Given IP is not accessible publicly or on private network"
+        user_input = raw_input("Do you want to Abort(a) or continue(c) installation[c]:") or 'c'
+        if user_input == "a" or user_input != "c":
+            sys.exit(1)
+        else:
+             print "Continuing .."
 
     print "Deploying appOrbit management server."
     with utility.DotProgress("Deploy"):
