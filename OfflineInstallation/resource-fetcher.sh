@@ -322,12 +322,11 @@ function create_cargo_to_ship {
 
 function main {
     declare -rA infra_containers=(
-        [etcd]=2.0.9
-        [kube2sky]=1.11
-        [skydns]=2015-03-11-001
-        [exechealthz]=1.0
-        [kube-ui]=v3
-        [pause]=0.8.0
+        [dnsmasq]=1.1
+        [kubedns-amd64]=1.5
+        [exechealthz-amd64]=1.0
+        [kubernetes-dashboard-amd64]=v1.1.0
+        [pause-amd64]=3.0   
     )
 
     echo -n "Checking Internet Connectivity"
