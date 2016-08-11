@@ -148,7 +148,7 @@ class Action:
         if reg_url:
             chef_image_name = reg_url + '/apporbit/apporbit-chef:2.0'
         else:
-            print "Please check apporbit-chef:2.0 registry url"
+            print "Failed - registry url not found, please verify registry url in local.conf"
             sys.exit(1)
 
         if clean_setup == '1':
@@ -603,9 +603,9 @@ class Action:
         self.utilityobj.cmdExecute(cmd_docs_image , "Pull document server image",True)
         self.utilityobj.progressBar(4)
         self.utilityobj.cmdExecute(cmd_dbs_image , "Pull database server image",True)
-        self.utilityobj.cmdExecute(cmd_svcd_image, "pull svcd server image",True)
-        self.utilityobj.cmdExecute(cmd_locator_image, "pull locator image",True)
-        self.utilityobj.cmdExecute(cmd_consul_image, "pull consul image",True)
+        self.utilityobj.cmdExecute(cmd_svcd_image, "Pull svcd  image",True)
+        self.utilityobj.cmdExecute(cmd_locator_image, "Pull locator image",True)
+        self.utilityobj.cmdExecute(cmd_consul_image, "Pull consul image",True)
 
         return True
 
