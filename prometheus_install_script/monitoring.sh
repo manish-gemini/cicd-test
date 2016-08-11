@@ -24,8 +24,8 @@ docker pull $GRAF_IMAGE
 docker pull $CAD_IMAGE
 docker pull $NODE_IMAGE
 
-docker run -d -p 9100:9100 --net="host" --name=apporbit-node-exporter -v $MONITORING_DATA/exporter-collector:/exporter-collector $NODE_IMAGE --collector.textfile.directory="/exporter-collector"
+docker run -d -p 9100:9100 --net="host" --name=apporbit-node-exporter -v $MONITORING_DATA/exporter-collector:/exporter-collector:Z $NODE_IMAGE --collector.textfile.directory="/exporter-collector"
 docker run --volume=/:/rootfs:ro --volume=/var/run:/var/run:rw  --volume=/sys:/sys:ro  --volume=/var/lib/docker/:/var/lib/docker:ro  --publish=9101:8080  --detach=true  --name=apporbit-cadvisor --privileged=true $CAD_IMAGE
-docker run -d -p 9093:9093 -v $MONITORING_DATA/alertmanager.yml:/alertmanager.yml -v $MONITORING_DATA/alert-data:/alert-data --name=apporbit-alertmanager $ALERT_IMAGE -config.file=/alertmanager.yml -storage.path=/alert-data
-docker run -d -p 9090:9090 -v $MONITORING_DATA/prometheus.yml:/etc/prometheus/prometheus.yml -v $MONITORING_DATA/alert.rules:/etc/prometheus/alert.rules -v $MONITORING_DATA/prom-data:/prom-data -v $MONITORING_DATA/targets:/var/lib/apporbit/monitoring/targets --name=apporbit-prometheus $PROM_IMAGE -config.file=/etc/prometheus/prometheus.yml -storage.local.path=/prom-data -alertmanager.url=http://${ALERT_MANAGER_IP}:9093
-docker run -d -p 3000:3000 -v $MONITORING_DATA/grafana-data:/var/lib/grafana -e GF_AUTH_ANONYMOUS_ENABLED=true -e GF_AUTH_ANONYMOUS_ORG_ROLE=Admin -e GF_USERS_DEFAULT_THEME=light --name=apporbit-grafana $GRAF_IMAGE
+docker run -d -p 9093:9093 -v $MONITORING_DATA/alertmanager.yml:/alertmanager.yml:Z -v $MONITORING_DATA/alert-data:/alert-data:Z --name=apporbit-alertmanager $ALERT_IMAGE -config.file=/alertmanager.yml -storage.path=/alert-data
+docker run -d -p 9090:9090 -v $MONITORING_DATA/prometheus.yml:/etc/prometheus/prometheus.yml:Z -v $MONITORING_DATA/alert.rules:/etc/prometheus/alert.rules:Z -v $MONITORING_DATA/prom-data:/prom-data:Z -v $MONITORING_DATA/targets:/var/lib/apporbit/monitoring/targets:Z --name=apporbit-prometheus $PROM_IMAGE -config.file=/etc/prometheus/prometheus.yml -storage.local.path=/prom-data -alertmanager.url=http://${ALERT_MANAGER_IP}:9093
+docker run -d -p 3000:3000 -v $MONITORING_DATA/grafana-data:/var/lib/grafana:Z -e GF_AUTH_ANONYMOUS_ENABLED=true -e GF_AUTH_ANONYMOUS_ORG_ROLE=Admin -e GF_USERS_DEFAULT_THEME=light --name=apporbit-grafana $GRAF_IMAGE
