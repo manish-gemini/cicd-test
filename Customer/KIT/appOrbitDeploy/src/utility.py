@@ -457,7 +457,7 @@ class Utility:
             if b_return and hostip in out :
                 result = True
             else:
-                logging.error("Given IP is not accessible publicly or on private network. \
+                logging.warning("Given IP is not accessible publicly or on private network. \
                 Please check network configuration or host IP entered.")
 
         return result
