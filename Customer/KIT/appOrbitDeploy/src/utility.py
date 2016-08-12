@@ -17,6 +17,7 @@ import urllib2
 import socket
 import traceback
 from time import sleep
+from distutils.version import LooseVersion
 
 # Implementation of DotProgress class
 class DotProgress(threading.Thread):
@@ -295,8 +296,8 @@ class Utility:
         docker_cmd = "docker -v"
         return_code, out, err = self.cmdExecute(docker_cmd, "Docker Install", False)
         if return_code and out:
-             docker_installed = map(int, out.split()[2].split(',')[0].split('.'))
-             docker_ver = map(int, self.docker_version.split('.'))
+             docker_installed = LooseVersion(out.split()[2].split(',')[0])
+             docker_ver = LooseVersion(self.docker_version)
         if not return_code:
             self.do_dockerinstall = 1
         elif docker_installed < docker_ver:
@@ -304,7 +305,7 @@ class Utility:
             logging.info ("Older " + str(out))
             logging.info ("Upgrading docker to " + self.docker_version)
         elif docker_installed == docker_ver:
-            logging.info ("Docker installed " + self.docker_version)
+            logging.info ("Docker installed : " + self.docker_version)
         else:
             logging.info ("Apporbit supports docker version upto " + self.docker_version )
             print "FAILED - Installtion failed due to docker version conflict"
