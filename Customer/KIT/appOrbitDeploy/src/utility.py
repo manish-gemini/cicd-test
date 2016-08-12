@@ -466,11 +466,14 @@ class Utility:
         if not result:
             logging.warning("Given IP is not publicly accessible %s" , hostip)
             logging.info('Validating host IP/hostname for private accessibility' )
-            b_return, out, err = self.cmdExecute("hostname -I", "Checking Hostname -I for local ip of the machine", False)
-            if b_return and hostip in out :
-                result = True
-            else:
-                logging.warning("Given IP is not accessible publicly or on private network. \
+            cmdlist = ["hostname -I", "hostname -f", "hostname -A", "hostname", "dnsdomainname"]
+            for cmd in cmdlist:
+                 b_return, out, err = self.cmdExecute(cmd, "Checking '" + cmd +"' of the machine", False)
+                 if b_return and hostip in out :
+                      result = True
+                      break
+            if not result:
+                logging.error("Given IP is not accessible publicly or on private network. \
                 Please check network configuration or host IP entered.")
 
         return result
