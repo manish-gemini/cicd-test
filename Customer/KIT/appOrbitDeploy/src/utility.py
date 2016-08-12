@@ -307,7 +307,7 @@ class Utility:
         elif docker_installed == docker_ver:
             logging.info ("Docker installed : " + self.docker_version)
         else:
-            logging.info ("Apporbit supports docker version upto " + self.docker_version )
+            print "Apporbit supports docker version upto " + self.docker_version 
             print "FAILED - Installtion failed due to docker version conflict"
             sys.exit(1)
 
