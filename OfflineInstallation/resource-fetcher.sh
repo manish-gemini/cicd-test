@@ -86,6 +86,7 @@ function get_internal_registry {
 }
 
 function install_docker {
+    docker_version="1.10.3"
     if [ ! -f /etc/yum.repos.d/apporbit.repo ]
     then
         cp Dockerfiles/apporbit.repo /etc/yum.repos.d/
@@ -94,7 +95,30 @@ function install_docker {
     echo "Check for Docker Version "
     if exists docker
     then
-        echo "Docker exists:" `docker -v` "from" `rpm -qa docker`
+        # check for installed docker version
+        installed_version=$(docker -v | awk '{print $3}'|sed 's/,//g')
+        ## check for upgrade docker version or apporbit support version
+        upgrade_version=$(echo -ne "${docker_version}\n${installed_version}" |sort -Vr| head -n1)
+
+        if [ ${installed_version} == ${docker_version} ]; then
+            echo "Docker exists:" $(docker -v) "from" $(rpm -qa docker)
+        elif [ ${upgrade_version} == ${docker_version} ]; then
+            echo "Older docker version ${installed_version}"
+            read -p "Do you want to upgrade docker to docker-${docker_version} [ y ] :" user_input
+            user_input=${user_input:-y}
+            if [ ${user_input} == 'y' ];then
+                yum -y install docker-${docker_version}
+                systemctl enable docker.service
+                systemctl start docker.service
+                echo "Docker upgrade to ${docker_version}"
+            else
+                echo "WARNING: running older docker version ${installed_version} .."
+            fi
+        else
+            echo "Apporbit supports docker version upto ${docker_version}"
+            echo "FAILED - Installtion failed due to docker version conflict"
+            exit 1
+        fi
     else
         echo "Docker is not installed. Installing docker..."
         if [ "x$platform_id" == "xcentos" ]; then
@@ -102,7 +126,7 @@ function install_docker {
         fi
         # BUG: https://bugzilla.redhat.com/show_bug.cgi?id=1294128
         yum -y upgrade lvm2
-        yum -y install docker-1.7.1
+        yum -y install docker-${docker_version}
         systemctl enable docker.service
         systemctl start docker.service
         if ! exists docker
@@ -111,11 +135,8 @@ function install_docker {
             exit
         fi
     fi
-
     # Login to secure registry
     docker login https://${INTERNAL_REGISTRY}
-
-
 }
 
 function download_images {
