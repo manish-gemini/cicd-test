@@ -321,6 +321,7 @@ class Action:
         if deploy_chef == "1":
             cmd_deploy_controller = cmd_deploy_controller + " -e CHEF_URL=https://"+ hostip +":9443"
 
+        cmd_deploy_controller = cmd_deploy_controller + " -e AO_HOST="+hostip
         cmd_deploy_controller = cmd_deploy_controller + " -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller \
         -e ON_PREM_MODE=" + onpremmode + " -e THEME_NAME="+ theme_name + "\
         -e CURRENT_API_VERSION=" + api_version + " --link apporbit-db:db --link apporbit-rmq:rmq " + "\
