@@ -17,6 +17,7 @@ import urllib2
 import socket
 import traceback
 from time import sleep
+from distutils.version import LooseVersion
 
 # Implementation of DotProgress class
 class DotProgress(threading.Thread):
@@ -42,6 +43,7 @@ class Utility:
 
     def __init__(self):
         self.do_dockerinstall = 0
+        self.docker_version = "1.10.3"
         self.do_ntpinstall = 0
         self.do_bindutilsinstall = 0
         self.do_wgetinstall = 0
@@ -291,12 +293,23 @@ class Utility:
 
         logging.info ("Verifying docker installation")
 
-        docker_cmd = "docker -v > /dev/null"
-
+        docker_cmd = "docker -v"
         return_code, out, err = self.cmdExecute(docker_cmd, "Docker Install", False)
-
+        if return_code and out:
+             docker_installed = LooseVersion(out.split()[2].split(',')[0])
+             docker_ver = LooseVersion(self.docker_version)
         if not return_code:
             self.do_dockerinstall = 1
+        elif docker_installed < docker_ver:
+            self.do_dockerinstall = 1
+            logging.info ("Older " + str(out))
+            logging.info ("Upgrading docker to " + self.docker_version)
+        elif docker_installed == docker_ver:
+            logging.info ("Docker installed : " + self.docker_version)
+        else:
+            print "Apporbit supports docker version upto " + self.docker_version 
+            print "FAILED - Installtion failed due to docker version conflict"
+            sys.exit(1)
 
         logging.info ("Verify NTP Installation!")
         ntp_cmd = "ntpdate time.nist.gov > /dev/null"
@@ -374,7 +387,7 @@ class Utility:
         self.progressBar(14)
 
         if self.do_dockerinstall:
-            cmd_dockerInstall = "yum install -y docker-1.7.1"
+            cmd_dockerInstall = "yum install -y docker-" + self.docker_version
             return_code, out, err = self.cmdExecute(cmd_dockerInstall, "Docker Install", False)
             if not return_code:
                 return False
@@ -453,10 +466,13 @@ class Utility:
         if not result:
             logging.warning("Given IP is not publicly accessible %s" , hostip)
             logging.info('Validating host IP/hostname for private accessibility' )
-            b_return, out, err = self.cmdExecute("hostname -I", "Checking Hostname -I for local ip of the machine", False)
-            if b_return and hostip in out :
-                result = True
-            else:
+            cmdlist = ["hostname -I", "hostname -f", "hostname -A", "hostname", "dnsdomainname"]
+            for cmd in cmdlist:
+                 b_return, out, err = self.cmdExecute(cmd, "Checking '" + cmd +"' of the machine", False)
+                 if b_return and hostip in out :
+                      result = True
+                      break
+            if not result:
                 logging.error("Given IP is not accessible publicly or on private network. \
                 Please check network configuration or host IP entered.")
 
