@@ -1,0 +1,17 @@
+route:
+ repeat_interval: 1m
+ receiver: default
+ routes:
+   - receiver: 'email-demo'
+     match:
+       severity: page
+
+receivers:
+ - name: default
+ - name: 'email-demo'
+   email_configs:
+       - to: 'muneeb@apporbit.com'
+         from: 'alert@muneeb-dev.novalocal'
+         smarthost: '209.205.208.119:25'
+         require_tls: false
+         send_resolved: true

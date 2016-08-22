@@ -69,6 +69,65 @@ class Action:
         sleep(60)
         return  True
 
+    def deployPrometheusConsul(self, config_obj):
+        reg_url = config_obj.registry_url
+        if not reg_url:
+            reg_url = "secure-registry.gsintlab.com"
+
+        consul_image_name = reg_url + "/apporbit/consul"
+        cmd_deploy_prometheus_consul = "docker run -d -p 8401:8400 -p 8501:8500 -p 8600:53/udp --restart=always \
+        --name apporbit-prometheus-consul -h consul "+ consul_image_name + " -server --bootstrap-expect 1"
+        cmd_desc = "Deploying Consul container for Prometheus"
+
+        self.utilityobj.cmdExecute(cmd_deploy_prometheus_consul, cmd_desc, True)
+        sleep(10)
+        return True
+
+    def deployNodeExporter(self):
+        node_exporter_image_name = "prom/node-exporter:0.12.0"
+        cmd_deploy_node_exporter = "docker run -d -p 9100:9100 --net=\"host\" --restart=always --name=apporbit-node-exporter -v /var/lib/apporbit/monitoring/exporter-collector:/exporter-collector:Z "+ node_exporter_image_name + " --collector.textfile.directory=\"/exporter-collector\""
+        cmd_desc = "Deploying Node exporter container"
+
+        self.utilityobj.cmdExecute(cmd_deploy_node_exporter, cmd_desc, True)
+        sleep(10)
+        return True
+
+    def deployCadvisor(self):
+        cadvisor_image_name = "google/cadvisor:v0.23.2"
+        cmd_deploy_cadvisor = "docker run --volume=/:/rootfs:ro --volume=/var/run:/var/run:rw  --volume=/sys:/sys:ro  --volume=/var/lib/docker/:/var/lib/docker:ro  --publish=9101:8080  --restart=always --detach=true  --name=apporbit-cadvisor --privileged=true " + cadvisor_image_name
+        cmd_desc = "Deploying Cadvisor container"
+
+        self.utilityobj.cmdExecute(cmd_deploy_cadvisor, cmd_desc, True)
+        sleep(10)
+        return True
+
+    def deployAlertmanager(self):
+        alertmanager_image_name = "prom/alertmanager:master"
+        cmd_deploy_alertmanager = "docker run -d -p 9093:9093 -v /var/lib/apporbit/monitoring/alertmanager.yml:/alertmanager.yml:Z -v /var/lib/apporbit/monitoring/alert-data:/alert-data:Z --restart=always --name=apporbit-alertmanager " + alertmanager_image_name + " -config.file=/alertmanager.yml -storage.path=/alert-data"
+        cmd_desc = "Deploying Alertmanager container"
+
+        self.utilityobj.cmdExecute(cmd_deploy_alertmanager, cmd_desc, True)
+        sleep(10)
+        return True
+
+    def deployPrometheus(self, host_ip):
+        prometheus_image_name = "prom/prometheus:v1.0.1"
+        cmd_deploy_prometheus = "docker run -d -p 9090:9090 -v /var/lib/apporbit/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:Z -v /var/lib/apporbit/monitoring/alert.rules:/etc/prometheus/alert.rules:Z -v /var/lib/apporbit/monitoring/prom-data:/prom-data:Z -v /var/lib/apporbit/monitoring/targets:/var/lib/apporbit/monitoring/targets:Z --restart=always --name=apporbit-prometheus " + prometheus_image_name + " -config.file=/etc/prometheus/prometheus.yml -storage.local.path=/prom-data -alertmanager.url=http://" + host_ip + ":9093"
+        cmd_desc = "Deploying Prometheus container"
+
+        self.utilityobj.cmdExecute(cmd_deploy_prometheus, cmd_desc, True)
+        sleep(10)
+        return True
+
+    def deployGrafana(self):
+        grafana_image_name = "apporbit/apporbit-grafana:0.1.0"
+        cmd_deploy_grafana = "docker run -d -p 3000:3000 -v /var/lib/apporbit/monitoring/grafana-data:/var/lib/grafana:Z -e GF_AUTH_ANONYMOUS_ENABLED=true -e GF_AUTH_ANONYMOUS_ORG_ROLE=Admin -e GF_USERS_DEFAULT_THEME=light --restart=always --name=apporbit-grafana " + grafana_image_name
+        cmd_desc = "Deploying Grafana container"
+
+        self.utilityobj.cmdExecute(cmd_deploy_grafana, cmd_desc, True)
+        sleep(10)
+        return True
+
     def routableDomain(self, consul_host):
         process = subprocess.Popen(["nslookup", consul_host], stdout=subprocess.PIPE)
         output = process.communicate()[0].split('\n')
@@ -421,6 +480,7 @@ class Action:
 
         # SETUP or CREATE DIRECTORIES for VOL MOUNT
         self.setupDirectoriesForVolumeMount()
+        self.copyAOMonitoringConfFiles(["alertmanager.yml", "prometheus.yml", "alert.rules"])
 
         if config_obj.chef_self_signed_crt == '1':
             self.createSelfSignedCert(True, config_obj.hostip)
@@ -472,9 +532,33 @@ class Action:
         self.deploySvcd(config_obj)
         self.utilityobj.progressBar(19)
 
+        # DEPLOY CONSUL FOR PROMETHEUS
+        self.deployPrometheusConsul(config_obj)
+        self.utilityobj.progressBar(20)
+
+        # DEPLOY NODE EXPORTER
+        self.deployNodeExporter()
+        self.utilityobj.progressBar(21)
+
+        # DEPLOY CADVISOR
+        self.deployCadvisor()
+        self.utilityobj.progressBar(22)
+
+        # DEPLOY ALERTMANAGER
+        self.deployAlertmanager()
+        self.utilityobj.progressBar(23)
+
+        # DEPLOY PROMETHEUS
+        self.deployPrometheus(config_obj.hostip)
+        self.utilityobj.progressBar(24)
+
+        # DEPLOY GRAFANA
+        self.deployGrafana()
+        self.utilityobj.progressBar(25)
+
         # DEPLOY PLATFORM
         self.deployController(config_obj)
-        self.utilityobj.progressBar(20)
+        self.utilityobj.progressBar(26)
 
         return True
 
@@ -509,7 +593,10 @@ class Action:
         container_name_list = ["db","apporbit-db", "apporbit-controller",
                                "apporbit-services","apporbit-docs",
                                "apporbit-rmq", "apporbit-consul",
-                               "apporbit-locator", "apporbit-svcd"]
+                               "apporbit-locator", "apporbit-svcd",
+                               "apporbit-prometheus-consul", "apporbit-node-exporter",
+                               "apporbit-cadvisor", "apporbit-alertmanager",
+                               "apporbit-prometheus", "apporbit-grafana"]
         if config_obj.clean_setup == '1':
             container_name_list.append("apporbit-chef")
 
@@ -569,10 +656,29 @@ class Action:
         logging.info("Setting up Directories for Volume Mount location  STARTED!!!")
         dirList = ["/var/dbstore", "/var/log/apporbit", "/var/lib/apporbit","/var/log/apporbit/controller",
                    "/var/log/apporbit/services", "/var/lib/apporbit/sshKey_root", "/var/lib/apporbit/sslkeystore",
-                   "/var/lib/apporbit/chefconf","/opt/apporbit/chef-serverkey", "/opt/apporbit/chef-server", "/var/lib/apporbit/consul" ]
+                   "/var/lib/apporbit/chefconf","/opt/apporbit/chef-serverkey", "/opt/apporbit/chef-server", "/var/lib/apporbit/consul",
+                   "/var/lib/apporbit/monitoring", "/var/lib/apporbit/monitoring/exporter-collector",
+                   "/var/lib/apporbit/monitoring/alert-data", "/var/lib/apporbit/monitoring/prom-data",
+                   "/var/lib/apporbit/monitoring/grafana-data", "/var/lib/apporbit/monitoring/targets"]
 
         for dirName in dirList:
             self.createDirSetSeLinuxPermission(dirName)
+
+        return True
+
+    def copyAOMonitoringConfFiles(self, mon_conf_files):
+        # Copy the configuration yaml files in /var/lib/apporbit/monitoring for 
+        # prometheus grafana and alertmanager
+        logging.info("Copying appOrbit monitoring configuration files.")
+        #path = os.path.dirname(os.path.realpath(__file__))
+        for conf_file in mon_conf_files:
+            #cnf = path + "/"+ conf_file
+            if os.path.isfile(conf_file):
+                cmd_exec = "cp -f " + conf_file + " /var/lib/apporbit/monitoring/"
+                cmd_desc = "Copying configuration file " + conf_file
+                self.utilityobj.cmdExecute(cmd_exec, cmd_desc, True)
+            else:
+                logging.error("Configuration file "+ conf_file + " doesn't exist")
 
         return True
 
@@ -586,6 +692,12 @@ class Action:
         svcd_image = repo_str + '/apporbit/svcd:' + build_id
         locator_image = repo_str + '/apporbit/locator:' + build_id
         consul_image = repo_str + '/apporbit/consul:' + build_id
+        prometheus_image = 'prom/prometheus:v1.0.1'
+        alertmanager_image = 'prom/alertmanager:master'
+        #grafana_image = 'apporbit/apporbit-grafana:0.1.0'
+        grafana_image = 'grafana/grafana:3.1.0'
+        cadvisor_image = 'google/cadvisor:v0.23.2'
+        node_exporter_image = 'prom/node-exporter:0.12.0'
 
         cmd_ctrl_image = 'docker pull ' + controller_image
         cmd_srvc_image = 'docker pull ' + services_image
@@ -595,6 +707,11 @@ class Action:
         cmd_svcd_image = 'docker pull ' + svcd_image
         cmd_locator_image = 'docker pull ' + locator_image
         cmd_consul_image = 'docker pull ' + consul_image
+        cmd_prometheus_image = 'docker pull ' + prometheus_image
+        cmd_alertmanager_image = 'docker pull ' + alertmanager_image
+        cmd_grafana_image = 'docker pull ' + grafana_image
+        cmd_cadvisor_image = 'docker pull ' + cadvisor_image
+        cmd_node_exporter_image = 'docker pull ' + node_exporter_image
 
         self.utilityobj.progressBar(2)
         self.utilityobj.cmdExecute(cmd_ctrl_image , "Pull controller image",True)
@@ -607,7 +724,12 @@ class Action:
         self.utilityobj.cmdExecute(cmd_svcd_image, "Pull svcd  image",True)
         self.utilityobj.cmdExecute(cmd_locator_image, "Pull locator image",True)
         self.utilityobj.cmdExecute(cmd_consul_image, "Pull consul image",True)
-
+        self.utilityobj.progressBar(5)
+        self.utilityobj.cmdExecute(cmd_prometheus_image, "Pull prometheus image", True)
+        self.utilityobj.cmdExecute(cmd_alertmanager_image, "Pull alertmanager image", True)
+        self.utilityobj.cmdExecute(cmd_grafana_image, "Pull grafana image", True)
+        self.utilityobj.cmdExecute(cmd_cadvisor_image, "Pull cadvisor image", True)
+        self.utilityobj.cmdExecute(cmd_node_exporter_image, "Pull node exporter image", True)
         return True
 
 
@@ -714,4 +836,3 @@ class DeployConsul:
               if self.utility_obj.isConsulDeployed():
                   print "Consul deployed successfully"
                   logging.info("Consul deployed successfully..")
-
