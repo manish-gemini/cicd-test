@@ -119,8 +119,11 @@ class Action:
         sleep(10)
         return True
 
-    def deployGrafana(self):
-        grafana_image_name = "apporbit/apporbit-grafana:0.1.0"
+    def deployGrafana(self, config_obj):
+        reg_url = config_obj.registry_url
+        if not reg_url:
+            reg_url = "secure-registry.gsintlab.com"
+        grafana_image_name = reg_url + "/apporbit/apporbit-grafana:3.1.0"
         cmd_deploy_grafana = "docker run -d -p 3000:3000 -v /var/lib/apporbit/monitoring/grafana-data:/var/lib/grafana:Z -e GF_AUTH_ANONYMOUS_ENABLED=true -e GF_AUTH_ANONYMOUS_ORG_ROLE=Admin -e GF_USERS_DEFAULT_THEME=light --restart=always --name=apporbit-grafana " + grafana_image_name
         cmd_desc = "Deploying Grafana container"
 
@@ -480,7 +483,7 @@ class Action:
 
         # SETUP or CREATE DIRECTORIES for VOL MOUNT
         self.setupDirectoriesForVolumeMount()
-        self.copyAOMonitoringConfFiles(["alertmanager.yml", "prometheus.yml", "alert.rules"])
+        self.copyAOMonitoringConfFiles(["alertmanager.yml", "prometheus.yml", "alert.rules"], config_obj.hostip)
 
         if config_obj.chef_self_signed_crt == '1':
             self.createSelfSignedCert(True, config_obj.hostip)
@@ -553,7 +556,7 @@ class Action:
         self.utilityobj.progressBar(24)
 
         # DEPLOY GRAFANA
-        self.deployGrafana()
+        self.deployGrafana(config_obj)
         self.utilityobj.progressBar(25)
 
         # DEPLOY PLATFORM
@@ -666,7 +669,7 @@ class Action:
 
         return True
 
-    def copyAOMonitoringConfFiles(self, mon_conf_files):
+    def copyAOMonitoringConfFiles(self, mon_conf_files, host_ip):
         # Copy the configuration yaml files in /var/lib/apporbit/monitoring for 
         # prometheus grafana and alertmanager
         logging.info("Copying appOrbit monitoring configuration files.")
@@ -679,6 +682,10 @@ class Action:
                 self.utilityobj.cmdExecute(cmd_exec, cmd_desc, True)
             else:
                 logging.error("Configuration file "+ conf_file + " doesn't exist")
+
+        cmd_exec = "sed -i \"s/AO_HOST_IP/" + host_ip + "/g\" /var/lib/apporbit/monitoring/prometheus.yml"
+        cmd_desc = "Adding consul host ip "+ host_ip + " to prometheus configuration"
+        self.utilityobj.cmdExecute(cmd_exec, cmd_desc, True)
 
         return True
 
@@ -694,8 +701,7 @@ class Action:
         consul_image = repo_str + '/apporbit/consul:' + build_id
         prometheus_image = 'prom/prometheus:v1.0.1'
         alertmanager_image = 'prom/alertmanager:master'
-        #grafana_image = 'apporbit/apporbit-grafana:0.1.0'
-        grafana_image = 'grafana/grafana:3.1.0'
+        grafana_image = repo_str + '/apporbit/apporbit-grafana:3.1.0'
         cadvisor_image = 'google/cadvisor:v0.23.2'
         node_exporter_image = 'prom/node-exporter:0.12.0'
 
