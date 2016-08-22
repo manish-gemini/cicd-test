@@ -87,6 +87,8 @@ function get_internal_registry {
 
 function install_docker {
     docker_version="1.10.3"
+    docker_lower_bound="1.7.1"
+
     if [ ! -f /etc/yum.repos.d/apporbit.repo ]
     then
         cp Dockerfiles/apporbit.repo /etc/yum.repos.d/
@@ -113,6 +115,16 @@ function install_docker {
                 echo "Docker upgrade to ${docker_version}"
             else
                 echo "WARNING: running older docker version ${installed_version} .."
+                ## check if the older version support by apporbit
+                upgrade_old_version=$(echo -ne "${docker_lower_bound}\n${installed_version}" |sort -Vr| head -n1)
+                if [ ${upgrade_old_version} == ${docker_lower_bound} ];then
+                  echo "WARNING: upgrade your docker to ${docker_version}"
+                else
+                  echo "Apporbit supports docker version above 1.7.1"
+                  echo "FAILED - Installtion failed due to docker version conflict"
+                  exit 1
+                fi 
+                   
             fi
         else
             echo "Apporbit supports docker version upto ${docker_version}"
