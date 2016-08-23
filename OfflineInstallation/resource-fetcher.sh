@@ -97,15 +97,16 @@ function install_docker {
     echo "Check for Docker Version "
     if exists docker
     then
-        # check for installed docker version
+        ## checking for installed docker version
         installed_version=$(docker -v | awk '{print $3}'|sed 's/,//g')
-        ## check for upgrade docker version or apporbit support version
+        ## checking for the docker version needs to upgrade or not with latest supported by apporbit
         upgrade_version=$(echo -ne "${docker_version}\n${installed_version}" |sort -Vr| head -n1)
-
+        ## comparing the installed docker version and supported by the apporbit
+        ## older docker version will be asked for upgraded 
         if [ ${installed_version} == ${docker_version} ]; then
-            echo "Docker exists:" $(docker -v) "from" $(rpm -qa docker)
+            echo "Docker exists:" $(docker -v) "from" $(rpm -qa docker) "with same version as apporbit supported docker version ${docker_version}"
         elif [ ${upgrade_version} == ${docker_version} ]; then
-            echo "Older docker version ${installed_version}"
+            echo "Older docker version ${installed_version} with respect to apporbit supported docker version ${docker_version}"
             read -p "Do you want to upgrade docker to docker-${docker_version} [ y ] :" user_input
             user_input=${user_input:-y}
             if [ ${user_input} == 'y' ];then
@@ -114,20 +115,21 @@ function install_docker {
                 systemctl start docker.service
                 echo "Docker upgrade to ${docker_version}"
             else
-                echo "WARNING: running older docker version ${installed_version} .."
-                ## check if the older version support by apporbit
+                echo "WARNING: running older docker version ${installed_version} with respect to apporbit supported docker version ${docker_version} "
+                ## checking if the older version support by apporbit
+                ## comparing the installed version with lower bound docker version supported by apporbit
                 upgrade_old_version=$(echo -ne "${docker_lower_bound}\n${installed_version}" |sort -Vr| head -n1)
                 if [ ${upgrade_old_version} == ${docker_lower_bound} ];then
-                  echo "WARNING: upgrade your docker to ${docker_version}"
+                  echo "WARNING: upgrade your docker to ${docker_version} apporbit supported docker version"
                 else
-                  echo "Apporbit supports docker version ${docker_lower_bound} and above"
+                  echo "Apporbit supports docker version from ${docker_lower_bound} to ${docker_version}"
                   echo "FAILED - Installtion failed due to docker version conflict"
                   exit 1
                 fi 
                    
             fi
         else
-            echo "Apporbit supports docker version upto ${docker_version}"
+            echo "Apporbit supports docker version from ${docker_lower_bound} to ${docker_version}"
             echo "FAILED - Installtion failed due to docker version conflict"
             exit 1
         fi
