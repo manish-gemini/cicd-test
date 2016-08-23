@@ -17,6 +17,7 @@ import ConfigParser
 import utility
 import userinteract
 import subprocess
+from urlparse import urlparse
 
 class Action:
 
@@ -68,20 +69,6 @@ class Action:
         self.utilityobj.cmdExecute(cmd_deploy_db, cmd_desc, True)
         sleep(60)
         return  True
-
-    def deployPrometheusConsul(self, config_obj):
-        reg_url = config_obj.registry_url
-        if not reg_url:
-            reg_url = "secure-registry.gsintlab.com"
-
-        consul_image_name = reg_url + "/apporbit/consul"
-        cmd_deploy_prometheus_consul = "docker run -d -p 8401:8400 -p 8501:8500 -p 8600:53/udp --restart=always \
-        --name apporbit-prometheus-consul -h consul "+ consul_image_name + " -server --bootstrap-expect 1"
-        cmd_desc = "Deploying Consul container for Prometheus"
-
-        self.utilityobj.cmdExecute(cmd_deploy_prometheus_consul, cmd_desc, True)
-        sleep(10)
-        return True
 
     def deployNodeExporter(self):
         node_exporter_image_name = "prom/node-exporter:0.12.0"
@@ -338,7 +325,7 @@ class Action:
         return max_app_process
 
 
-    def deployController (self, config_obj):
+    def deployController (self, config_obj, consul_ip, consul_port):
 
         onprem_emailID = config_obj.onprem_emailID
         hostip = config_obj.hostip
@@ -349,6 +336,8 @@ class Action:
         build_deploy_mode = config_obj.build_deploy_mode
         vol_mount = config_obj.volume_mount
         deploy_chef = config_obj.deploy_chef
+        consulip = consul_ip
+        consulport = consul_port
 
 
         log_level = 'DEBUG'
@@ -389,7 +378,9 @@ class Action:
         if deploy_chef == "1":
             cmd_deploy_controller = cmd_deploy_controller + " -e CHEF_URL=https://"+ hostip +":9443"
 
-        cmd_deploy_controller = cmd_deploy_controller + " -e AO_HOST="+hostip
+        cmd_deploy_controller = cmd_deploy_controller + " -e AO_HOST=" + hostip
+        cmd_deploy_controller = cmd_deploy_controller + " -e CONSUL_IP=" + consulip
+        cmd_deploy_controller = cmd_deploy_controller + " -e CONSUL_PORT=" + consulport
         cmd_deploy_controller = cmd_deploy_controller + " -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller \
         -e ON_PREM_MODE=" + onpremmode + " -e THEME_NAME="+ theme_name + "\
         -e CURRENT_API_VERSION=" + api_version + " --link apporbit-db:db --link apporbit-rmq:rmq " + "\
@@ -466,6 +457,13 @@ class Action:
 
 
     def deployAppOrbit(self, config_obj):
+        consul_ip_port = config_obj.consul_ip_port
+        consul_ip = config_obj.hostip
+        consul_port = '8500'
+        if consul_ip_port:
+            consul_ip_port = urlparse(consul_ip_port)
+            consul_ip = consul_ip_port.hostname
+            consul_port = str(consul_ip_port.port)
         self.utilityobj.progressBar(1)
         # LOGIN to DOCKER REGISTRY
         if config_obj.build_deploy_mode == '3' or config_obj.build_deploy_mode == '0':
@@ -483,7 +481,7 @@ class Action:
 
         # SETUP or CREATE DIRECTORIES for VOL MOUNT
         self.setupDirectoriesForVolumeMount()
-        self.copyAOMonitoringConfFiles(["alertmanager.yml", "prometheus.yml", "alert.rules"], config_obj.hostip)
+        self.copyAOMonitoringConfFiles(["alertmanager.yml", "prometheus.yml", "alert.rules"], consul_ip, consul_port)
 
         if config_obj.chef_self_signed_crt == '1':
             self.createSelfSignedCert(True, config_obj.hostip)
@@ -535,33 +533,29 @@ class Action:
         self.deploySvcd(config_obj)
         self.utilityobj.progressBar(19)
 
-        # DEPLOY CONSUL FOR PROMETHEUS
-        self.deployPrometheusConsul(config_obj)
-        self.utilityobj.progressBar(20)
-
         # DEPLOY NODE EXPORTER
         self.deployNodeExporter()
-        self.utilityobj.progressBar(21)
+        self.utilityobj.progressBar(20)
 
         # DEPLOY CADVISOR
         self.deployCadvisor()
-        self.utilityobj.progressBar(22)
+        self.utilityobj.progressBar(21)
 
         # DEPLOY ALERTMANAGER
         self.deployAlertmanager()
-        self.utilityobj.progressBar(23)
+        self.utilityobj.progressBar(22)
 
         # DEPLOY PROMETHEUS
         self.deployPrometheus(config_obj.hostip)
-        self.utilityobj.progressBar(24)
+        self.utilityobj.progressBar(23)
 
         # DEPLOY GRAFANA
         self.deployGrafana(config_obj)
-        self.utilityobj.progressBar(25)
+        self.utilityobj.progressBar(24)
 
         # DEPLOY PLATFORM
-        self.deployController(config_obj)
-        self.utilityobj.progressBar(26)
+        self.deployController(config_obj, consul_ip, consul_port)
+        self.utilityobj.progressBar(25)
 
         return True
 
@@ -597,7 +591,7 @@ class Action:
                                "apporbit-services","apporbit-docs",
                                "apporbit-rmq", "apporbit-consul",
                                "apporbit-locator", "apporbit-svcd",
-                               "apporbit-prometheus-consul", "apporbit-node-exporter",
+                               "apporbit-node-exporter",
                                "apporbit-cadvisor", "apporbit-alertmanager",
                                "apporbit-prometheus", "apporbit-grafana"]
         if config_obj.clean_setup == '1':
@@ -669,7 +663,7 @@ class Action:
 
         return True
 
-    def copyAOMonitoringConfFiles(self, mon_conf_files, host_ip):
+    def copyAOMonitoringConfFiles(self, mon_conf_files, consul_ip, consul_port):
         # Copy the configuration yaml files in /var/lib/apporbit/monitoring for 
         # prometheus grafana and alertmanager
         logging.info("Copying appOrbit monitoring configuration files.")
@@ -683,8 +677,8 @@ class Action:
             else:
                 logging.error("Configuration file "+ conf_file + " doesn't exist")
 
-        cmd_exec = "sed -i \"s/AO_HOST_IP/" + host_ip + "/g\" /var/lib/apporbit/monitoring/prometheus.yml"
-        cmd_desc = "Adding consul host ip "+ host_ip + " to prometheus configuration"
+        cmd_exec = "sed -i \"s/CONSUL_HOST_ADDR/" + consul_ip + ":" + str(consul_port) + "/g\" /var/lib/apporbit/monitoring/prometheus.yml"
+        cmd_desc = "Adding consul host ip "+ consul_ip + ":" + str(consul_port) + " to prometheus configuration"
         self.utilityobj.cmdExecute(cmd_exec, cmd_desc, True)
 
         return True
