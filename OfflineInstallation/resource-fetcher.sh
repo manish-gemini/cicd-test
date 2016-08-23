@@ -120,7 +120,7 @@ function install_docker {
                 if [ ${upgrade_old_version} == ${docker_lower_bound} ];then
                   echo "WARNING: upgrade your docker to ${docker_version}"
                 else
-                  echo "Apporbit supports docker version above 1.7.1"
+                  echo "Apporbit supports docker version ${docker_lower_bound} and above"
                   echo "FAILED - Installtion failed due to docker version conflict"
                   exit 1
                 fi 
