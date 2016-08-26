@@ -6,9 +6,13 @@ import os
 import sys
 import re
 import shutil
+import glob
+import datetime
 import ConfigParser
 import errno
 from time import sleep
+import getpass
+import ConfigParser
 
 import utility
 import userinteract
@@ -79,11 +83,16 @@ class Action:
         #print routable
         return routable
 
-    def deployConsul(self, reg_url, consul_host, consul_domain):
+    def deployConsul(self, reg_url, consul_host, consul_domain, build_deploy_mode):
         routable = 'false'
-	if not reg_url:
-            reg_url = "secure-registry.gsintlab.com"
-        consul_image_name = reg_url + "/apporbit/consul"
+        if not reg_url:
+            consul_image_name  = "apporbit/consul"
+        else:
+            consul_image_name = reg_url + "/apporbit/consul"
+
+        if build_deploy_mode == '1':
+            consul_image_name = 'apporbit/consul'
+
 	if not consul_domain:
 		#print "\nconsul_domain is missing"
 		cmd_deploy_consul = ("docker run -d -p 8400:8400 -p 8500:8500 -p 53:53/udp "
@@ -116,11 +125,14 @@ class Action:
         sleep(10)
         return True
 
-    def deployLocator(self, consul_ip_port, reg_url):
+    def deployLocator(self, consul_ip_port, reg_url, build_deploy_mode):
         if not reg_url:
             locator_image_name = "apporbit/locator"
         else:
             locator_image_name = reg_url + "/apporbit/locator"
+
+        if build_deploy_mode == '1':
+            locator_image_name = 'apporbit/locator'
 
         cmd_deploy_locator = ("docker run -d --name apporbit-locator "
                               "--restart=always -p 8080:8080 "
@@ -136,7 +148,8 @@ class Action:
         if reg_url:
             chef_image_name = reg_url + '/apporbit/apporbit-chef:2.0'
         else:
-            chef_image_name = 'apporbit/apporbit-chef'
+            print "Failed - registry url not found, please verify registry url in local.conf"
+            sys.exit(1)
 
         if clean_setup == '1':
             chef_upgrade = " -e UPGRADE=1 " #1 is Clean Setup
@@ -159,10 +172,15 @@ class Action:
 
     def deploySvcd(self, config_obj):
         reg_url = config_obj.registry_url
+        build_deploy_mode = config_obj.build_deploy_mode
+
         if not (config_obj.registry_url):
             svcd_image = "apporbit/svcd"
         else:
             svcd_image = reg_url + "/apporbit/svcd"
+
+        if build_deploy_mode == '1':
+            svcd_image = 'apporbit/svcd'
 
         cmd_deploy_svcd = ("docker run -d --name apporbit-svcd "
                            "--restart=always" + " -p 8888:8080 "
@@ -196,7 +214,7 @@ class Action:
         else:
             image_name = "apporbit/apporbit-services"
 
-        if mode == '2' or mode == '1':
+        if mode == '1':
             image_name = "apporbit/apporbit-services"
 
         if vol_mount:
@@ -288,18 +306,19 @@ class Action:
         else:
             cntrlimageName = 'apporbit/apporbit-controller'
 
-        if build_deploy_mode == '2' or build_deploy_mode == '1':
+        if  build_deploy_mode == '1':
             cntrlimageName = 'apporbit/apporbit-controller'
 
         if vol_mount:
             volonhost = vol_mount + "/Gemini-poc-mgnt"
             voloncontainer = "/home/apporbit/apporbit-controller"
             vol_mount_str = " -v " + volonhost + ":" + voloncontainer + ":Z"
+            logging.info("volume mount str" + vol_mount_str)
             gemfile = volonhost + "/Gemfile"
             if not os.path.isfile(gemfile):
                 rename_gemfile = "cp -f " + gemfile + "-master " + gemfile
                 self.utilityobj.cmdExecute(rename_gemfile, 'copy Gemfile-master as Gemfile ', True)
-
+          
 
         cmd_deploy_controller = "docker run -t --name apporbit-controller --restart=always \
         -p 80:80 -p 443:443 -e ONPREM_EMAIL_ID="+ onprem_emailID + " \
@@ -441,11 +460,11 @@ class Action:
         self.utilityobj.progressBar(16)
 	
         #DEPLOY CONSUL
-        self.deployConsul(config_obj.registry_url, config_obj.consul_host, config_obj.consul_domain)
+        self.deployConsul(config_obj.registry_url, config_obj.consul_host, config_obj.consul_domain, config_obj.build_deploy_mode)
         self.utilityobj.progressBar(17)
 
         #DEPLOY LOCATOR
-        self.deployLocator(config_obj.consul_ip_port, config_obj.registry_url)
+        self.deployLocator(config_obj.consul_ip_port, config_obj.registry_url, config_obj.build_deploy_mode)
         self.utilityobj.progressBar(18)
 
         # DEPLOY SVCD
@@ -467,6 +486,14 @@ class Action:
                 self.removeContainer("apporbit-chef")
         return
 
+    def removeConsulContainer(self):
+        cmd_dockerps = "docker ps -a "
+        cmd_desc = "Checking Docker ps"
+        code, out, err = self.utilityobj.cmdExecute(cmd_dockerps, cmd_desc, True)
+        if "apporbit-consul" in out:
+                logging.info( "apporbit-consul exist remove it")
+                self.removeContainer("apporbit-consul")
+        return
 
     def removeContainer(self, container_name):
         cmd_stop = "docker stop " + container_name
@@ -509,7 +536,14 @@ class Action:
         try:
             shutil.rmtree('/var/dbstore', ignore_errors = True)
             shutil.rmtree('/var/lib/apporbit/', ignore_errors = True)
-            shutil.rmtree('/var/log/apporbit/', ignore_errors = True)
+            logtimestamp = '/var/log/apporbit/oldlogs_' + str(datetime.datetime.now().strftime('%Y%m%d%H%M%S'))
+            os.makedirs(logtimestamp)
+            if os.path.exists("/var/log/apporbit/controller"):
+   	        shutil.move('/var/log/apporbit/controller/', logtimestamp )
+            if os.path.exists("/var/log/apporbit/services"):
+                shutil.move('/var/log/apporbit/services/', logtimestamp )
+            for filename in glob.glob(os.path.join('/var/log/apporbit/', 'apporbitInstall-*')):
+                shutil.move(filename, logtimestamp)
             shutil.rmtree('/opt/apporbit/chef-server', ignore_errors = True)
         except OSError as e:
             logging.warning("Failed to clean old Entries : " + e.strerror)
@@ -548,12 +582,18 @@ class Action:
         message_queue_image = repo_str + '/apporbit/apporbit-rmq'
         docs_image = repo_str + '/apporbit/apporbit-docs'
         database_image = 'mysql:5.6.24'
+        svcd_image = repo_str + '/apporbit/svcd:' + build_id
+        locator_image = repo_str + '/apporbit/locator:' + build_id
+        consul_image = repo_str + '/apporbit/consul:' + build_id
 
         cmd_ctrl_image = 'docker pull ' + controller_image
         cmd_srvc_image = 'docker pull ' + services_image
         cmd_msg_image = 'docker pull ' + message_queue_image
         cmd_docs_image = 'docker pull ' + docs_image
         cmd_dbs_image = 'docker pull ' + database_image
+        cmd_svcd_image = 'docker pull ' + svcd_image
+        cmd_locator_image = 'docker pull ' + locator_image
+        cmd_consul_image = 'docker pull ' + consul_image
 
         self.utilityobj.progressBar(2)
         self.utilityobj.cmdExecute(cmd_ctrl_image , "Pull controller image",True)
@@ -563,6 +603,9 @@ class Action:
         self.utilityobj.cmdExecute(cmd_docs_image , "Pull document server image",True)
         self.utilityobj.progressBar(4)
         self.utilityobj.cmdExecute(cmd_dbs_image , "Pull database server image",True)
+        self.utilityobj.cmdExecute(cmd_svcd_image, "Pull svcd  image",True)
+        self.utilityobj.cmdExecute(cmd_locator_image, "Pull locator image",True)
+        self.utilityobj.cmdExecute(cmd_consul_image, "Pull consul image",True)
 
         return True
 
@@ -626,7 +669,48 @@ class DeployChef:
         print "Now you can access the chef-server ui at https://" + self.hostIP + ":9443. It is recommended to change the default password."
 
 
+class DeployConsul:
+    def __init__(self):
+        self.utility_obj = utility.Utility()
+        self.action_obj = Action()
 
+    def deploy_consul(self):
+         if os.path.isfile('local.conf'):
+            config = ConfigParser.ConfigParser()
+            fp = open('local.conf', 'r')
+            config.readfp(fp)
+            try:
+                self.uname = config.get('Docker Login', 'username')
+                self.password = config.get('Docker Login', 'password')
+                self.reg_url = config.get('User Config', 'registry_url')
+                self.utility_obj.loginDockerRegistry(self.uname, self.password, self.reg_url)
+                self.consul_host = config.get('User Config', 'consul_host')
+                self.consul_domain = config.get('User Config', 'consul_domain')
+                logging.info("Consul deployment started..")
+                print "Consul deployment started.."
+                self.action_obj.removeConsulContainer()
+                self.action_obj.deployConsul(self.reg_url, self.consul_host, self.consul_domain)
+                if self.utility_obj.isConsulDeployed():
+                    print "Consul deployed successfully.."
+                    logging.info("Consul deployed successfully..")
+            except ConfigParser.NoSectionError, ConfigParser.NoOptionError:
+                pass
 
+            fp.close()
 
+         else:
+              print "Login to the appOrbit registry using the credentials sent to you by email, by appOrbit support team."
+              reg_user_name = raw_input("Enter the user name: ")
+              reg_password = getpass.getpass()
+              self.utility_obj.loginDockerRegistry(reg_user_name, reg_password, "registry.apporbit.com")
+              consul_domain = raw_input("Enter consul domain [default]:") or ''
+              consul_host = raw_input("Enter consul host [default]:") or ''
+              logging.info("Consul deployment started.. ")
+              print "Consul deployment started.."
+              self.action_obj.removeConsulContainer()
+              self.action_obj.deployConsul("registry.apporbit.com", consul_host, consul_domain)
+
+              if self.utility_obj.isConsulDeployed():
+                  print "Consul deployed successfully"
+                  logging.info("Consul deployed successfully..")
 

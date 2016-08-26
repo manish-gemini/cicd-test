@@ -12,25 +12,28 @@ import config, utility, action, userinteract
 
 
 def main():
-    if not os.path.exists("/var/log"):
-       os.makedirs("/var/log")
+    if not os.path.exists("/var/log/apporbit"):
+       os.makedirs("/var/log/apporbit")
 
-    logging.basicConfig(filename='/var/log/apporbitInstall.log', level=logging.DEBUG,
-                         format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+    logging.basicConfig(filename='/var/log/apporbit/apporbitInstall.log', level=logging.DEBUG,
+                         format='[ %(asctime)s ] %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
 
     # arguments parser
     parser = argparse.ArgumentParser(description='Apporbitlauncher argument')
     parser.add_argument("-d","--deploychef",action='store_true', help='Deploy chef enable flag')
-    parser.add_argument("-s","--skipipvalidity", action='store_true', help='Skip ip host validity flag')
+    parser.add_argument("-c","--consul", action='store_true', help='Deploy consul')
     args = parser.parse_args()
     if args.deploychef:
         chef_dep_obj = action.DeployChef()
         chef_dep_obj.deploy_chef()
         sys.exit(1)
-
+    if args.consul:
+        consul_obj = action.DeployConsul()
+        consul_obj.deploy_consul()
+        sys.exit(1)
 
     print ("This installer will install the appOrbit management server in this machine")
-    print ("Installation logging at /var/log/apporbitInstall.log")
+    print ("Installation logging at /var/log/apporbit/apporbitInstall.log")
     logging.info("Starting appOrbit Installation")
 
     config_obj = config.Config()
@@ -87,10 +90,13 @@ def main():
         logging.info("user configuration is recived SUCCESS.")
 
     # Validate that the Hostip chosen during configuration belongs to the current host machine.
-    if not args.skipipvalidity:
-       if not utility_obj.validateHostIP(config_obj.hostip):
-          print "ERROR: Host-IP or Host-Name entered is not valid. Check log for details."
-          sys.exit(1)
+    if not utility_obj.validateHostIP(config_obj.hostip):
+        print "WARNING: Given IP is not accessible publicly or on private network"
+        user_input = raw_input("Do you want to Abort(a) or continue(c) installation[c]:") or 'c'
+        if user_input == "a" or user_input != "c":
+            sys.exit(1)
+        else:
+             print "Continuing .."
 
     print "Deploying appOrbit management server."
     with utility.DotProgress("Deploy"):
@@ -104,7 +110,7 @@ def main():
     logging.info("END OF DEPLOYMENT")
 
     logtimestamp = str(datetime.datetime.now().strftime('%Y%m%d%H%M%S'))
-    shutil.move('/var/log/apporbitInstall.log', '/var/log/apporbit/apporbitInstall-' + logtimestamp + '.log')
+    shutil.move('/var/log/apporbit/apporbitInstall.log', '/var/log/apporbit/apporbitInstall-' + logtimestamp + '.log')
     print "Installation logs moved to /var/log/apporbit/apporbitInstall-" + logtimestamp + '.log'
 
     return

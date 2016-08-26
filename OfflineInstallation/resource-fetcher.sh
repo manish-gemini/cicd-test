@@ -210,23 +210,24 @@ function install_packaging_utils {
 function download_general_packages {
     echo "Downloading Nginx Passenger"
     CWD=`pwd`
+    REPO="http://repos.gsintlab.com/release"
     mkdir -p appOrbitRPMs/noarch/
     cd appOrbitRPMs/noarch/
-    wget -c http://repos.gsintlab.com/repos/noarch/nginx-1.6.3.tar.gz
-    wget -c http://repos.gsintlab.com/repos/noarch/passenger-5.0.10.tar.gz
+    wget -c ${REPO}/noarch/nginx-1.6.3.tar.gz
+    wget -c ${REPO}/noarch/passenger-5.0.10.tar.gz
     cd "$CWD"
 
     echo "Downloading Passenger agent"
     mkdir -p appOrbitRPMs/noarch/5.0.7/
     cd appOrbitRPMs/noarch/5.0.7/
-    wget -c http://repos.gsintlab.com/repos/noarch/5.0.7/agent-x86_64-linux.tar.gz
+    wget -c ${REPO}/noarch/5.0.7/agent-x86_64-linux.tar.gz
     wget -c https://s3.amazonaws.com/phusion-passenger/binaries/passenger/by_release/5.0.7/nginx-1.6.3-x86_64-linux.tar.gz
     cd "$CWD"
 
     echo "Downloading mist jar"
     mkdir -p appOrbitRPMs/mist/master
     cd appOrbitRPMs/mist/master
-    wget -c http://repos.gsintlab.com/repos/mist/master/run.jar
+    wget -c ${REPO}/mist/master/run.jar
 
     cd "$CWD"
 
@@ -321,12 +322,11 @@ function create_cargo_to_ship {
 
 function main {
     declare -rA infra_containers=(
-        [etcd]=2.0.9
-        [kube2sky]=1.11
-        [skydns]=2015-03-11-001
-        [exechealthz]=1.0
-        [kube-ui]=v3
-        [pause]=0.8.0
+        [dnsmasq]=1.1
+        [kubedns-amd64]=1.5
+        [exechealthz-amd64]=1.0
+        [kubernetes-dashboard-amd64]=v1.1.0
+        [pause-amd64]=3.0   
     )
 
     echo -n "Checking Internet Connectivity"

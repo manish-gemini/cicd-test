@@ -17,8 +17,7 @@ password :
 build_deploy_mode:
     # This sets up Mode of Deploy
     # 0 - QA/Dev Deploy for Master/Integration Build
-    # 1 - Dev Deploy for local volume mount build
-    # 2 - QA/DEV local deploy.
+    # 1 - Dev/QA local Deploy for local volume mount build ( prerequisite: run Build.sh for local images)
     [NOTE: For any build mode, if you specify volume_mount attribute,
     the specified volume will be mounted to the image chosen for deployment.
 

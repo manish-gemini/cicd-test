@@ -17,6 +17,7 @@ import urllib2
 import socket
 import traceback
 from time import sleep
+from distutils.version import LooseVersion
 
 # Implementation of DotProgress class
 class DotProgress(threading.Thread):
@@ -42,7 +43,9 @@ class Utility:
 
     def __init__(self):
         self.do_dockerinstall = 0
+        self.docker_version = "1.10.3"
         self.do_ntpinstall = 0
+        self.do_bindutilsinstall = 0
         self.do_wgetinstall = 0
         self.do_sesettings = 0
         self.redhat_subscription = True
@@ -59,9 +62,9 @@ class Utility:
                 logging.info(out)
             else:
                 if bexit :
-                    logging.error("FAILED - %s", cmd_desc)
+                    logging.error("FAILED - %s [ %s ]", cmd_desc, cmd_str)
                     logging.error(err)
-                    print "FAILED - " + cmd_desc
+                    print "FAILED - " + cmd_desc + "[" + cmd_str + "]"
                     print "Check log for details."
                     sys.exit(1)
                 else:
@@ -70,9 +73,9 @@ class Utility:
                     return False, out, err
         except Exception as exp:
             if bexit :
-                    logging.error("FAILED - %s", cmd_desc)
+                    logging.error("FAILED - %s [ %s ]", cmd_desci, cmd_str)
                     logging.error("Exception: %d : %s", exp.errno, exp.strerror)
-                    print "[FAILED] - " + cmd_desc
+                    print "[FAILED] - " + cmd_desc + "[" + cmd_str + "]"
                     print "Check log for details."
                     sys.exit(1)
             else:
@@ -111,6 +114,16 @@ class Utility:
         code, out, err = self.cmdExecute(cmd_dockerps, cmd_desc, True)
         if "apporbit-chef" in out:
             logging.info("Chef server is deployed in this host")
+            ret_val = True
+        return ret_val
+
+    def isConsulDeployed(self):
+        ret_val = False
+        cmd_dockerps = "docker ps"
+        cmd_desc = "Docker ps"
+        code, out, err = self.cmdExecute(cmd_dockerps, cmd_desc, True)
+        if "apporbit-consul" in out:
+            logging.info("Consul server is deployed in this host")
             ret_val = True
         return ret_val
 
@@ -280,12 +293,23 @@ class Utility:
 
         logging.info ("Verifying docker installation")
 
-        docker_cmd = "docker -v > /dev/null"
-
+        docker_cmd = "docker -v"
         return_code, out, err = self.cmdExecute(docker_cmd, "Docker Install", False)
-
+        if return_code and out:
+             docker_installed = LooseVersion(out.split()[2].split(',')[0])
+             docker_ver = LooseVersion(self.docker_version)
         if not return_code:
             self.do_dockerinstall = 1
+        elif docker_installed < docker_ver:
+            self.do_dockerinstall = 1
+            logging.info ("Older " + str(out))
+            logging.info ("Upgrading docker to " + self.docker_version)
+        elif docker_installed == docker_ver:
+            logging.info ("Docker installed : " + self.docker_version)
+        else:
+            print "Apporbit supports docker version upto " + self.docker_version 
+            print "FAILED - Installtion failed due to docker version conflict"
+            sys.exit(1)
 
         logging.info ("Verify NTP Installation!")
         ntp_cmd = "ntpdate time.nist.gov > /dev/null"
@@ -298,6 +322,12 @@ class Utility:
         return_code, out, err = self.cmdExecute(wget_cmd, "wget Install", False)
         if not return_code:
             self.do_wgetinstall = 1
+
+        logging.info("Verify nslookup installation")
+        nslookup_cmd = "which nslookup > /dev/null"
+        return_code, out, err = self.cmdExecute(nslookup_cmd, "nslookup (bind-utils) Install", False)
+        if not return_code:
+            self.do_bindutilsinstall = 1
 
         return True
 
@@ -347,10 +377,17 @@ class Utility:
             if not return_code:
                 return False
 
+        self.progressBar(13)
+        if self.do_bindutilsinstall:
+            cmd_bindutilsInstall = "yum install -y bind-utils"
+            return_code, out, err = self.cmdExecute(cmd_bindutilsInstall, "Bind Utils Install", False)
+            if not return_code:
+                return False
+
         self.progressBar(14)
 
         if self.do_dockerinstall:
-            cmd_dockerInstall = "yum install -y docker-1.7.1"
+            cmd_dockerInstall = "yum install -y docker-" + self.docker_version
             return_code, out, err = self.cmdExecute(cmd_dockerInstall, "Docker Install", False)
             if not return_code:
                 return False
@@ -411,14 +448,15 @@ class Utility:
         try:
             logging.info(external_host_ip)
             hostip_name_tup = socket.gethostbyaddr(external_host_ip)
+            logging.info("HOST/IP found :" + str(hostip_name_tup))
         except socket.herror as e:
+            hostip_name_tup = ()
+            logging.info("HOST/IP not found")
             logging.error( "Socket Error" + e.strerror)
-
-        logging.info(str(hostip_name_tup))
 
         for elem in hostip_name_tup:
             if hostip in elem:
-                logging.info("VALID HOSTIP %s" + hostip)
+                logging.info("VALID HOSTIP %s" , hostip)
                 result = True
                 break
             else:
@@ -428,10 +466,13 @@ class Utility:
         if not result:
             logging.warning("Given IP is not publicly accessible %s" , hostip)
             logging.info('Validating host IP/hostname for private accessibility' )
-            b_return, out, err = self.cmdExecute("hostname -I", "Checking Hostname -I for local ip of the machine", False)
-            if b_return and hostip in out :
-                result = True
-            else:
+            cmdlist = ["hostname -I", "hostname -f", "hostname -A", "hostname", "dnsdomainname"]
+            for cmd in cmdlist:
+                 b_return, out, err = self.cmdExecute(cmd, "Checking '" + cmd +"' of the machine", False)
+                 if b_return and hostip in out :
+                      result = True
+                      break
+            if not result:
                 logging.error("Given IP is not accessible publicly or on private network. \
                 Please check network configuration or host IP entered.")
 
