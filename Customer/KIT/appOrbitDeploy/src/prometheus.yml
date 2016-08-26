@@ -15,4 +15,4 @@ scrape_configs:
       action: keep
 
 rule_files:
-  - '/var/lib/apporbit/monitoring/alert.rules'
+  - 'etc/prometheus/alert.rules'

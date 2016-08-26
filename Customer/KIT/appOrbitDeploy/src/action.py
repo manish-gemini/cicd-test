@@ -535,27 +535,22 @@ class Action:
 
         # DEPLOY NODE EXPORTER
         self.deployNodeExporter()
-        self.utilityobj.progressBar(20)
 
         # DEPLOY CADVISOR
         self.deployCadvisor()
-        self.utilityobj.progressBar(21)
 
         # DEPLOY ALERTMANAGER
         self.deployAlertmanager()
-        self.utilityobj.progressBar(22)
 
         # DEPLOY PROMETHEUS
         self.deployPrometheus(config_obj.hostip)
-        self.utilityobj.progressBar(23)
 
         # DEPLOY GRAFANA
         self.deployGrafana(config_obj)
-        self.utilityobj.progressBar(24)
 
         # DEPLOY PLATFORM
         self.deployController(config_obj, consul_ip, consul_port)
-        self.utilityobj.progressBar(25)
+        self.utilityobj.progressBar(20)
 
         return True
 
