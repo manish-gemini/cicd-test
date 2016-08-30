@@ -400,6 +400,12 @@ class Utility:
                 return False
 
         self.progressBar(17)
+       
+        
+        if 'log-driver=journald' in open('/etc/sysconfig/docker').read():
+             cmd_docker_daemon_flag = "sed -i 's/log-driver=journald/log-driver=json-file/' /etc/sysconfig/docker"
+             self.cmdExecute(cmd_docker_daemon_flag, "Enabled docker daemon --log-driver flag with json-file ",False)
+
         cmd_dockerservice = "systemctl enable docker.service"
         self.cmdExecute(cmd_dockerservice, "Enable Docker service on restart", False)
 
