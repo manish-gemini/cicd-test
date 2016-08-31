@@ -7,7 +7,7 @@ protect=0
 
 [apporbit-release]
 name=apporbit release repository
-baseurl=http://repos.gsintlab.com/release/1.5.1/
+baseurl=http://repos.gsintlab.com/1.5.1/
 enabled=1
 gpgcheck=0
 protect=0
