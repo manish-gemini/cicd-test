@@ -87,9 +87,57 @@ EOF
 
 function install_docker {
     echo "Checking Docker Version "
+    docker_version="1.10.3"
+    docker_lower_bound="1.7.1"
+
     if exists docker
     then
-        echo "Docker exists:" `docker -v` "from" `rpm -qa docker`
+        ## checking for installed docker version
+        installed_version=$(docker -v | awk '{print $3}'|sed 's/,//g')
+        ## checking for the docker version needs to upgrade or not with latest supported by apporbit
+        upgrade_version=$(echo -ne "${docker_version}\n${installed_version}" |sort -Vr| head -n1)
+        ## comparing the installed docker version and supported by the apporbit
+        ## older docker version will be for upgraded
+        if [ ${installed_version} == ${docker_version} ]; then
+           echo "Expected docker version exists:" $(docker -v) "from" $(rpm -qa docker)
+        elif [ ${upgrade_version} == ${docker_version} ]; then
+            echo "Older docker version ${installed_version}, expected docker ${docker_version}"
+            read -p "Do you want to upgrade with docker-${docker_version} [ y ] :" user_input
+            user_input=${user_input:-y}
+            if [ ${user_input} == 'y' ];then
+                yum -y --disablerepo="*" --enablerepo="apporbit-offline" install docker-${docker_version}
+                if [ $? -eq 0 ];then
+                   echo "Docker upgraded to docker-${docker_version}"
+                else
+                   echo "Failed to upgrade, Exiting."
+                   exit 1
+                fi
+                ## docker daemon --log-driver flag enabled
+                 if grep -q "log-driver=journald" /etc/sysconfig/docker; then
+                    sed -i 's/log-driver=journald/log-driver=json-file/' /etc/sysconfig/docker
+                    systemctl restart docker.service
+                fi
+            else
+                echo "WARNING: running older docker version ${installed_version} , Apporbit supports docker ${docker_version} "
+                ## checking if the older version support by apporbit
+                ## comparing the installed version with lower bound docker version supported by apporbit
+                upgrade_old_version=$(echo -ne "${docker_lower_bound}\n${installed_version}" |sort -Vr| head -n1)
+                if [ ${upgrade_old_version} == ${docker_lower_bound} ];then
+                  echo "WARNING: Apporbit supports docker-${docker_version}, you need to upgrade."
+                else
+                  echo "FAILED - Unsupported docker version"
+                  echo "Apporbit supports docker version from ${docker_lower_bound} to ${docker_version}"
+                  echo "Exiting."
+                  exit 1
+                fi
+
+            fi
+        else
+           echo "FAILED - Unsupported docker version"
+           echo "Apporbit supports docker version from ${docker_lower_bound} to ${docker_version}"
+           echo "Exiting."
+           exit 1
+        fi
     else
         echo "Docker is not installed. Installing docker..."
         if [ "x$platform_id" == "xcentos" ]; then
@@ -97,7 +145,10 @@ function install_docker {
         fi
         # BUG: https://bugzilla.redhat.com/show_bug.cgi?id=1294128
         yum -y --disablerepo="*" --enablerepo="apporbit-local" upgrade lvm2
-        yum -y --disablerepo="*" --enablerepo="apporbit-local" install docker-1.7.1
+        yum -y --disablerepo="*" --enablerepo="apporbit-local" install docker-${docker_version}
+        if grep -q "log-driver=journald" /etc/sysconfig/docker; then
+              sed -i 's/log-driver=journald/log-driver=json-file/' /etc/sysconfig/docker
+        fi
         systemctl enable docker.service
         systemctl start docker.service
         if ! exists docker
