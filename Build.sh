@@ -206,12 +206,12 @@ if [[ ( -z "$mistBuildType" ) || ( $mistBuildType -eq 2) ]]; then
    echo $mistRepo
    if [ $mistRepo == 1 ]
    then
-      wget http://repos.gsintlab.com/repos/mist/master/run.jar
+      wget http://repos.gsintlab.com/release/mist/master/run.jar
    elif [ $mistRepo == 2 ]
    then
-      wget http://repos.gsintlab.com/repos/mist/integration/run.jar
+      wget http://repos.gsintlab.com/release/mist/integration/run.jar
    else
-      wget http://repos.gsintlab.com/repos/mist/integration-features/run.jar
+      wget http://repos.gsintlab.com/release/mist/integration-features/run.jar
    fi
 else
    docker pull secure-registry.gsintlab.com/apporbit/mist-builder

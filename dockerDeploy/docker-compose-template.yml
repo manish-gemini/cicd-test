@@ -28,7 +28,7 @@ db:
 geminiStack:
   image: gemini/gemini-stack
   environment:
-    GEMINI_INT_REPO: http://repos.gsintlab.com/repos/
+    GEMINI_INT_REPO: http://repos.gsintlab.com/release/
     MYSQL_HOST: db
     MYSQL_USERNAME: root
     MYSQL_PASSWORD: admin

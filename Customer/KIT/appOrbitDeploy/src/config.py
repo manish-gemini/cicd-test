@@ -11,7 +11,7 @@ class Config():
         self.docker_passwd = ''
         self.deploy_chef = '1'
         self.build_deploy_mode = '3'
-        self.internal_repo = 'http://repos.gsintlab.com/repos'
+        self.internal_repo = 'http://repos.gsintlab.com/release'
         self.clean_setup = '2'
         self.deploy_mode = '1'
         self.onprem_emailID = 'admin@apporbit.com'
@@ -75,7 +75,7 @@ class Config():
                                      themeName = 'apporbit-v2',\
                                      api_version = 'v2',\
                                      build_deploy_mode = '3', reg_url='registry.apporbit.com',\
-                                     internal_repo = 'http://repos.gsintlab.com/repos',\
+                                     internal_repo = 'http://repos.gsintlab.com/release',\
                                      volume_mount = ''):
 
         logging.info("Create Config file")

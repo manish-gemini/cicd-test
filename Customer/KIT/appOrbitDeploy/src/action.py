@@ -222,7 +222,7 @@ class Action:
             voloncontainer = "/home/apporbit/apporbit-services"
             vol_mount_str = " -v " + volonhost + ":" + voloncontainer + ":Z"
             logging.info("volume mount str" + vol_mount_str)
-            pull_mist_binary = "wget -P " + volonhost + "/mist-cgp http://repos.gsintlab.com/repos/mist/integration/run.jar"
+            pull_mist_binary = "wget -P " + volonhost + "/mist-cgp http://repos.gsintlab.com/release/mist/integration/run.jar"
             self.utilityobj.cmdExecute(pull_mist_binary, 'pull mist binary ', True)
 
         cmd_deploy_services = "docker run -t --name apporbit-services --restart=always \

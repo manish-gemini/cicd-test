@@ -26,7 +26,7 @@ build_deploy_mode:
     reg_url = secure-registry.gsintlab.com
     volume_mount = /opt
 
-    In this case, controller and service will be lauched using Master Images and will be volume mounted to
+    In this case, controller, service and deta will be lauched using Master Images and will be volume mounted to
     /opt/Gemini-poc-stack and /opt/Gemini-poc-mgnt respectively.
     ]
 	
@@ -65,7 +65,7 @@ registry_url :
 	Sepicify it if you use build_deploy_mode = 0 for QA Master/Integration build
 	by specifying " secure-registry.gsintlab.com" for Master test
 	"jenkin-registry.gsintlab.com" for integration test
-internal_repo = http://repos.gsintlab.com/repos
+internal_repo = http://repos.gsintlab.com/release
 volume_mount : 
 Location for Code of Controller and Services to be volume mounted.
 consul_ip_port = http://<HOST_IP>:8500

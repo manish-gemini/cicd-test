@@ -23,7 +23,7 @@ hostip = $ip
 themename = apporbit-v2
 api_version = v2
 registry_url = jenkin-registry.gsintlab.com
-internal_repo = http://repos.gsintlab.com/repos
+internal_repo = http://repos.gsintlab.com/release
 volume_mount = " > Customer/KIT/appOrbitDeploy/src/local.conf
 
 cd Customer/KIT/appOrbitDeploy/src
