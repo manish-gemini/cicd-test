@@ -1,0 +1,18 @@
+global:
+  scrape_interval: 1m
+  evaluation_interval: 1m
+
+  external_labels:
+    monitor: 'apporbit'
+
+scrape_configs:
+- job_name: 'host'
+  consul_sd_configs:
+      - server: 'CONSUL_HOST_ADDR'
+  relabel_configs:
+    - source_labels: [__meta_consul_tags]
+      regex: .*,monitor,.*
+      action: keep
+
+rule_files:
+  - 'etc/prometheus/alert.rules'
