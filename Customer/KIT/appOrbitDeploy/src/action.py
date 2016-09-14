@@ -582,12 +582,12 @@ class Action:
         return True
 
     def removeRunningContainers(self, config_obj):
-        container_name_list = ["db","apporbit-db", "apporbit-controller",
+        container_name_list = ["apporbit-cadvisor", "db","apporbit-db", "apporbit-controller",
                                "apporbit-services","apporbit-docs",
                                "apporbit-rmq", "apporbit-consul",
                                "apporbit-locator", "apporbit-svcd",
                                "apporbit-node-exporter",
-                               "apporbit-cadvisor", "apporbit-alertmanager",
+                               "apporbit-alertmanager",
                                "apporbit-prometheus", "apporbit-grafana"]
         if config_obj.clean_setup == '1':
             container_name_list.append("apporbit-chef")
