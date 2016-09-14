@@ -168,8 +168,8 @@ echo "Release Repo = 1"
 echo "Master Repo = 2"
 echo "Test Repo = 3"
 echo "Dev Repo = 4"
-read -p "Default(2):" repoType
-repoType=${repoType:-"2"}
+read -p "Default(3):" repoType
+repoType=${repoType:-"3"}
 echo $repoType
 
 if docker images |grep -a apporbit/apporbit-services-base; then
@@ -181,7 +181,7 @@ else
 	quickBuildStack=2
 fi
 
-echo  "Enter 1 for Quick Build apporbit-services & apporbit-controller or 2 for to build all "
+echo  "Enter 1 for Quick Build apporbit-services, apporbit-controller and deta or 2 for to build all "
 read -p "Default($quickBuildStack):" quickBuild
 quickBuild=${quickBuild:-$quickBuildStack}
 echo $quickBuild
