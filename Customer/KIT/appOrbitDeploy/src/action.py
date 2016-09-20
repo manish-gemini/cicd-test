@@ -466,7 +466,7 @@ class Action:
             consul_port = str(consul_ip_port.port)
         self.utilityobj.progressBar(1)
         # LOGIN to DOCKER REGISTRY
-        if config_obj.build_deploy_mode in [ 0, 1, 3 ]:
+        if config_obj.build_deploy_mode in ['0', '1', '3']:
             self.utilityobj.loginDockerRegistry(config_obj.docker_uname, config_obj.docker_passwd, config_obj.registry_url)
             self.pullImagesformRepos(config_obj.registry_url, config_obj.buildid)
 
