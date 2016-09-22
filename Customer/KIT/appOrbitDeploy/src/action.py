@@ -242,6 +242,28 @@ class Action:
         sleep(10)
         return True
 
+    def deployCaptain(self, config_obj):
+        reg_url = config_obj.registry_url
+	build_deploy_mode = config_obj.build_deploy_mode
+
+        if not (config_obj.registry_url):
+            captain_image = "apporbit/captain"
+        else:
+            captain_image = reg_url + "/apporbit/captain"
+	if build_deploy_mode == '1':
+            captain_image = 'apporbit/captain'
+
+        cmd_deploy_captain = ("docker run -d --name apporbit-captain "
+                           "--restart=always" + " -p 8090:8080 "
+                           "--link apporbit-controller:controller "
+                           "-e CONTROLLER_ALIAS_NAME=controller " +
+                           captain_image)
+        cmd_desc = "Deploying captain container"
+
+        self.utilityobj.cmdExecute(cmd_deploy_captain, cmd_desc, True)
+        sleep(10)
+        return True
+    
     def deployServices(self, config_obj):
         internal_repo = config_obj.internal_repo
         host_ip = config_obj.hostip
@@ -513,25 +535,25 @@ class Action:
         self.utilityobj.progressBar(12)
         #DEPLOY DOCS CONTAINER
         self.deployDocs(config_obj.registry_url)
-        self.utilityobj.progressBar(14)
+        self.utilityobj.progressBar(13)
         # DEPLOY RABBIT MQ
         self.deployRMQ(config_obj.registry_url)
-        self.utilityobj.progressBar(15)
+        self.utilityobj.progressBar(14)
         # DEPLOY SERVICES
         self.deployServices(config_obj)
-        self.utilityobj.progressBar(16)
+        self.utilityobj.progressBar(15)
 	
         #DEPLOY CONSUL
         self.deployConsul(config_obj.registry_url, config_obj.consul_host, config_obj.consul_domain, config_obj.build_deploy_mode)
-        self.utilityobj.progressBar(17)
+        self.utilityobj.progressBar(16)
 
         #DEPLOY LOCATOR
         self.deployLocator(config_obj.consul_ip_port, config_obj.registry_url, config_obj.build_deploy_mode)
-        self.utilityobj.progressBar(18)
+        self.utilityobj.progressBar(17)
 
         # DEPLOY SVCD
         self.deploySvcd(config_obj)
-        self.utilityobj.progressBar(19)
+        self.utilityobj.progressBar(18)
 
         # DEPLOY NODE EXPORTER
         self.deployNodeExporter()
@@ -550,6 +572,10 @@ class Action:
 
         # DEPLOY PLATFORM
         self.deployController(config_obj, consul_ip, consul_port)
+        self.utilityobj.progressBar(19)
+
+	#DEPLOY DETA CAPTAIN
+        self.deployCaptain(config_obj)
         self.utilityobj.progressBar(20)
 
         return True
@@ -588,7 +614,8 @@ class Action:
                                "apporbit-locator", "apporbit-svcd",
                                "apporbit-node-exporter",
                                "apporbit-alertmanager",
-                               "apporbit-prometheus", "apporbit-grafana"]
+                               "apporbit-prometheus", "apporbit-grafana",
+                               "apporbit-captain"]
         if config_obj.clean_setup == '1':
             container_name_list.append("apporbit-chef")
 
@@ -693,6 +720,7 @@ class Action:
         grafana_image = repo_str + '/apporbit/apporbit-grafana:3.1.0'
         cadvisor_image = 'google/cadvisor:v0.23.2'
         node_exporter_image = 'prom/node-exporter:0.12.0'
+	captain_image = repo_str + '/apporbit/captain:' + build_id
 
         cmd_ctrl_image = 'docker pull ' + controller_image
         cmd_srvc_image = 'docker pull ' + services_image
@@ -707,6 +735,7 @@ class Action:
         cmd_grafana_image = 'docker pull ' + grafana_image
         cmd_cadvisor_image = 'docker pull ' + cadvisor_image
         cmd_node_exporter_image = 'docker pull ' + node_exporter_image
+	cmd_captain_image = 'docker pull ' + captain_image
 
         self.utilityobj.progressBar(2)
         self.utilityobj.cmdExecute(cmd_ctrl_image , "Pull controller image",True)
@@ -725,6 +754,8 @@ class Action:
         self.utilityobj.cmdExecute(cmd_grafana_image, "Pull grafana image", True)
         self.utilityobj.cmdExecute(cmd_cadvisor_image, "Pull cadvisor image", True)
         self.utilityobj.cmdExecute(cmd_node_exporter_image, "Pull node exporter image", True)
+	self.utilityobj.cmdExecute(cmd_captain_image, "Pull captain image",True)
+
         return True
 
 
