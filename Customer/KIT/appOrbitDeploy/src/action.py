@@ -405,6 +405,7 @@ class Action:
         cmd_deploy_controller = cmd_deploy_controller + " -e CONSUL_PORT=" + consulport
         cmd_deploy_controller = cmd_deploy_controller + " -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=admin -e MYSQL_DATABASE=apporbit_controller \
         -e ON_PREM_MODE=" + onpremmode + " -e THEME_NAME="+ theme_name + "\
+        -e CAPTAIN_TCP_ADDR=" + hostip + " -e CAPTAIN_TCP_PORT=8090" + "\
         -e CURRENT_API_VERSION=" + api_version + " --link apporbit-db:db --link apporbit-rmq:rmq " + "\
 	--link apporbit-svcd:svcd "
         if deploy_chef == "1":
