@@ -70,24 +70,6 @@ class Action:
         sleep(60)
         return  True
 
-    def deployNodeExporter(self):
-        node_exporter_image_name = "prom/node-exporter:0.12.0"
-        cmd_deploy_node_exporter = "docker run -d -p 9100:9100 --net=\"host\" --restart=always --name=apporbit-node-exporter -v /var/lib/apporbit/monitoring/exporter-collector:/exporter-collector:Z "+ node_exporter_image_name + " --collector.textfile.directory=\"/exporter-collector\""
-        cmd_desc = "Deploying Node exporter container"
-
-        self.utilityobj.cmdExecute(cmd_deploy_node_exporter, cmd_desc, True)
-        sleep(10)
-        return True
-
-    def deployCadvisor(self):
-        cadvisor_image_name = "google/cadvisor:v0.23.2"
-        cmd_deploy_cadvisor = "docker run --volume=/:/rootfs:ro --volume=/var/run:/var/run:rw  --volume=/sys:/sys:ro  --volume=/var/lib/docker/:/var/lib/docker:ro  --publish=9101:8080  --restart=always --detach=true  --name=apporbit-cadvisor --privileged=true " + cadvisor_image_name
-        cmd_desc = "Deploying Cadvisor container"
-
-        self.utilityobj.cmdExecute(cmd_deploy_cadvisor, cmd_desc, True)
-        sleep(10)
-        return True
-
     def deployAlertmanager(self):
         alertmanager_image_name = "prom/alertmanager:master"
         cmd_deploy_alertmanager = "docker run -d -p 9093:9093 -v /var/lib/apporbit/monitoring/alertmanager.yml:/alertmanager.yml:Z -v /var/lib/apporbit/monitoring/alert-data:/alert-data:Z --restart=always --name=apporbit-alertmanager " + alertmanager_image_name + " -config.file=/alertmanager.yml -storage.path=/alert-data"
@@ -556,12 +538,6 @@ class Action:
         self.deploySvcd(config_obj)
         self.utilityobj.progressBar(18)
 
-        # DEPLOY NODE EXPORTER
-        self.deployNodeExporter()
-
-        # DEPLOY CADVISOR
-        self.deployCadvisor()
-
         # DEPLOY ALERTMANAGER
         self.deployAlertmanager()
 
@@ -609,11 +585,10 @@ class Action:
         return True
 
     def removeRunningContainers(self, config_obj):
-        container_name_list = ["apporbit-cadvisor", "db","apporbit-db", "apporbit-controller",
+        container_name_list = ["db","apporbit-db", "apporbit-controller",
                                "apporbit-services","apporbit-docs",
                                "apporbit-rmq", "apporbit-consul",
                                "apporbit-locator", "apporbit-svcd",
-                               "apporbit-node-exporter",
                                "apporbit-alertmanager",
                                "apporbit-prometheus", "apporbit-grafana",
                                "apporbit-captain"]
@@ -677,7 +652,7 @@ class Action:
         dirList = ["/var/dbstore", "/var/log/apporbit", "/var/lib/apporbit","/var/log/apporbit/controller",
                    "/var/log/apporbit/services", "/var/lib/apporbit/sshKey_root", "/var/lib/apporbit/sslkeystore",
                    "/var/lib/apporbit/chefconf","/opt/apporbit/chef-serverkey", "/opt/apporbit/chef-server", "/var/lib/apporbit/consul",
-                   "/var/lib/apporbit/monitoring", "/var/lib/apporbit/monitoring/exporter-collector",
+                   "/var/lib/apporbit/monitoring", 
                    "/var/lib/apporbit/monitoring/alert-data", "/var/lib/apporbit/monitoring/prom-data",
                    "/var/lib/apporbit/monitoring/grafana-data", "/var/lib/apporbit/monitoring/targets"]
 
@@ -719,8 +694,6 @@ class Action:
         prometheus_image = 'prom/prometheus:v1.0.1'
         alertmanager_image = 'prom/alertmanager:master'
         grafana_image = repo_str + '/apporbit/apporbit-grafana:3.1.0'
-        cadvisor_image = 'google/cadvisor:v0.23.2'
-        node_exporter_image = 'prom/node-exporter:0.12.0'
 	captain_image = repo_str + '/apporbit/captain:' + build_id
 
         cmd_ctrl_image = 'docker pull ' + controller_image
@@ -734,8 +707,6 @@ class Action:
         cmd_prometheus_image = 'docker pull ' + prometheus_image
         cmd_alertmanager_image = 'docker pull ' + alertmanager_image
         cmd_grafana_image = 'docker pull ' + grafana_image
-        cmd_cadvisor_image = 'docker pull ' + cadvisor_image
-        cmd_node_exporter_image = 'docker pull ' + node_exporter_image
 	cmd_captain_image = 'docker pull ' + captain_image
 
         self.utilityobj.progressBar(2)
@@ -753,8 +724,6 @@ class Action:
         self.utilityobj.cmdExecute(cmd_prometheus_image, "Pull prometheus image", True)
         self.utilityobj.cmdExecute(cmd_alertmanager_image, "Pull alertmanager image", True)
         self.utilityobj.cmdExecute(cmd_grafana_image, "Pull grafana image", True)
-        self.utilityobj.cmdExecute(cmd_cadvisor_image, "Pull cadvisor image", True)
-        self.utilityobj.cmdExecute(cmd_node_exporter_image, "Pull node exporter image", True)
 	self.utilityobj.cmdExecute(cmd_captain_image, "Pull captain image",True)
 
         return True
