@@ -226,26 +226,31 @@ class Action:
 
     def deployCaptain(self, config_obj):
         reg_url = config_obj.registry_url
-	build_deploy_mode = config_obj.build_deploy_mode
+        build_deploy_mode = config_obj.build_deploy_mode
 
+        ao_registry_url = ""
         if not (config_obj.registry_url):
             captain_image = "apporbit/captain"
+            ao_registry_url = "jenkin-registry.gsintlab.com"
         else:
             captain_image = reg_url + "/apporbit/captain"
-	if build_deploy_mode == '1':
+            ao_registry_url = config_obj.registry_url
+
+        if build_deploy_mode == '1':
             captain_image = 'apporbit/captain'
 
         cmd_deploy_captain = ("docker run -d --name apporbit-captain "
                            "--restart=always" + " -p 8090:8080 "
                            "--link apporbit-controller:controller "
                            "-e CONTROLLER_ALIAS_NAME=controller " +
+                           "-e AO_REGISTRY=" + ao_registry_url + " " +
                            captain_image)
         cmd_desc = "Deploying captain container"
 
         self.utilityobj.cmdExecute(cmd_deploy_captain, cmd_desc, True)
         sleep(10)
         return True
-    
+
     def deployServices(self, config_obj):
         internal_repo = config_obj.internal_repo
         host_ip = config_obj.hostip
