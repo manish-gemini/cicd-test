@@ -242,6 +242,7 @@ class Action:
         cmd_deploy_captain = ("docker run -d --name apporbit-captain "
                            "--restart=always" + " -p 8090:8080 "
                            "--link apporbit-controller:controller "
+                           "--link apporbit-svcd:svcd "
                            "-e CONTROLLER_ALIAS_NAME=controller " +
                            "-e AO_REGISTRY=" + ao_registry_url + " " +
                            captain_image)
