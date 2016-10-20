@@ -28,7 +28,7 @@ else
   cproxy=""
 fi
 
-FILES="action.pyc  config.pyc  README.md  userinteract.pyc  utility.pyc  apporbitlauncher.pyc  apporbit.repo apporbit-supportbundle.sh"
+FILES="action.pyc  config.pyc  README.md  userinteract.pyc  utility.pyc  apporbitlauncher.pyc  apporbit.repo apporbit-supportbundle.sh  alert.rules  alertmanager.yml  prometheus.yml"
 
 echo "Downloading apporbit installer"
 for i in $FILES
