@@ -10,8 +10,8 @@ receivers:
  - name: default
  - name: 'email-demo'
    email_configs:
-       - to: ' '
-         from: ' '
-         smarthost: ' '
+       - to: 'admin@apporbit.com'
+         from: 'admin@apporbit.com'
+         smarthost: 'localhost'
          require_tls: false
          send_resolved: true
