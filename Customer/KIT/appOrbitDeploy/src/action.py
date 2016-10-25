@@ -479,7 +479,7 @@ class Action:
         # LOGIN to DOCKER REGISTRY
         if config_obj.build_deploy_mode in ['0', '1', '3']:
             self.utilityobj.loginDockerRegistry(config_obj.docker_uname, config_obj.docker_passwd, config_obj.registry_url)
-            self.pullImagesformRepos(config_obj.registry_url, config_obj.buildid)
+            self.pullImagesformRepos(config_obj.registry_url, config_obj.buildid, config_obj.build_deploy_mode)
 
         self.utilityobj.progressBar(5)
         self.removeRunningContainers(config_obj)
@@ -688,7 +688,7 @@ class Action:
         return True
 
 
-    def pullImagesformRepos(self, repo_str, build_id):
+    def pullImagesformRepos(self, repo_str, build_id, build_deploy_mode):
         controller_image = repo_str + '/apporbit/apporbit-controller:' + build_id
         services_image = repo_str + '/apporbit/apporbit-services:' + build_id
         message_queue_image = repo_str + '/apporbit/apporbit-rmq'
@@ -716,21 +716,25 @@ class Action:
 	cmd_captain_image = 'docker pull ' + captain_image
 
         self.utilityobj.progressBar(2)
-        self.utilityobj.cmdExecute(cmd_ctrl_image , "Pull controller image",True)
-        self.utilityobj.cmdExecute(cmd_srvc_image , "Pull services image",True)
+	if build_deploy_mode not in ['1']:
+            self.utilityobj.cmdExecute(cmd_ctrl_image , "Pull controller image",True)
+            self.utilityobj.cmdExecute(cmd_srvc_image , "Pull services image",True)
+            self.utilityobj.cmdExecute(cmd_svcd_image, "Pull svcd  image",True)
+            self.utilityobj.cmdExecute(cmd_locator_image, "Pull locator image",True)
+            self.utilityobj.cmdExecute(cmd_consul_image, "Pull consul image",True)
+	    self.utilityobj.cmdExecute(cmd_captain_image, "Pull captain image",True)
+	else:
+            logging.info("Apporbit deployment using local images")
+
         self.utilityobj.progressBar(3)
         self.utilityobj.cmdExecute(cmd_msg_image , "Pull message server image",True)
         self.utilityobj.cmdExecute(cmd_docs_image , "Pull document server image",True)
         self.utilityobj.progressBar(4)
         self.utilityobj.cmdExecute(cmd_dbs_image , "Pull database server image",True)
-        self.utilityobj.cmdExecute(cmd_svcd_image, "Pull svcd  image",True)
-        self.utilityobj.cmdExecute(cmd_locator_image, "Pull locator image",True)
-        self.utilityobj.cmdExecute(cmd_consul_image, "Pull consul image",True)
         self.utilityobj.progressBar(5)
         self.utilityobj.cmdExecute(cmd_prometheus_image, "Pull prometheus image", True)
         self.utilityobj.cmdExecute(cmd_alertmanager_image, "Pull alertmanager image", True)
         self.utilityobj.cmdExecute(cmd_grafana_image, "Pull grafana image", True)
-	self.utilityobj.cmdExecute(cmd_captain_image, "Pull captain image",True)
 
         return True
 
