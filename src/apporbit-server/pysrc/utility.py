@@ -16,6 +16,7 @@ import threading
 import urllib2
 import socket
 import traceback
+from io import StringIO
 from time import sleep
 from distutils.version import LooseVersion
 
@@ -43,7 +44,8 @@ class Utility:
 
     def __init__(self):
         self.do_dockerinstall = 0
-        self.docker_version = "1.10.3"
+        self.remove_olddocker = 0
+        self.docker_version = "1.11.2"
         self.do_ntpinstall = 0
         self.do_bindutilsinstall = 0
         self.do_wgetinstall = 0
@@ -52,41 +54,62 @@ class Utility:
         return
 
 
-    def cmdExecute(self, cmd_str, cmd_desc = '', bexit = False):
+    def cmdExecute(self, cmd_str, cmd_desc = '', bexit = False, show = False):
         try:
-            process = subprocess.Popen(cmd_str, shell=True, stdout=subprocess.PIPE, \
-                                   stderr=subprocess.PIPE)
-            out, err =  process.communicate()
+            logging.debug("CMD: %s",  cmd_str)
+            result = []
+            process = subprocess.Popen(cmd_str, bufsize=4096, shell=True, stdout=subprocess.PIPE,
+                                   stderr=subprocess.STDOUT)
+            err =  process.stderr
+            while True:
+                line = process.stdout.readline()
+                if not line: 
+                    break
+                else:
+                    line = line.rstrip()
+                    result.append(line)
+                    logging.debug(line)
+                    if show:
+                        print line
+            while process.poll() == None:
+                    sleep(1)
+            out = '\n'.join(result)
             if process.returncode == 0:
                 logging.info("Success - %s",cmd_desc)
-                logging.info(out)
             else:
                 if bexit :
                     logging.error("FAILED - %s [ %s ]", cmd_desc, cmd_str)
-                    logging.error(err)
+                    logging.error("OUTPUT: %d %s %s", process.returncode, out, err)
                     print "FAILED - " + cmd_desc + "[" + cmd_str + "]"
+                    print process.returncode, err
                     print "Check log for details."
                     sys.exit(1)
                 else:
-                    logging.warning("WARNING - %s", cmd_desc)
-                    logging.warning(err)
+                    logging.warning("FAILED - %s [ %s ]", cmd_desc, cmd_str)
+                    logging.warning("OUTPUT: %d %s %s", process.returncode, out, err)
                     return False, out, err
         except Exception as exp:
+            out = '\n'.join(result)
             if bexit :
-                    logging.error("FAILED - %s [ %s ]", cmd_desci, cmd_str)
-                    logging.error("Exception: %d : %s", exp.errno, exp.strerror)
+                    logging.error("FAILED - %s [ %s  ]", cmd_desc, cmd_str)
+                    logging.error(" FAILED ERR: %s %s", out, err)
                     print "[FAILED] - " + cmd_desc + "[" + cmd_str + "]"
+                    print str(exp)
                     print "Check log for details."
                     sys.exit(1)
             else:
-                    logging.warning("WARNING - %s", cmd_desc)
-                    logging.warning("Exception: %d : %s", exp.errno, exp.strerror)
+                    logging.warning("FAILED - %s [ %s  ]", cmd_desc, cmd_str)
+                    logging.warning(" FAILED ERR: %s %s", out, err)
+                    logging.warning(" Exception %s", exp)
+                    print "[FAILED] - " + cmd_desc + "[" + cmd_str + "]"
+                    print str(exp)
+                    print "Check log for details."
                     return False, out, err
 
         return True, out, err
 
 
-    # Progress Bar Impleementaion
+    # Progress Bar Implementation
     def progressBar(self, i):
         sys.stdout.write('\r')
         # the exact output you're looking for:
@@ -142,8 +165,16 @@ class Utility:
         return True
 
     # Create Temp file
-    def createTempFile(self):
-        open("install.tmp", 'w').close()
+    def loadTempFile(self,config_obj):
+        logging.debug("Checking install.tmp if it exists")
+        if os.path.isfile("install.tmp"):
+            config_obj.loadConfig("install.tmp")
+            logging.debug("Loading install.tmp config")
+        return True
+
+    # Create Temp file
+    def createTempFile(self,config_obj):
+        config_obj.createConfigFile("install.tmp")
         return True
 
     #Create logRotate File
@@ -167,10 +198,10 @@ class Utility:
 
 
     #Docker Login
-    def loginDockerRegistry(self, uname, passwd, repo_str = "secure-registry.gsintlab.com" ):
+    def loginDockerRegistry(self, uname, passwd, repo_str = "registry.apporbit.com" ):
         # print "Login to Docker Registry " + repo_str
         if passwd:
-            cmd_str = 'docker login -e=admin@apporbit.com -u=' + uname + ' -p=' + passwd +' '+ repo_str
+            cmd_str = 'docker login -u=' + uname + ' -p=' + passwd +' '+ repo_str
             self.cmdExecute(cmd_str, "Docker login ", True)
         else:
             logging.error("Docker Login Failed ")
@@ -227,7 +258,18 @@ class Utility:
         if ram_size < 3000000: #4194304:
             logging.info("RAM size is less than expected 4 GB.\
                          Upgrade your system and proceed with installation.")
-            print "ERROR: System Memory is expected to be alteast 4GB. Upgrade your system and proceed with installation."
+            print "ERROR: System Memory is expected to be minimum 4GB. Upgrade your system and proceed with installation."
+            return False
+
+
+        rootdisk_cmd = "df --output=avail / |tail -1"
+        code, out, err = self.cmdExecute(rootdisk_cmd, "Check Freespace", False)
+        root_size = int(out)
+        logging.info("Root disk size = %d", root_size)
+        if root_size < 10 * 1000 * 1000: # 10GB Free
+            logging.info("Root disk should have atleast 10GB free.\
+                         Upgrade your system and proceed with installation.")
+            print "ERROR: System / disk  is expected to have minimum 10GB free. Upgrade your system and proceed with installation."
             return False
 
         logging.info("Hardware requirement verified successfully")
@@ -281,33 +323,40 @@ class Utility:
         logging.info("started verifying software requirements")
         # Check for Operating System compatibility.
         self.verifyOSRequirement()
-        if os.path.isfile('apporbit.repo'):
-            logging.info('copying apporbit.repo to yum.repos.d directory.')
-            shutil.copyfile('apporbit.repo', '/etc/yum.repos.d/apporbit.repo')
-
+        if os.path.isfile('/etc/yum.repos.d/apporbit.repo'):
+            logging.info('Found apporbit.repo in yum.repos.d directory.')
         else:
             logging.error('apporbit.repo file is missing in the package.\
                           check with AppOrbit Business contact.')
-            print ("ERROR: package files missing! check with your appOrbit Business contact.")
+            print ("ERROR: apporbit.repo package files missing! check with your appOrbit Business contact.")
             return False
 
         logging.info ("Verifying docker installation")
 
         docker_cmd = "docker -v"
         return_code, out, err = self.cmdExecute(docker_cmd, "Docker Install", False)
+        docker_ver = LooseVersion(self.docker_version)
         if return_code and out:
-             docker_installed = LooseVersion(out.split()[2].split(',')[0])
-             docker_ver = LooseVersion(self.docker_version)
+            docker_installed = LooseVersion(out.split()[2].split(',')[0])
+            if docker_installed < docker_ver:
+                self.do_dockerinstall = 1
+                self.remove_olddocker = 1
+                logging.info ("Older docker " + str(out))
+                logging.info ("Upgrading docker to " + self.docker_version)
+            else:
+                logging.info ("Docker installed : " + str(out.split()[2].split(',')[0]))
+
         if not return_code:
             self.do_dockerinstall = 1
-        elif docker_installed < docker_ver:
-            self.do_dockerinstall = 1
-            logging.info ("Older " + str(out))
-            logging.info ("Upgrading docker to " + self.docker_version)
-        elif docker_installed == docker_ver:
-            logging.info ("Docker installed : " + self.docker_version)
+        elif out :
+            docker_installed = LooseVersion(out.split()[2].split(',')[0])
+            if docker_installed < docker_ver:
+                self.do_dockerinstall = 1
+                self.remove_olddocker = 1
+                logging.info ("Older " + str(out))
+                logging.info ("Upgrading docker to " + self.docker_version)
         else:
-            print "Apporbit supports docker version upto " + self.docker_version 
+            print "Apporbit supports minimum docker version  " + self.docker_version 
             print "FAILED - Installtion failed due to docker version conflict"
             sys.exit(1)
 
@@ -357,6 +406,17 @@ class Utility:
             print ("Unable to connect to appOrbit repository. Check Network settings and Enable connection to http://repos.apporbit.com ")
             return False
 
+    def preSysRequirements(self,config_obj):
+        cmd_yuminstall = "/bin/yum install -y  curl bind-utils ntp wget "
+        return_code, out, err = self.cmdExecute(cmd_yuminstall, "Pre Install packages", False)
+        if not return_code:
+            if not self.redhat_subscription:
+                print "FAILED- Red Hat is not having a valid subscription. Get a valid subscription and retry installation."
+            return False
+        config_obj.createRepoFile()
+        self.progressBar(11)
+        return True
+
     def fixSysRequirements(self):
         cmd_upgradelvm = "yum -y upgrade lvm2"
         return_code, out, err = self.cmdExecute(cmd_upgradelvm, "lvm upgrade", False)
@@ -365,36 +425,21 @@ class Utility:
                 print "FAILED- Red Hat is not having a valid subscription. Get a valid subscription and retry installation."
             return False
 
-        if self.do_wgetinstall:
-            cmd_wgetInstall = "yum install -y wget"
-            return_code, out, err = self.cmdExecute(cmd_wgetInstall, "Wget Install", False)
-            if not return_code:
-                if not self.redhat_subscription:
-                    print "FAILED- Red Hat is not having a valid subscription. Get a valid subscription and retry installation."
-                return False
-
         self.progressBar(12)
-        if self.do_ntpinstall:
-            cmd_ntpInstall = "yum install -y ntp"
-            return_code, out, err = self.cmdExecute(cmd_ntpInstall, "Ntp Install", False)
-            if not return_code:
-                return False
-
-        self.progressBar(13)
-        if self.do_bindutilsinstall:
-            cmd_bindutilsInstall = "yum install -y bind-utils"
-            return_code, out, err = self.cmdExecute(cmd_bindutilsInstall, "Bind Utils Install", False)
-            if not return_code:
-                return False
-
-        self.progressBar(14)
 
         if self.do_dockerinstall:
-            cmd_dockerInstall = "yum install -y docker-" + self.docker_version
+            if self.remove_olddocker:
+                logging.info('Removing older version of docker')
+                cmd_dockerremove = "/bin/yum remove -y docker docker-selinux docker-common" 
+                return_code, out, err = self.cmdExecute(cmd_dockerremove, "Docker Remove older version if present", False)
+                if not return_code:
+                    return False
+            logging.info('Installing docker version %s' % self.docker_version)
+            cmd_dockerInstall = "/bin/yum install -y docker-engine-" + self.docker_version
             return_code, out, err = self.cmdExecute(cmd_dockerInstall, "Docker Install", False)
             if not return_code:
                 return False
-        self.progressBar(16)
+        self.progressBar(14)
 
         if self.do_sesettings:
             cmd_sesettings = "setenforce 0"
@@ -404,9 +449,14 @@ class Utility:
 
         self.progressBar(17)
        
-        
-        if 'log-driver=journald' in open('/etc/sysconfig/docker').read():
-             cmd_docker_daemon_flag = "sed -i 's/log-driver=journald/log-driver=json-file/' /etc/sysconfig/docker"
+        if os.path.isfile('/etc/sysconfig/docker'):
+           dockerConfig = '/etc/sysconfig/docker'
+        elif os.path.isfile('/etc/default/docker'):
+           dockerConfig = '/etc/default/docker'  
+        else:
+           dockerConfig = None
+        if dockerConfig and 'log-driver=journald' in open(dockerConfig).read():
+             cmd_docker_daemon_flag = "sed -i 's/log-driver=journald/log-driver=json-file/'  " + dockerConfig
              self.cmdExecute(cmd_docker_daemon_flag, "Enabled docker daemon --log-driver flag with json-file ",False)
 
         cmd_dockerservice = "systemctl enable docker.service"
@@ -494,3 +544,12 @@ class Utility:
 
         return result
 
+
+        def resource_path(self,relative_path):
+            try:
+                # PyInstaller creates a temp folder and stores path in _MEIPASS
+                base_path = sys._MEIPASS
+            except Exception:
+                base_path = os.path.abspath(".")
+
+            return os.path.join(base_path, relative_path)

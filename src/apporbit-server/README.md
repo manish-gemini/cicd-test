@@ -7,8 +7,8 @@ AppOrbit Installer Documentation
 
 - 4 vCPU
 - 8 GB RAM
-- 100 GB disk space
-- 8 GB minimum free disk space in the host machine
+- 100 GB disk space recommended disk space in the host machine
+- 10 GB minimum free disk space in the host machine
 
 Network public IP or private IP
 A private IP can be used only when the entire cloud is running in a private, on premise environment without public IPs. If the platform needs to create any clusters in the public cloud or private cloud on the public network, the configuration management server needs to use public IPs, and be accessible to all created virtual machines and the appOrbit Platform.
@@ -23,10 +23,12 @@ The appOrbit Platform requires the following ports in the host firewall accessib
 - 443
 - 9443
 - 9080 
+- 3000 (Prometheus)
+- 53 /tcp/udp (consul)
 
 ## Software
 
-Have python and curl installed.
+Have curl  installed.
 
 # Installation Steps
 
@@ -85,7 +87,7 @@ bash <(curl -s http://repos.apporbit.com/install/appOrbitKit/install.sh)
 
 ##Installation Logs
 
-In case of Installation issues, you can refer to /opt/apporbit/bin/appOrbitInstall.log .
+In case of Installation issues, you can refer to /opt/apporbit/bin/apporbit-server.log .
 
 
 # Updating Chef Server

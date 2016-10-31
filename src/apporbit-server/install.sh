@@ -28,7 +28,7 @@ else
   cproxy=""
 fi
 
-FILES="action.pyc  config.pyc  README.md  userinteract.pyc  utility.pyc  apporbitlauncher.pyc  apporbit.repo apporbit-supportbundle.sh"
+FILES="README.md apporbit-server  docker-compose apporbit-supportbundle.sh"
 
 echo "Downloading apporbit installer"
 for i in $FILES
@@ -45,11 +45,11 @@ do
   fi
 
 done
-chmod a+x /opt/apporbit/bin/*.pyc
+chmod a+x /opt/apporbit/bin/apporbit-server /opt/apporbit/bin/docker-compose /opt/apporbit/bin/*.sh
 # Running predeploy script
 cd /opt/apporbit/bin
 #/opt/apporbit/bin/apporbit-deploy.sh
-cmdstr="python /opt/apporbit/bin/apporbitlauncher.pyc"
+cmdstr="/opt/apporbit/bin/apporbit-server"
 
    for arg in "$@"; do
    case $arg in

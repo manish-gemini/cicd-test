@@ -1,0 +1,35 @@
+#!/bin/bash
+DOCKERFILE=${DOCKERFILE:-Dockerfile}
+cd /go/src/appos/
+if [ -e "depends.bash" ]
+then
+        bash -x depends.bash
+fi
+#cp -f $DOCKERFILE /go/bin/Dockerfile
+#cp -f *.sh /go/bin/
+find . -maxdepth 1 -name \*.sh -exec cp {} /go/bin/ \;
+find . -maxdepth 1 -name "Dockerfile-*"  -exec cp {} /go/bin/ \;
+if [ -d pysrc ]; then
+  #pylint -E pysrc/*.py
+  pyinstaller --noconfirm --log-level=WARN \
+      --onefile  \
+      --specpath=pysrc \
+      --workpath=/tmp/ \
+      --distpath=/go/bin/ \
+      ${OUTPUTNAME}.spec 
+fi
+if [ -d gosrc ]; then
+  ln -s /go/src/appos/gosrc /go/src/${OUTPUTNAME}
+  # Go install only uses the current directory name as output file name
+  # so change directory to reflect the name of output binary
+  cd /go/src/${OUTPUTNAME}
+else
+  ln -s /go/src/appos/ /go/src/${OUTPUTNAME}
+fi
+
+if [ $(find ./ -name "*.go" | wc -l) -gt 0 ]
+then
+    export GOBIN=/go/bin
+    go install
+fi
+
