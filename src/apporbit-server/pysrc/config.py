@@ -38,7 +38,7 @@ class Config():
         self.datasvc_registry = 'docker.io'
         self.remove_data= False
         self.initial_setup= False
-        self.apporbit_repo = 'http://repos.gsintlab.com/repos'
+        self.apporbit_repo = 'http://repos.gsintlab.com/release'
         self.registry_uname = ''
         self.registry_passwd = ''
         self.initial_install = False
@@ -488,7 +488,7 @@ services:
   apporbit-consul:
     container_name: apporbit-consul
     image: ${APPORBIT_REGISTRY}apporbit/consul:${APPORBIT_BUILDID}
-    command: -server -bootstrap --domain=jksvc.gsintlab.com
+    command: -server -bootstrap --domain=${APPORBIT_DOMAIN}
     hostname: consul
     restart: always
     network_mode: "bridge"
@@ -542,7 +542,7 @@ services:
     restart: always
     network_mode: "bridge"
     ports:
-      - "9093"
+      - "9093:9093"
     volumes:
       - ${APPORBIT_CONF}/alertmanager.yml:/alertmanager.yml:Z
       - ${APPORBIT_LIB}/monitoring/alert-data:/alert-data:Z 
@@ -555,7 +555,7 @@ services:
     restart: always
     network_mode: "bridge"
     ports:
-      - "9090"
+      - "9090:9090"
     links:
       - apporbit-consul:consul 
       - apporbit-alertmanager:alertmanager 
@@ -703,6 +703,7 @@ volumes:
                             APPORBIT_LOG = self.APPORBIT_LOG,
                             APPORBIT_LOGINID = self.apporbit_loginid,
                             APPORBIT_REGISTRY = aoreg,
+                            APPORBIT_DOMAIN = self.apporbit_domain,
                             APPORBIT_REPO = self.apporbit_repo,
                             APPORBIT_BUILDID = self.buildid,
                             DATASVC_REGISTRY = datareg,

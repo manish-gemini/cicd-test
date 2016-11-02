@@ -1,4 +1,5 @@
 BASEDIR := ${PWD}
+CICDDIR := ${BASEDIR}/cicd
 SRCDIR := ${BASEDIR}/cicd/src
 BUILDDIR := ${BASEDIR}/cicd/build
 APPORBIT_VERSION := 2.0-beta
@@ -26,12 +27,12 @@ DTAG = docker tag
 
 GOTEST = go test -v
 
-IGNORE := $(shell bash -c "source ${SRCDIR}/setup/setenv.sh; env | sed 's/=/:=/' | sed 's/^/export /' > ${BUILDDIR}/makeenv")
+IGNORE := $(shell bash -c "cd cicd; source ${CICDDIR}/setup/setenv.sh; env | sed 's/=/:=/' | sed 's/^/export /' > ${BUILDDIR}/makeenv")
 include ${BUILDDIR}/makeenv
 
 
 .PHONY: setup clean
-default: clean compile images
+default: setup clean compile images
 
 all: clean compile images 
 
@@ -79,11 +80,12 @@ install:
 
 	for IMG in ${MODULES} ; do \
 	    BASEIMG=$(basename $$IMG) ;\
-		${DTAG}  ${APPORBITUSER}/$$BASEIMG ${APPORBIT_PUSHPRE}/$$BASEIMG:${APPORBIT_VERSION} ;\
-		${DTAG} -f ${APPORBITUSER}/$$BASEIMG ${APPORBIT_PUSHPRE}/$$BASEIMG:${APPORBIT_ALTVER} ;\
-		${DPUSH} ${APPORBIT_PUSHPRE}/$$BASEIMG:${APPORBIT_VERSION} ;\
-		${DPUSH} ${APPORBIT_PUSHPRE}/$$BASEIMG:${APPORBIT_ALTVER} ;\
+		if [ -f ${BUILDDIR}/$$BASEIMG/Dockerfile ] ; then \
+		    ${DTAG}  ${APPORBITUSER}/$$BASEIMG ${APPORBIT_PUSHPRE}/$$BASEIMG:${APPORBIT_VERSION} ;\
+		    ${DTAG} -f ${APPORBITUSER}/$$BASEIMG ${APPORBIT_PUSHPRE}/$$BASEIMG:${APPORBIT_ALTVER} ;\
+		    ${DPUSH} ${APPORBIT_PUSHPRE}/$$BASEIMG:${APPORBIT_VERSION} ;\
+		    ${DPUSH} ${APPORBIT_PUSHPRE}/$$BASEIMG:${APPORBIT_ALTVER} ;\
+		fi ;\
 	done
-
 
 
