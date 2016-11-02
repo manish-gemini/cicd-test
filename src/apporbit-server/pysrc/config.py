@@ -13,6 +13,7 @@ from string import Template
 class Config():
 
     def __init__(self):
+        self.NUM_CONTAINERS = 13
         self.APPORBIT_HOME = '/opt/apporbit'
         self.APPORBIT_BIN = self.APPORBIT_HOME + '/bin'
         self.APPORBIT_CONF = self.APPORBIT_HOME + '/conf'
@@ -34,6 +35,7 @@ class Config():
         self.chef_host = ''
         self.apporbit_deploy = 'all'
         self.apporbit_registry = 'registry.apporbit.com'
+        self.datasvc_registry = 'docker.io'
         self.remove_data= False
         self.initial_setup= False
         self.apporbit_repo = 'http://repos.gsintlab.com/repos'
@@ -133,6 +135,8 @@ class Config():
                   self.apporbit_registry = val
                elif key == 'apporbit_repo':
                   self.apporbit_repo = val
+               elif key == 'datasvc_registry':
+                  self.datasvc_registry = val
 
            for key in config.options('System Setup'):
                val = config.get('System Setup', key)
@@ -201,6 +205,8 @@ class Config():
         config.set('Registry Setup' , 'username', self.registry_uname)
         config.set('Registry Setup', 'password', self.registry_passwd)
         config.set('Registry Setup', 'apporbit_repo', self.apporbit_repo)
+        if self.datasvc_registry <> '':
+            config.set('Registry Setup', 'datasvc_registry', self.datasvc_registry)
 
         config.add_section('System Setup')
         config.set('System Setup', 'apporbit_host', self.apporbit_host)
@@ -398,7 +404,7 @@ services:
 
   apporbit-chef:
     container_name: apporbit-chef
-    image: ${APPORBIT_REGISTRY}/apporbit/apporbit-chef:2.0
+    image: ${APPORBIT_REGISTRY}apporbit/apporbit-chef:2.0
     mem_limit: 2100000000
     hostname: ${APPORBIT_HOST}
     restart: always
@@ -432,7 +438,7 @@ services:
 
   apporbit-rmq:
     container_name: apporbit-rmq
-    image: ${APPORBIT_REGISTRY}/apporbit/apporbit-rmq:${APPORBIT_BUILDID}
+    image: ${APPORBIT_REGISTRY}apporbit/apporbit-rmq:${APPORBIT_BUILDID}
     hostname: "rmq"
     restart: always
     network_mode: "bridge"
@@ -444,7 +450,7 @@ services:
 
   apporbit-docs:
     container_name: apporbit-docs
-    image: ${APPORBIT_REGISTRY}/apporbit/apporbit-docs:${APPORBIT_BUILDID}
+    image: ${APPORBIT_REGISTRY}apporbit/apporbit-docs:${APPORBIT_BUILDID}
     restart: always
     network_mode: "bridge"
     ports:
@@ -453,7 +459,7 @@ services:
 
   apporbit-services:
     container_name: apporbit-services
-    image: ${APPORBIT_REGISTRY}/apporbit/apporbit-services:${APPORBIT_BUILDID}
+    image: ${APPORBIT_REGISTRY}apporbit/apporbit-services:${APPORBIT_BUILDID}
     restart: always
     network_mode: "bridge"
     environment:
@@ -481,7 +487,7 @@ services:
 
   apporbit-consul:
     container_name: apporbit-consul
-    image: ${APPORBIT_REGISTRY}/apporbit/consul:${APPORBIT_BUILDID}
+    image: ${APPORBIT_REGISTRY}apporbit/consul:${APPORBIT_BUILDID}
     command: -server -bootstrap --domain=jksvc.gsintlab.com
     hostname: consul
     restart: always
@@ -499,7 +505,7 @@ services:
 
   apporbit-locator:
     container_name: apporbit-locator
-    image: ${APPORBIT_REGISTRY}/apporbit/locator:${APPORBIT_BUILDID}
+    image: ${APPORBIT_REGISTRY}apporbit/locator:${APPORBIT_BUILDID}
     hostname: locator
     restart: always
     network_mode: "bridge"
@@ -516,7 +522,7 @@ services:
 
   apporbit-svcd:
     container_name: apporbit-svcd
-    image: ${APPORBIT_REGISTRY}/apporbit/svcd:${APPORBIT_BUILDID}
+    image: ${APPORBIT_REGISTRY}apporbit/svcd:${APPORBIT_BUILDID}
     hostname: svcd
     restart: always
     network_mode: "bridge"
@@ -561,7 +567,7 @@ services:
 
   apporbit-grafana:
     container_name: apporbit-grafana
-    image: ${APPORBIT_REGISTRY}/apporbit/apporbit-grafana:3.1.0
+    image: ${APPORBIT_REGISTRY}apporbit/apporbit-grafana:3.1.0
     restart: always
     network_mode: "bridge"
     ports:
@@ -578,14 +584,14 @@ services:
 
   apporbit-captain:
     container_name: apporbit-captain
-    image: ${APPORBIT_REGISTRY}/apporbit/captain:${APPORBIT_BUILDID}
+    image: ${APPORBIT_REGISTRY}apporbit/captain:${APPORBIT_BUILDID}
     restart: always
     network_mode: "bridge"
     ports:
       - "8080"
     environment:
       - CONTROLLER_ALIAS_NAME=controller
-      - AO_REGISTRY=${APPORBIT_REGISTRY}
+      - AO_REGISTRY=${DATASVC_REGISTRY}
     extra_hosts:
       - "controller:${APPORBIT_HOST}"
     links:
@@ -596,7 +602,7 @@ services:
 
   apporbit-controller:
     container_name: apporbit-controller
-    image: ${APPORBIT_REGISTRY}/apporbit/apporbit-controller:${APPORBIT_BUILDID}
+    image: ${APPORBIT_REGISTRY}apporbit/apporbit-controller:${APPORBIT_BUILDID}
     hostname: controller
     restart: always
     network_mode: "bridge"
@@ -678,6 +684,16 @@ volumes:
                      services_devmount = ''
                      controller_devmount = ''
 
+                 # aoreg has / so local or full qualified images are handled in template
+                 aoreg = self.apporbit_registry
+                 if aoreg:
+                    aoreg += '/'
+
+                 datareg = self.apporbit_registry
+                 if self.datasvc_registry <> '':
+                    datareg = self.datasvc_registry
+                 
+
                  content = content.safe_substitute(
                             APPORBIT_CHEFHOST = self.chef_host,
                             APPORBIT_CONF = self.APPORBIT_CONF,
@@ -686,9 +702,10 @@ volumes:
                             APPORBIT_LIB = self.APPORBIT_DATA,
                             APPORBIT_LOG = self.APPORBIT_LOG,
                             APPORBIT_LOGINID = self.apporbit_loginid,
-                            APPORBIT_REGISTRY = self.apporbit_registry,
+                            APPORBIT_REGISTRY = aoreg,
                             APPORBIT_REPO = self.apporbit_repo,
                             APPORBIT_BUILDID = self.buildid,
+                            DATASVC_REGISTRY = datareg,
                             SERVICES_DEVMOUNT = services_devmount,
                             CONTROLLER_DEVMOUNT = controller_devmount,
                             UPGRADE = "1"

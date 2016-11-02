@@ -269,8 +269,8 @@ class Action:
         return True
 
 
-    def removeData(self,config_obj):
-        if config_obj.APPORBIT_DATA and config_obj.APPORBIT_DATA <> '/':
+    def removeData(self, config_obj):
+        if config_obj.APPORBIT_DATA and config_obj.APPORBIT_DATA != '/':
             cmd_removedata = "rm -rf " + config_obj.APPORBIT_DATA
         else:
             cmd_removedata = "rm -rf /var/lib/apporbit"
@@ -278,6 +278,15 @@ class Action:
         code, out, err = self.utilityobj.cmdExecute(cmd_removedata, cmd_desc, True)
         config_obj.remove_data = True
         config_obj.initial_install = True
+        return code
+
+    def removeSetupConfig(self, config_obj):
+        if config_obj.APPORBIT_CONF and config_obj.APPORBIT_CONF != '/':
+            cmd_removeconf = "rm -rf " + config_obj.APPORBIT_CONF
+        else:
+            logging.warning( "Nothing to remove in setupconfig directory : " + config_obj.APPORBIT_CONF )
+        cmd_desc = "Remove old setup configuration"
+        code, out, err = self.utilityobj.cmdExecute(cmd_removeconf, cmd_desc, True)
         return code
 
 
@@ -310,11 +319,11 @@ class Action:
 
     def removeRunningContainers(self, config_obj, show = False):
         # First down compose
-        self.removeCompose(config_obj,show)
+        self.removeCompose(config_obj, show)
 
         # Now kill and remove any stray apporbit-containers
         logging.info("Killing and removing old apporbit containers." )
-        cmd_killcmd = 'docker kill $(docker ps -a -q --filter "name=apporbit-*")'
+        cmd_killcmd = 'docker kill $(docker ps -q --filter "name=apporbit-*")'
         return_code, out, err = self.utilityobj.cmdExecute(cmd_killcmd, "Killing old appOrbit containers", False)
         if (not return_code):
             logging.warning("Could not kill appOrbit containers. %d %s %s" % (return_code, out, err))
@@ -427,6 +436,10 @@ class Action:
 
 
     def pullImages(self, config_obj):
+        if not config_obj.apporbit_registry:
+            print "Using local images"
+            logging.info("Using local images. No pull required.")
+            return True
         self.utilityobj.loginDockerRegistry(config_obj.registry_uname, config_obj.registry_passwd, config_obj.apporbit_registry)
         logging.info("Pulling new images from registry: " + config_obj.apporbit_registry)
         cmd_pull_images = config_obj.APPORBIT_COMPOSE + " -f " +  config_obj.composeFile + " pull"
@@ -437,10 +450,10 @@ class Action:
             sys.exit(1)
         return True
 
-    def showStatus(self,config_obj):
+    def showStatus(self,config_obj,show=True):
         cmd_status = config_obj.APPORBIT_COMPOSE + " -f " +  config_obj.composeFile + " ps"
-        self.utilityobj.cmdExecute(cmd_status , "Showing status images", show=True)
-        return True
+        return_code, out, err = self.utilityobj.cmdExecute(cmd_status , "Showing status images", show=show)
+        return return_code and len(out.split('\n')) > config_obj.NUM_CONTAINERS
 
 
 class DeployChef:

@@ -14,6 +14,9 @@ import config, utility, action, userinteract
 
 def main():
     CONF_FILE='setup.conf'
+    if os.geteuid() != 0:
+        sys.exit("You need to have root privileges to run this script.\nPlease try again, this time using 'sudo'. Exiting.")
+
     if not os.path.exists("/var/log/apporbit"):
        os.makedirs("/var/log/apporbit")
 
@@ -53,9 +56,7 @@ def main():
 
     setupDone = False
     try:
-      if args.status:
-          setupRequired = False
-      elif (os.path.isfile(config_obj.apporbit_serverconf) 
+      if (os.path.isfile(config_obj.apporbit_serverconf) 
            and os.path.isfile(config_obj.composeFile)
            and utility_obj.isPreviousInstallSuccess()
            ):
@@ -63,12 +64,17 @@ def main():
           logging.info("Setup not required. Loading existing setup config")
           config_obj.loadConfig(config_obj.apporbit_serverconf)
       else:
+          # This is the only visual clue that the product is not installed.
+          print ("appOrbit server is not installed.")
           setupRequired = True
     except:
           #setupRequired = True
           raise
+    skipSetup = False
+    if not args.setuponly and (args.stop or args.kill or args.status or args.removedata or args.removeconfig):
+       skipSetup = True
 
-    if args.setuponly or  setupRequired:
+    if  args.setuponly or (setupRequired and not skipSetup):
         print ("This installer will install the appOrbit server in this machine")
         print ("Installation log will be in : /var/log/apporbit/apporbit-server.log")
         logging.info("Starting appOrbit Installation")
@@ -143,7 +149,14 @@ def main():
             action_obj.removeData(config_obj)
 
         if os.listdir(config_obj.APPORBIT_DATA):
-                    config_obj.initial_install = True
+            config_obj.initial_install = True
+
+        if args.setuponly:
+            utility_obj.removeTempFile()
+            print "Requested setup only."
+            print "Use apporbit-server --pullimages to pull images."
+            print "Then use  apporbit-server --start to start appOrbit server."
+            return
 
         print "Download  appOrbit Server container images"
         logging.info("Updating Images")
@@ -152,6 +165,7 @@ def main():
             action_obj.pullImages(config_obj)
             utility_obj.progressBar(20)
         print "   -- [Done]"
+
 
         print "Deploying appOrbit server."
         with utility.DotProgress("Deploy"):
@@ -207,30 +221,42 @@ def main():
         logging.info("Restarted appOrbit Server")
         print " [Done]"
     elif args.removedata:
-        print "Requesting to removing Data"
-        print "Please stop apporbit server and then"
-        print "rm -rf /var/lib/apporbit/"
         logging.info("Requesting to remove data")
+        if action_obj.showStatus(config_obj,show=False):
+            print "Run apporbit-server --stop to stop containers before deleting data."
+            logging.error("appOrbit server is running. Cannot delete data")
+            return False
+        else:
+            logging.warning("REMOVING appOrbit server Volume data.")
+            action_obj.removeData(config_obj)
+            print "Removing appOrbit server data."
     elif args.removeconfig:
-        print "Requesting to removing Data"
-        print "Please stop apporbit server and then"
-        print "rm -rf /opt/apporbit/conf/"
-        logging.info("Requesting to remove configuration")
+        logging.info("Requesting to remove setup configuration")
+        if action_obj.showStatus(config_obj,show=False):
+            print "Run apporbit-server --stop to stop containers before deleting setup configuration."
+            logging.error("appOrbit server is running. Cannot delete setup configuration")
+            return False
+        else:
+            logging.warning("REMOVING appOrbit server setup configuration.")
+            action_obj.removeSetupConfig(config_obj)
+            print "Removing appOrbit server setup configuration."
     elif args.status:
+        # If product is not installed it will show above that it is not installed.
+        # If it is installed then the next block will show the status of containers
         if os.path.isfile(config_obj.apporbit_serverconf):
             print "Showing status of appOrbit Server"
-            action_obj.showStatus(config_obj)
-        else:
-            print "appOrbit server is not installed."
+            action_obj.showStatus(config_obj, show=True)
     elif args.list:
+        # if I am here I have not given any valid option but did enter a list argument
         complist = ' '.join(args.list)
-        print 'Invalid option: ' + complist
-        print "Use --help to see commands"
+        print 'Invalid arguments: ' + complist + '\n\n'
+        parser.print_help()
     else:
-        print "Showing status of appOrbit Server"
-        action_obj.showStatus(config_obj)
-        print "Use --help to see commands"
-
+        # No options and no list and product is already installed. Just show the status and help command
+        print "appOrbit Server is already configured\n"
+        action_obj.showStatus(config_obj,show=True)
+        print ""
+        parser.print_help()
 
     return
 

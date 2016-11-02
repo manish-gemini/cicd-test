@@ -24,6 +24,7 @@ class UserInteract:
         if passwd <> '':
            config_obj.registry_passwd = passwd
         # is_install_cfgmgr = raw_input("\n Do you want to deploy config manager in the same machine? [Y/n] : ") or 'y'
+        
         utility_obj.loginDockerRegistry(config_obj.registry_uname, config_obj.registry_passwd, config_obj.apporbit_registry)
 
         if utility_obj.isChefDeployed():
@@ -77,16 +78,27 @@ class UserInteract:
         print ""
         print "appOrbit Registry setup (sent to you by email, by appOrbit support team):"
         config_obj.apporbit_registry = raw_input("    appOrbit registry name [%s]: " %config_obj.apporbit_registry) or config_obj.apporbit_registry
-        config_obj.registry_uname = raw_input("    Registry user name[%s]: " %config_obj.registry_uname) or config_obj.registry_uname
-        if config_obj.registry_passwd <> '':
-           password_prompt = '    Password[*****]: '
-        else:
-           password_prompt = '    Password: '
-        passwd  = getpass.getpass(password_prompt)
-        if passwd <> '':
-           config_obj.registry_passwd = passwd
-        # is_install_cfgmgr = raw_input("\n Do you want to deploy config manager in the same machine? [Y/n] : ") or 'y'
-        utility_obj.loginDockerRegistry(config_obj.registry_uname, config_obj.registry_passwd, config_obj.apporbit_registry)
+        if config_obj.apporbit_registry == 'local':
+            config_obj.apporbit_registry = ''
+
+        if config_obj.apporbit_registry:
+            config_obj.registry_uname = raw_input("    Registry user name[%s]: " %config_obj.registry_uname) or config_obj.registry_uname
+            if config_obj.registry_passwd <> '':
+               password_prompt = '    Password[*****]: '
+            else:
+               password_prompt = '    Password: '
+            passwd  = getpass.getpass(password_prompt)
+            if passwd <> '':
+               config_obj.registry_passwd = passwd
+            # is_install_cfgmgr = raw_input("\n Do you want to deploy config manager in the same machine? [Y/n] : ") or 'y'
+            utility_obj.loginDockerRegistry(config_obj.registry_uname, config_obj.registry_passwd, config_obj.apporbit_registry)
+        while True:
+            config_obj.datasvc_registry = raw_input("    dataservice registry name [%s]: " %config_obj.datasvc_registry) or config_obj.datasvc_registry
+            if config_obj.datasvc_registry == 'local':
+               print "local registry is not supported"
+               next
+            else:
+               break
 
         print ""
         print "appOrbit Deployment setup:"
