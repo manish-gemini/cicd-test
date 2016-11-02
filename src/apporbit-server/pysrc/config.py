@@ -30,6 +30,7 @@ class Config():
         self.apporbit_host = ''
         self.apporbit_domain = ''
         self.consul_host = ''
+        self.consul_acl_token = ''
         self.consul_port = '8500'
         self.chef_host = ''
         self.apporbit_deploy = 'all'
@@ -142,6 +143,8 @@ class Config():
                   self.apporbit_domain = val
                elif key == 'consul_host':
                   self.consul_host = val
+               elif key == 'consul_acl_token':
+                  self.consul_acl_token = val
                elif key == 'chef_host':
                   self.chef_host = val
 
@@ -206,6 +209,7 @@ class Config():
         config.set('System Setup', 'apporbit_host', self.apporbit_host)
         config.set('System Setup', 'apporbit_domain', self.apporbit_domain)
         config.set('System Setup', 'consul_host', self.consul_host)
+        config.set('System Setup', 'consul_acl_token', self.consul_acl_token)
         config.set('System Setup', 'chef_host', self.chef_host)
 
         config.add_section('Deployment Setup')
@@ -493,6 +497,8 @@ services:
       - "53:53"
       - "8301:8301/udp"
       - "8302:8302/udp"
+    environment:
+      - CONSUL_ACL_TOKEN=${CONSUL_ACL_TOKEN}
     volumes:
       - ${APPORBIT_LIB}/consul:/data:Z
 
@@ -507,6 +513,7 @@ services:
       - "8080"
     environment:
       - CONSUL_IP_PORT=http://consul:8500
+      - CONSUL_ACL_TOKEN=${CONSUL_ACL_TOKEN}
     links:
       - apporbit-consul:consul
     volumes:
@@ -550,6 +557,8 @@ services:
     network_mode: "bridge"
     ports:
       - "9090"
+    environment:
+      - CONSUL_ACL_TOKEN=${CONSUL_ACL_TOKEN}
     links:
       - apporbit-consul:consul 
       - apporbit-alertmanager:alertmanager 
@@ -691,7 +700,8 @@ volumes:
                             APPORBIT_BUILDID = self.buildid,
                             SERVICES_DEVMOUNT = services_devmount,
                             CONTROLLER_DEVMOUNT = controller_devmount,
-                            UPGRADE = "1"
+                            UPGRADE = "1",
+                            CONSUL_ACL_TOKEN = self.consul_acl_token
                             )
                  file_obj.write(content)
                  file_obj.close()
