@@ -79,7 +79,7 @@ test:
 install:
 
 	for IMG in ${MODULES} ; do \
-	    BASEIMG=$(basename $$IMG) ;\
+	    BASEIMG=$$(basename $$IMG) ;\
 		if [ -f ${BUILDDIR}/$$BASEIMG/Dockerfile ] ; then \
 		    ${DTAG}  ${APPORBITUSER}/$$BASEIMG ${APPORBIT_PUSHPRE}/$$BASEIMG:${APPORBIT_VERSION} ;\
 		    ${DTAG} -f ${APPORBITUSER}/$$BASEIMG ${APPORBIT_PUSHPRE}/$$BASEIMG:${APPORBIT_ALTVER} ;\
