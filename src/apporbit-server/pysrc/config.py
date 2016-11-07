@@ -45,6 +45,7 @@ class Config():
         self.deploy_apporbit = True
         self.deploy_chef = True
         self.deploy_consul = True
+        self.upgrade = False
         self.create_keys = True
         self.import_keys_from_dir = ''
         self.build_deploy_mode = '3'
@@ -65,7 +66,7 @@ class Config():
             os.utime(fname, times)
 
 
-    def setupConfig(self, utilityobj):
+    def setupConfig(self, utilityobj, max_api_users):
         try:
             os.stat(self.APPORBIT_BIN)
         except:
@@ -77,7 +78,7 @@ class Config():
         self.downloadCompose(utilityobj)
         self.touch(self.apporbit_ini )
         self.createMonitoringConfig()
-        self.createComposeFile(utilityobj)
+        self.createComposeFile(utilityobj, max_api_users)
         self.createConfigFile(self.apporbit_serverconf)
 
 
@@ -173,6 +174,8 @@ class Config():
                   self.deploy_chef = val
                elif key == 'deploy_consul':
                   self.deploy_consul = val
+               elif key == 'upgrade':
+                  self.upgrade = val
                elif key == 'deploy_mode':
                   self.deploy_mode = val
                elif key == 'volume_mount':
@@ -225,6 +228,7 @@ class Config():
         config.set('Deployment Setup', 'chef_ssl_crt_dir', self.chef_self_signed_crt_dir)
         config.set('Deployment Setup', 'deploy_chef', self.deploy_chef)
         config.set('Deployment Setup', 'deploy_consul', self.deploy_consul)
+        config.set('Deployment Setup', 'upgrade', self.upgrade)
         config.set('Deployment Setup', 'deploy_mode', self.deploy_mode)
         config.set('Deployment Setup', 'volume_mount', self.volume_mount)
         config.set('Deployment Setup', 'systemreqs', self.systemreqs)
@@ -394,7 +398,7 @@ gpgkey=https://yum.dockerproject.org/gpg
 
 
 
-    def createComposeFile(self, utilityobj):
+    def createComposeFile(self, utilityobj, max_api_users=1):
 
         logging.info("Creating Compose configuration files")
         content=Template('''
@@ -402,11 +406,17 @@ gpgkey=https://yum.dockerproject.org/gpg
 version: "2"
 services:
 
+
   apporbit-chef:
     container_name: apporbit-chef
     image: ${APPORBIT_REGISTRY}apporbit/apporbit-chef:2.0
     mem_limit: 2100000000
     hostname: ${APPORBIT_HOST}
+    dns:  
+      - 8.8.8.8
+      - ${APPORBIT_DNS}
+    dns_search: 
+      - ${APPORBIT_DNSSEARCH}
     restart: always
     network_mode: "bridge"
     ports:
@@ -418,12 +428,34 @@ services:
       - ${APPORBIT_KEY}:/var/opt/chef-server/nginx/ca/:Z
       - chef-conf:/etc/chef-server/:Z
 
+  apporbit-rmq:
+    container_name: apporbit-rmq
+    image: ${APPORBIT_REGISTRY}apporbit/apporbit-rmq:${APPORBIT_BUILDID}
+    hostname: rmq
+    dns:  
+      - 8.8.8.8
+      - ${APPORBIT_DNS}
+    dns_search: 
+      - ${APPORBIT_DNSSEARCH}
+    restart: always
+    network_mode: "bridge"
+    mem_limit: 2100000000
+    environment:
+      - RABBITMQ_VM_MEMORY_HIGH_WATERMARK_PAGING_RATIO=0.1
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq:Z
+      - ${APPORBIT_LOG}/rmq:/var/log/rabbitmq:Z
 
   apporbit-db:
     container_name: apporbit-db
     image: mysql:5.6.24
     network_mode: "bridge"
     hostname: db
+    dns:  
+      - 8.8.8.8
+      - ${APPORBIT_DNS}
+    dns_search: 
+      - ${APPORBIT_DNSSEARCH}
     restart: always
     ports:
       - "3306"
@@ -436,60 +468,16 @@ services:
       - ${APPORBIT_LIB}/mysql:/var/lib/mysql:Z
 
 
-  apporbit-rmq:
-    container_name: apporbit-rmq
-    image: ${APPORBIT_REGISTRY}apporbit/apporbit-rmq:${APPORBIT_BUILDID}
-    hostname: "rmq"
-    restart: always
-    network_mode: "bridge"
-    mem_limit: 2100000000
-    volumes:
-      - rabbitmq-data:/var/lib/rabbitmq:Z
-      - ${APPORBIT_LOG}/rmq:/var/log/rabbitmq:Z
-
-
-  apporbit-docs:
-    container_name: apporbit-docs
-    image: ${APPORBIT_REGISTRY}apporbit/apporbit-docs:${APPORBIT_BUILDID}
-    restart: always
-    network_mode: "bridge"
-    ports:
-      - "9080:80"
-
-
-  apporbit-services:
-    container_name: apporbit-services
-    image: ${APPORBIT_REGISTRY}apporbit/apporbit-services:${APPORBIT_BUILDID}
-    restart: always
-    network_mode: "bridge"
-    environment:
-      - GEMINI_INT_REPO=${APPORBIT_REPO}
-      - CHEF_URL= https://${APPORBIT_CHEFHOST}:9443
-      - UPGRADE=${UPGRADE}
-      - MYSQL_HOST=db
-      - MYSQL_USERNAME=root
-      - MYSQL_PASSWORD=admin
-      - MYSQL_DATABASE=apporbit_mist
-      - GEMINI_STACK_IPANEMA=1
-    links:
-      - apporbit-db:db 
-      - apporbit-rmq:rmq
-    volumes_from:
-      - apporbit-chef
-    volumes:
-      - ${APPORBIT_LIB}/sshKey_root:/root:Z
-      - ${APPORBIT_CONF}/apporbit.ini:/etc/apporbit.ini:Z
-      - ${APPORBIT_LIB}/services:/var/lib/apporbit:Z
-      - ${APPORBIT_LOG}/services:/var/log/apporbit:Z
-      - ${APPORBIT_LIB}/chefconf:/opt/apporbit/chef:Z
-      ${SERVICES_DEVMOUNT}
-
-
   apporbit-consul:
     container_name: apporbit-consul
     image: ${APPORBIT_REGISTRY}apporbit/consul:${APPORBIT_BUILDID}
     command: -server -bootstrap --domain=${APPORBIT_DOMAIN}
     hostname: consul
+    dns:  
+      - 8.8.8.8
+      - ${APPORBIT_DNS}
+    dns_search: 
+      - ${APPORBIT_DNSSEARCH}
     restart: always
     network_mode: "bridge"
     ports:
@@ -502,11 +490,52 @@ services:
     volumes:
       - ${APPORBIT_LIB}/consul:/data:Z
 
+  apporbit-services:
+    container_name: apporbit-services
+    image: ${APPORBIT_REGISTRY}apporbit/apporbit-services:${APPORBIT_BUILDID}
+    restart: always
+    hostname: services
+    dns:  
+      - 8.8.8.8
+      - ${APPORBIT_DNS}
+    dns_search: 
+      - ${APPORBIT_DNSSEARCH}
+    network_mode: "bridge"
+    environment:
+      - TERM=xterm
+      - GEMINI_INT_REPO=${APPORBIT_REPO}
+      - CHEF_URL=https://${APPORBIT_CHEFHOST}:9443
+      - UPGRADE
+      - MYSQL_HOST=db
+      - MYSQL_USERNAME=root
+      - MYSQL_PASSWORD=admin
+      - MYSQL_DATABASE=apporbit_mist
+      - GEMINI_STACK_IPANEMA=1
+    links:
+      - apporbit-db:db 
+      - apporbit-rmq:rmq
+    volumes_from:
+      - apporbit-chef
+    depends_on:
+      - apporbit-captain
+    volumes:
+      - ${APPORBIT_LIB}/sshKey_root:/root:Z
+      - ${APPORBIT_CONF}/apporbit.ini:/etc/apporbit.ini:Z
+      - ${APPORBIT_LIB}/services:/var/lib/apporbit:Z
+      - ${APPORBIT_LOG}/services:/var/log/apporbit:Z
+      - ${APPORBIT_LIB}/chefconf:/opt/apporbit/chef:Z
+      ${SERVICES_DEVMOUNT}
+
 
   apporbit-locator:
     container_name: apporbit-locator
     image: ${APPORBIT_REGISTRY}apporbit/locator:${APPORBIT_BUILDID}
     hostname: locator
+    dns:  
+      - 8.8.8.8
+      - ${APPORBIT_DNS}
+    dns_search: 
+      - ${APPORBIT_DNSSEARCH}
     restart: always
     network_mode: "bridge"
     ports:
@@ -524,8 +553,15 @@ services:
     container_name: apporbit-svcd
     image: ${APPORBIT_REGISTRY}apporbit/svcd:${APPORBIT_BUILDID}
     hostname: svcd
+    dns:  
+      - 8.8.8.8
+      - ${APPORBIT_DNS}
+    dns_search: 
+      - ${APPORBIT_DNSSEARCH}
     restart: always
     network_mode: "bridge"
+    environment:
+      - CONTROLLER_ALIAS_NAME=${APPORBIT_HOST}
     ports:
       - "8080"
     links:
@@ -539,6 +575,11 @@ services:
     image: prom/alertmanager:master
     command: "-config.file=/alertmanager.yml -storage.path=/alert-data"
     hostname: alertmanager
+    dns:  
+      - 8.8.8.8
+      - ${APPORBIT_DNS}
+    dns_search: 
+      - ${APPORBIT_DNSSEARCH}
     restart: always
     network_mode: "bridge"
     ports:
@@ -553,6 +594,12 @@ services:
     image: prom/prometheus:v1.0.1
     command: "-config.file=/etc/prometheus/prometheus.yml -storage.local.path=/prom-data -alertmanager.url=http://alertmanager:9093"
     restart: always
+    hostname: prometheus
+    dns:  
+      - 8.8.8.8
+      - ${APPORBIT_DNS}
+    dns_search: 
+      - ${APPORBIT_DNSSEARCH}
     network_mode: "bridge"
     ports:
       - "9090:9090"
@@ -569,6 +616,12 @@ services:
     container_name: apporbit-grafana
     image: ${APPORBIT_REGISTRY}apporbit/apporbit-grafana:3.1.0
     restart: always
+    hostname: grafana
+    dns:  
+      - 8.8.8.8
+      - ${APPORBIT_DNS}
+    dns_search: 
+      - ${APPORBIT_DNSSEARCH}
     network_mode: "bridge"
     ports:
       - "3000:3000"
@@ -586,14 +639,18 @@ services:
     container_name: apporbit-captain
     image: ${APPORBIT_REGISTRY}apporbit/captain:${APPORBIT_BUILDID}
     restart: always
+    hostname: captain
+    dns:  
+      - 8.8.8.8
+      - ${APPORBIT_DNS}
+    dns_search: 
+      - ${APPORBIT_DNSSEARCH}
     network_mode: "bridge"
     ports:
       - "8080"
     environment:
-      - CONTROLLER_ALIAS_NAME=controller
+      - CONTROLLER_ALIAS_NAME=${APPORBIT_HOST}
       - AO_REGISTRY=${DATASVC_REGISTRY}
-    extra_hosts:
-      - "controller:${APPORBIT_HOST}"
     links:
       - apporbit-svcd:svcd
     volumes:
@@ -603,7 +660,12 @@ services:
   apporbit-controller:
     container_name: apporbit-controller
     image: ${APPORBIT_REGISTRY}apporbit/apporbit-controller:${APPORBIT_BUILDID}
-    hostname: controller
+    hostname: ${APPORBIT_HOST}
+    dns:  
+      - 8.8.8.8
+      - ${APPORBIT_DNS}
+    dns_search: 
+      - ${APPORBIT_DNSSEARCH}
     restart: always
     network_mode: "bridge"
     ports:
@@ -616,7 +678,7 @@ services:
       - CURRENT_API_VERSION=v2
       - ONPREM_EMAIL_ID=${APPORBIT_LOGINID}
       - LOG_LEVEL=WARN
-      - MAX_POOL_SIZE=2
+      - MAX_POOL_SIZE=${MAX_API_USERS}
       - CHEF_URL=https://${APPORBIT_CHEFHOST}:9443
       - AO_HOST=${APPORBIT_HOST}
       - CONSUL_IP=consul
@@ -640,6 +702,22 @@ services:
       - ${APPORBIT_LOG}/controller:/var/log/apporbit:Z
       - ${APPORBIT_KEY}:/home/apporbit/apporbit-controller/sslkeystore:Z
       ${CONTROLLER_DEVMOUNT}
+
+  apporbit-docs:
+    container_name: apporbit-docs
+    image: ${APPORBIT_REGISTRY}apporbit/apporbit-docs:${APPORBIT_BUILDID}
+    restart: always
+    hostname: docs
+    dns:  
+      - 8.8.8.8
+      - ${APPORBIT_DNS}
+    dns_search: 
+      - ${APPORBIT_DNSSEARCH}
+    network_mode: "bridge"
+    ports:
+      - "9080:80"
+    depends_on:
+      - apporbit-controller
 
 networks:
   default:
@@ -690,26 +768,33 @@ volumes:
                     aoreg += '/'
 
                  datareg = self.apporbit_registry
-                 if self.datasvc_registry <> '':
+                 if self.datasvc_registry != '':
                     datareg = self.datasvc_registry
-                 
+
+                 if self.apporbit_domain:
+                    domain = self.apporbit_domain
+                 else:
+                    domain = 'consul.'
+
 
                  content = content.safe_substitute(
                             APPORBIT_CHEFHOST = self.chef_host,
                             APPORBIT_CONF = self.APPORBIT_CONF,
                             APPORBIT_HOST = self.apporbit_host,
+                            APPORBIT_DOMAIN = domain,
+                            APPORBIT_DNS = self.consul_host,
+                            APPORBIT_DNSSEARCH = domain,
                             APPORBIT_KEY = self.APPORBIT_KEY,
                             APPORBIT_LIB = self.APPORBIT_DATA,
                             APPORBIT_LOG = self.APPORBIT_LOG,
                             APPORBIT_LOGINID = self.apporbit_loginid,
                             APPORBIT_REGISTRY = aoreg,
-                            APPORBIT_DOMAIN = self.apporbit_domain,
                             APPORBIT_REPO = self.apporbit_repo,
                             APPORBIT_BUILDID = self.buildid,
+                            MAX_API_USERS = max_api_users,
                             DATASVC_REGISTRY = datareg,
                             SERVICES_DEVMOUNT = services_devmount,
                             CONTROLLER_DEVMOUNT = controller_devmount,
-                            UPGRADE = "1"
                             )
                  file_obj.write(content)
                  file_obj.close()

@@ -1,1 +1,1 @@
-cp Dockerfile /go/bin
+cp add-user.sh init.sh Dockerfile /go/bin

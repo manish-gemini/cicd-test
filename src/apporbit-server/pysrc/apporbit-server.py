@@ -35,6 +35,7 @@ def main():
     parser.add_argument("--pullimages", action='store_true', help='Pull new versions of appOrbit Server images')
     parser.add_argument("--removedata", action='store_true', help='Remove Data in appOrbit Server')
     parser.add_argument("--removeconfig", action='store_true', help='Remove Config in appOrbit Server')
+    parser.add_argument("--removeall", action='store_true', help='Remove Data, Config and Keys in appOrbit Server')
     parser.add_argument("--status", action='store_true', help='Show status of appOrbit Server')
     parser.add_argument("list",  nargs='*', help='List of components')
     args = parser.parse_args()
@@ -67,11 +68,14 @@ def main():
           # This is the only visual clue that the product is not installed.
           print ("appOrbit server is not installed.")
           setupRequired = True
+          if os.path.isfile(CONF_FILE):
+              logging.info('Using ' + CONF_FILE + ' file for deployment')
+              config_obj.loadConfig(CONF_FILE)
     except:
           #setupRequired = True
           raise
     skipSetup = False
-    if not args.setuponly and (args.stop or args.kill or args.status or args.removedata or args.removeconfig):
+    if not args.setuponly and (args.stop or args.kill or args.status or args.removedata or args.removeconfig or args.removeall):
        skipSetup = True
 
     if  args.setuponly or (setupRequired and not skipSetup):
@@ -106,14 +110,11 @@ def main():
             utility_obj.createTempFile(config_obj)
 
 
-        # If CONF_FILE file is available will proceed for Local Deployment
+        # If CONF_FILE file is available it would have already been loaded
         # else will proceed with the Customer Deployment.
         # In Regular customer Deployment case we will not provide any config file.
 
-        if os.path.isfile(CONF_FILE):
-            logging.info('Using ' + CONF_FILE + ' file for deployment')
-            config_obj.loadConfig(CONF_FILE)
-        else:
+        if not os.path.isfile(CONF_FILE):
             logging.info("Starting to get user configuration.")
             # Get User Configuration for Customer Deployment
             # and write to a config file apporbit_deploy.conf
@@ -134,7 +135,8 @@ def main():
 
         # Setup configuration files
         print "\nConfiguring appOrbit setup"
-        config_obj.setupConfig(utility_obj)
+        max_api_users = action_obj.calcMaxPhusionProcess()
+        config_obj.setupConfig(utility_obj, max_api_users)
 
         print "Preparing and removing old containers for appOrbit server."
         with utility.DotProgress("Prepare"):
@@ -148,7 +150,12 @@ def main():
             print "Removing old data for appOrbit server."
             action_obj.removeData(config_obj)
 
-        if os.listdir(config_obj.APPORBIT_DATA):
+        try:
+            if os.stat(config_obj.APPORBIT_DATA) and os.listdir(config_obj.APPORBIT_DATA):
+                config_obj.initial_install = False
+            else:
+                config_obj.initial_install = True
+        except:
             config_obj.initial_install = True
 
         if args.setuponly:
@@ -168,6 +175,8 @@ def main():
 
 
         print "Deploying appOrbit server."
+        if 'update' in args.list or 'upgrade' in args.list:
+           config_obj.upgrade = True
         with utility.DotProgress("Deploy"):
             utility_obj.progressBar(0)
             action_obj.deployAppOrbitCompose(config_obj)
@@ -175,6 +184,12 @@ def main():
 	    utility_obj.removeTempFile()
         print "   -- [Done]"
 
+        print "Waiting for appOrbit server to be active"
+        with utility.DotProgress("Waiting"):
+            utility_obj.progressBar(0)
+            action_obj.waitForDeployment(config_obj,utility_obj)
+            utility_obj.progressBar(20)
+        print "   -- [Done]"
 
         print "Now login to the appOrbit server using"
         print "https://" + config_obj.apporbit_host 
@@ -189,16 +204,24 @@ def main():
     elif args.pullimages:
         print "Update  appOrbit Server images"
         logging.info("Updating Images")
-        with utility.DotProgress("Pull"):
+        with utility.DotProgress("PullImages"):
             utility_obj.progressBar(0)
             action_obj.pullImages(config_obj)
-            utility_obj.progressBar(100)
+            utility_obj.progressBar(20)
         print "   -- [Done]"
     elif args.start: 
         print "Start appOrbit Server containers"
+        if 'update' in args.list or 'upgrade' in args.list:
+           config_obj.upgrade = True
         logging.info("Starting Server")
         action_obj.deployAppOrbitCompose(config_obj, show=True)
-        print " [Done]"
+        print "[Done]"
+        print "Waiting for appOrbit server to be active"
+        with utility.DotProgress("Waiting"):
+            utility_obj.progressBar(0)
+            action_obj.waitForDeployment(config_obj,utility_obj)
+            utility_obj.progressBar(20)
+        print "   -- [Done]"
         print "Now login to the appOrbit server using"
         print "https://" + config_obj.apporbit_host 
     elif args.stop:
@@ -240,6 +263,18 @@ def main():
             logging.warning("REMOVING appOrbit server setup configuration.")
             action_obj.removeSetupConfig(config_obj)
             print "Removing appOrbit server setup configuration."
+    elif args.removeall:
+        logging.info("Requesting to remove all data, configuration, keys")
+        if action_obj.showStatus(config_obj,show=False):
+            print "Run apporbit-server --stop to stop containers before deleting setup configuration."
+            logging.error("appOrbit server is running. Cannot delete all data, keys and configuration")
+            return False
+        else:
+            logging.warning("REMOVING appOrbit server setup configuration, data and keys.")
+            action_obj.removeSetupConfig(config_obj)
+            action_obj.removeData(config_obj)
+            action_obj.removeKeys(config_obj)
+            print "Removing appOrbit server setup configuration, data and keys."
     elif args.status:
         # If product is not installed it will show above that it is not installed.
         # If it is installed then the next block will show the status of containers

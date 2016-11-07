@@ -89,6 +89,7 @@ class Action:
             chef_upgrade = " -e UPGRADE=1 " #1 is Clean Setup
         else:
             chef_upgrade = " -e UPGRADE=2 " #2 is Chef Upgrade Mode
+            config_obj.upgrade = True
 
         cmd_chefDeploy = "docker run -m 2g -it --restart=always "
         cmd_chefDeploy += chef_upgrade
@@ -198,7 +199,12 @@ class Action:
         return True
 
     def deployCompose(self, config_obj, show = False):
-        cmd_deploy_db = config_obj.APPORBIT_COMPOSE + " -f " + config_obj.composeFile + " up -d"
+        if config_obj.upgrade:
+           envlist = "UPGRADE=2"
+        else:
+           envlist = "UPGRADE=1"
+        envlist += " "
+        cmd_deploy_db = envlist + config_obj.APPORBIT_COMPOSE + " -f " + config_obj.composeFile + " up -d"
         cmd_desc = "Start deploying AppOrbit containers.."
         self.utilityobj.cmdExecute(cmd_deploy_db, cmd_desc, True, show)
         logging.info("Deployed appOrbit containers.")
@@ -226,8 +232,21 @@ class Action:
         return  True
 
     def deployAppOrbitCompose(self, config_obj, show= False):
-        logging.info("Deploying appOrbit containers using docker compose ..")
+        logging.info("Deploying appOrbit containers using docker compose.")
         self.deployCompose(config_obj, show)
+        self.postdeployAppOrbit(config_obj, show)
+        return True
+
+    def postdeployAppOrbit(self, config_obj, show=False):
+        # MRPHS-1530 - RabbitMq Timing issue to create test user. RabbitMq users are not persisted many times
+        return_code, out, err = self.utilityobj.cmdExecute(
+               "docker exec -ti apporbit-rmq /add-user.sh", "Creating test user in rabbitmq", False)
+        return True
+
+    def waitForDeployment(self, config_obj, utility_obj):
+        logging.info("Waiting for appOrbit Server to respond.")
+        utility_obj.wait_net_service(config_obj.apporbit_host, 443, 300)
+        self.postdeployAppOrbit(config_obj, show=False)
         return True
 
     def predeployAppOrbit(self, config_obj):
@@ -276,6 +295,9 @@ class Action:
             cmd_removedata = "rm -rf /var/lib/apporbit"
         cmd_desc = "Remove old data"
         code, out, err = self.utilityobj.cmdExecute(cmd_removedata, cmd_desc, True)
+        # We now also need to remove docker volumes if they exist
+        cmd_removedata = "docker volume rm apporbit_chef-conf apporbit_rabbitmq-data"
+        self.utilityobj.cmdExecute(cmd_removedata, cmd_desc, False)
         config_obj.remove_data = True
         config_obj.initial_install = True
         return code
@@ -287,6 +309,15 @@ class Action:
             logging.warning( "Nothing to remove in setupconfig directory : " + config_obj.APPORBIT_CONF )
         cmd_desc = "Remove old setup configuration"
         code, out, err = self.utilityobj.cmdExecute(cmd_removeconf, cmd_desc, True)
+        return code
+
+    def removeKeys(self, config_obj):
+        if config_obj.APPORBIT_KEY and config_obj.APPORBIT_KEY != '/':
+            cmd_removekey = "rm -rf " + config_obj.APPORBIT_KEY
+        else:
+            logging.warning( "Nothing to remove in key directory : " + config_obj.APPORBIT_KEY )
+        cmd_desc = "Remove old key"
+        code, out, err = self.utilityobj.cmdExecute(cmd_removekey, cmd_desc, True)
         return code
 
 
@@ -377,6 +408,7 @@ class Action:
         try:
             logging.info("Found /var/dbstore. Doing upgrade routine")
             os.stat("/var/dbstore")
+            config_obj.upgrade = True
         except:
             logging.info("Upgrade not required as /var/dbstore does not exist")
             return True

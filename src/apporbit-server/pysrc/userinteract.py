@@ -92,6 +92,7 @@ class UserInteract:
                config_obj.registry_passwd = passwd
             # is_install_cfgmgr = raw_input("\n Do you want to deploy config manager in the same machine? [Y/n] : ") or 'y'
             utility_obj.loginDockerRegistry(config_obj.registry_uname, config_obj.registry_passwd, config_obj.apporbit_registry)
+        utility_obj.createTempFile(config_obj)
         while True:
             config_obj.datasvc_registry = raw_input("    dataservice registry name [%s]: " %config_obj.datasvc_registry) or config_obj.datasvc_registry
             if config_obj.datasvc_registry == 'local':
@@ -154,6 +155,7 @@ class UserInteract:
              config_obj.deployChef = True
              config_obj.chef_host = config_obj.apporbit_host
 
+        utility_obj.createTempFile(config_obj)
 
         if config_obj.initial_install and is_install_cfgmgr == "1":
             print '    Configure the SSL certificate for chef-server:'
@@ -185,6 +187,7 @@ class UserInteract:
              config_obj.consul_host = config_obj.apporbit_host
 
         logging.info ("Consul information : %s %s" % (config_obj.consul_host , config_obj.consul_port))
+        utility_obj.createTempFile(config_obj)
 
 
         #BELOW LINES ARE INTENTIONALLY COMMENTED TO AVOID ASKING USER.
