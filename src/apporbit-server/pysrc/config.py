@@ -150,6 +150,11 @@ class Config():
                elif key == 'chef_host':
                   self.chef_host = val
 
+           if self.apporbit_host and not self.consul_host:
+               self.consul_host = self.apporbit_host
+           if self.apporbit_host and not self.chef_host:
+               self.chef_host = self.apporbit_host
+
            for key in config.options('Deployment Setup'):
                val = config.get('Deployment Setup', key)
                if key == 'remote_data':
