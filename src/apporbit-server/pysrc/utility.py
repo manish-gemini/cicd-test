@@ -506,7 +506,6 @@ class Utility:
         return True
 
     def validateDomain(self, domainname):
-        result = False
         logging.info('Validating domainname ')
         code, out, err = self.cmdExecute("ping -c 1 -w 5 " + domainname, "Ping test for domain", False)
         if code:
