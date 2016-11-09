@@ -79,7 +79,7 @@ def main():
        skipSetup = True
 
     if  args.setuponly or (setupRequired and not skipSetup):
-        print ("This installer will install the appOrbit server in this machine")
+        print ("apporbit-server will install the appOrbit server in this machine")
         print ("Installation log will be in : /var/log/apporbit/apporbit-server.log")
         logging.info("Starting appOrbit Installation")
 
@@ -121,11 +121,16 @@ def main():
             userinteract_obj.getUserConfigInfo(config_obj, utility_obj)
             utility_obj.createTempFile(config_obj)
 
+        # Validate that the apporbit_domain is not a hostname
+        if config_obj.apporbit_domain and not utility_obj.validateDomain(config_obj.apporbit_domain):
+            print "ERROR: Apporbit Domain cannot be ip or hostname"
+            sys.exit(1)
+
         # Validate that the apporbit_host chosen during configuration belongs to the current host machine.
         if not utility_obj.validateHostIP(config_obj.apporbit_host):
             print "WARNING: Given Name/IP is not accessible publicly or on private network"
             if os.path.isfile(CONF_FILE):
-                print "The install will proceed in 5 seconds with that Name/IP.. Break CTRL-C to stop"
+                print "apporbit-server will proceed in 5 seconds with that Name/IP.. Break CTRL-C to stop"
                 time.sleep(5)
             else:
                 user_input = raw_input("Do you want to Abort(a) or continue(c) installation[c]:") or 'c'
@@ -162,10 +167,10 @@ def main():
             utility_obj.removeTempFile()
             print "Requested setup only."
             print "Use apporbit-server --pullimages to pull images."
-            print "Then use  apporbit-server --start to start appOrbit server."
+            print "Then use apporbit-server --start to start appOrbit server."
             return
 
-        print "Download  appOrbit Server container images"
+        print "Download appOrbit Server container images"
         logging.info("Updating Images")
         with utility.DotProgress("Pull"):
             utility_obj.progressBar(0)

@@ -427,7 +427,7 @@ services:
     ports:
       - "9443:9443"
     environment:
-      - UPGRADE=2
+      - UPGRADE
     volumes:
       - ${APPORBIT_LIB}/chef-server:/var/opt/chef-server:Z
       - ${APPORBIT_KEY}:/var/opt/chef-server/nginx/ca/:Z

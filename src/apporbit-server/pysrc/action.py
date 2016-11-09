@@ -60,7 +60,7 @@ class Action:
                 cmd_desc = "Deploying Consul container"
         else:
             #print "\nBoth values are present"
-            #check if domain is routable
+            #check if consul_host is routable
             routable = self.routableDomain(consul_host)
             if routable == 'true':
                 cmd_deploy_consul = ("docker run -d -p 8400:8400 -p 8500:8500 -p 53:53/udp "
@@ -139,8 +139,8 @@ class Action:
             os.mkdir(config_obj.APPORBIT_KEY)   
 
         if isChef:
-            if (os.path.isfile(config_obj.APPORBIT_KEY + hostIP + '.key') and
-                os.path.isfile(config_obj.APPORBIT_KEY + hostIP + '.key')):
+            if (os.path.isfile(config_obj.APPORBIT_KEY + '/' + hostIP + '.key') and
+                os.path.isfile(config_obj.APPORBIT_KEY + '/' + hostIP + '.key')):
                 logging.info("Chef Key already exists. Not creating.")
                 return True
             else:
@@ -151,8 +151,8 @@ class Action:
                 -out ' + config_obj.APPORBIT_KEY + '/'+ hostIP + '.crt'
                 cmd_desc = "Creating Chef SSL Certificate."
         else:
-            if (os.path.isfile(config_obj.APPORBIT_KEY + 'apporbitserver.key') and
-                os.path.isfile(config_obj.APPORBIT_KEY + 'apporbitserver.crt')):
+            if (os.path.isfile(config_obj.APPORBIT_KEY + '/apporbitserver.key') and
+                os.path.isfile(config_obj.APPORBIT_KEY + '/apporbitserver.crt')):
                 logging.info("appOrbit Server Key already exists. Not creating.")
                 return True
             else:
@@ -478,7 +478,7 @@ class Action:
         return_code, out, err = self.utilityobj.cmdExecute(cmd_pull_images, "Pulling new images",True)
         if (not return_code):
             logging.error("Could not pull appOrbit containers. Exiting")
-            print "Unable to pull new images. Check Log."
+            print "Unable to pull new images. Check free disk space for docker.  Check Log."
             sys.exit(1)
         return True
 
