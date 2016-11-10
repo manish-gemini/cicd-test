@@ -140,7 +140,7 @@ class Action:
 
         if isChef:
             if (os.path.isfile(config_obj.APPORBIT_KEY + '/' + hostIP + '.key') and
-                os.path.isfile(config_obj.APPORBIT_KEY + '/' + hostIP + '.key')):
+                os.path.isfile(config_obj.APPORBIT_KEY + '/' + hostIP + '.crt')):
                 logging.info("Chef Key already exists. Not creating.")
                 return True
             else:
