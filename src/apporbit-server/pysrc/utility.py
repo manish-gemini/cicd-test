@@ -272,15 +272,16 @@ class Utility:
             print "ERROR: System / disk  is expected to have minimum 10GB free. Upgrade your system and proceed with installation."
             return False
 
-        dockerdisk_cmd = "df --output=avail /var/lib/docker |tail -1"
-        code, out, err = self.cmdExecute(dockerdisk_cmd, "Check Freespace", False)
-        docker_size = int(out)
-        logging.info("Docker (/var/lib/docker)  disk size = %d", docker_size)
-        if docker_size < 5 * 1000 * 1000: # 5GB Free
-            logging.info("Docker data /var/lib/docker disk should have atleast 5GB free.\
-                         Upgrade your system and proceed with installation.")
-            print "ERROR: Docker data /var/lib/docker  disk  is expected to have minimum 5GB free. Upgrade your system and proceed with installation."
-            return False
+        if os.path.isdir("/var/lib/docker"):
+           dockerdisk_cmd = "df --output=avail /var/lib/docker |tail -1"
+           code, out, err = self.cmdExecute(dockerdisk_cmd, "Check Freespace", False)
+           docker_size = int(out)
+           logging.info("Docker (/var/lib/docker)  disk size = %d", docker_size)
+           if docker_size < 5 * 1000 * 1000: # 5GB Free
+               logging.info("Docker data /var/lib/docker disk should have atleast 5GB free.\
+                            Upgrade your system and proceed with installation.")
+               print "ERROR: Docker data /var/lib/docker  disk  is expected to have minimum 5GB free. Upgrade your system and proceed with installation."
+               return False
 
         logging.info("Hardware requirement verified successfully")
         return True
