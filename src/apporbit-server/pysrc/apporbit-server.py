@@ -36,6 +36,7 @@ def main():
     parser.add_argument("--removedata", action='store_true', help='Remove Data in appOrbit Server')
     parser.add_argument("--removeconfig", action='store_true', help='Remove Config in appOrbit Server')
     parser.add_argument("--removeall", action='store_true', help='Remove Data, Config and Keys in appOrbit Server')
+    parser.add_argument("--upgrade", action='store_true', help='Upgrade Setup')
     parser.add_argument("--status", action='store_true', help='Show status of appOrbit Server')
     parser.add_argument("list",  nargs='*', help='List of components')
     args = parser.parse_args()
@@ -75,13 +76,24 @@ def main():
           #setupRequired = True
           raise
     skipSetup = False
-    if not args.setuponly and (args.stop or args.kill or args.status or args.removedata or args.removeconfig or args.removeall):
+    if args.upgrade and not setupRequired:
+        logging.info("Requesting to upgrade configuration")
+        if action_obj.showStatus(config_obj,show=False):
+            logging.info("Stopping Server")
+            action_obj.removeCompose(config_obj, show=True)
+            logging.info("Stopped Server")
+        logging.warning("Backing  appOrbit server setup configuration.")
+        action_obj.backupSetupConfig(config_obj)
+        action_obj.removeSetupConfig(config_obj)
+        config_obj.upgrade = True
+        setupRequired = True
+    elif not args.setuponly and (args.stop or args.kill or args.status or args.removedata or args.removeconfig or args.removeall):
        skipSetup = True
 
     if  args.setuponly or (setupRequired and not skipSetup):
-        print ("apporbit-server will install the appOrbit server in this machine")
+        print ("apporbit-server will install/upgrade the appOrbit server in this machine")
         print ("Installation log will be in : /var/log/apporbit/apporbit-server.log")
-        logging.info("Starting appOrbit Installation")
+        logging.info("Starting appOrbit Installation/upgrade")
 
         # Will check all the System Requirements
         # Fail and exit if Not fixable Requirements like

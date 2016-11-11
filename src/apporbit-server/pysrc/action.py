@@ -302,22 +302,35 @@ class Action:
         config_obj.initial_install = True
         return code
 
+    def backupSetupConfig(self, config_obj):
+        if config_obj.APPORBIT_CONF and config_obj.APPORBIT_CONF != '/':
+            logtimestamp = str(datetime.datetime.now().strftime('%Y%m%d%H%M%S'))
+            cmd_backup = "mv  " + config_obj.APPORBIT_CONF + " " + config_obj.APPORBIT_CONF + "-" + logtimestamp
+            cmd_desc = "Backup old setup configuration"
+            code, out, err = self.utilityobj.cmdExecute(cmd_backup, cmd_desc, True)
+        else:
+            logging.warning( "Nothing to backup in setupconfig directory : " + config_obj.APPORBIT_CONF )
+            code = True
+        return code
+
     def removeSetupConfig(self, config_obj):
         if config_obj.APPORBIT_CONF and config_obj.APPORBIT_CONF != '/':
             cmd_removeconf = "rm -rf " + config_obj.APPORBIT_CONF
+            cmd_desc = "Remove old setup configuration"
+            code, out, err = self.utilityobj.cmdExecute(cmd_removeconf, cmd_desc, True)
         else:
             logging.warning( "Nothing to remove in setupconfig directory : " + config_obj.APPORBIT_CONF )
-        cmd_desc = "Remove old setup configuration"
-        code, out, err = self.utilityobj.cmdExecute(cmd_removeconf, cmd_desc, True)
+            code = True
         return code
 
     def removeKeys(self, config_obj):
         if config_obj.APPORBIT_KEY and config_obj.APPORBIT_KEY != '/':
             cmd_removekey = "rm -rf " + config_obj.APPORBIT_KEY
+            cmd_desc = "Remove old key"
+            code, out, err = self.utilityobj.cmdExecute(cmd_removekey, cmd_desc, True)
         else:
             logging.warning( "Nothing to remove in key directory : " + config_obj.APPORBIT_KEY )
-        cmd_desc = "Remove old key"
-        code, out, err = self.utilityobj.cmdExecute(cmd_removekey, cmd_desc, True)
+            code = True
         return code
 
 
