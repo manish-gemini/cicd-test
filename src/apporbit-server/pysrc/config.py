@@ -51,6 +51,7 @@ class Config():
         self.build_deploy_mode = '3'
         self.deploy_mode = 'onprem'
         self.theme_name = 'apporbit-v2'
+        self.log_level = 'DEBUG'
         self.api_version = 'v2'
         self.self_signed_crt = '1'
         self.self_signed_crt_dir = ''
@@ -193,6 +194,8 @@ class Config():
                   self.theme_name = val
                elif key == 'api_version':
                   self.api_version = val
+               elif key == 'log_level':
+                  self.log_level = val
 
         except ConfigParser.NoSectionError, ConfigParser.NoOptionError:
             logging.warning("warning No section or No option error were found in the file...")
@@ -241,6 +244,7 @@ class Config():
         config.set('Software Setup', 'apporbit_loginid', self.apporbit_loginid)
         config.set('Software Setup', 'themeName', self.theme_name)
         config.set('Software Setup', 'api_version', self.api_version)
+        config.set('Software Setup', 'log_level', self.log_level)
 
         config.write(cfg_file)
         cfg_file.close()
@@ -416,6 +420,7 @@ services:
       - MYSQL_PASSWORD=admin
       - MYSQL_DATABASE=apporbit_mist
       - GEMINI_STACK_IPANEMA=1
+      - LOG_LEVEL=${APPORBIT_LOGLEVEL}
     links:
       - apporbit-db:db 
       - apporbit-rmq:rmq
@@ -518,7 +523,7 @@ services:
       - THEME_NAME=apporbit-v2
       - CURRENT_API_VERSION=v2
       - ONPREM_EMAIL_ID=${APPORBIT_LOGINID}
-      - LOG_LEVEL=WARN
+      - LOG_LEVEL=${APPORBIT_LOGLEVEL}
       - MAX_POOL_SIZE=${MAX_API_USERS}
       - CHEF_URL=https://${APPORBIT_CHEFHOST}:9443
       - AO_HOST=${APPORBIT_HOST}
@@ -629,6 +634,7 @@ volumes:
                             APPORBIT_LIB = self.APPORBIT_DATA,
                             APPORBIT_LOG = self.APPORBIT_LOG,
                             APPORBIT_LOGINID = self.apporbit_loginid,
+                            APPORBIT_LOGLEVEL = self.log_level,
                             APPORBIT_REGISTRY = aoreg,
                             APPORBIT_REPO = self.apporbit_repo,
                             APPORBIT_BUILDID = self.buildid,
