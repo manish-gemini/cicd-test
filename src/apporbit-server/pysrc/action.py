@@ -60,7 +60,7 @@ class Action:
                 cmd_desc = "Deploying Consul container"
         else:
             #print "\nBoth values are present"
-            #check if domain is routable
+            #check if consul_host is routable
             routable = self.routableDomain(consul_host)
             if routable == 'true':
                 cmd_deploy_consul = ("docker run -d -p 8400:8400 -p 8500:8500 -p 53:53/udp "
@@ -139,8 +139,8 @@ class Action:
             os.mkdir(config_obj.APPORBIT_KEY)   
 
         if isChef:
-            if (os.path.isfile(config_obj.APPORBIT_KEY + hostIP + '.key') and
-                os.path.isfile(config_obj.APPORBIT_KEY + hostIP + '.key')):
+            if (os.path.isfile(config_obj.APPORBIT_KEY + '/' + hostIP + '.key') and
+                os.path.isfile(config_obj.APPORBIT_KEY + '/' + hostIP + '.crt')):
                 logging.info("Chef Key already exists. Not creating.")
                 return True
             else:
@@ -151,8 +151,8 @@ class Action:
                 -out ' + config_obj.APPORBIT_KEY + '/'+ hostIP + '.crt'
                 cmd_desc = "Creating Chef SSL Certificate."
         else:
-            if (os.path.isfile(config_obj.APPORBIT_KEY + 'apporbitserver.key') and
-                os.path.isfile(config_obj.APPORBIT_KEY + 'apporbitserver.crt')):
+            if (os.path.isfile(config_obj.APPORBIT_KEY + '/apporbitserver.key') and
+                os.path.isfile(config_obj.APPORBIT_KEY + '/apporbitserver.crt')):
                 logging.info("appOrbit Server Key already exists. Not creating.")
                 return True
             else:
@@ -302,22 +302,35 @@ class Action:
         config_obj.initial_install = True
         return code
 
+    def backupSetupConfig(self, config_obj):
+        if config_obj.APPORBIT_CONF and config_obj.APPORBIT_CONF != '/':
+            logtimestamp = str(datetime.datetime.now().strftime('%Y%m%d%H%M%S'))
+            cmd_backup = "mv  " + config_obj.APPORBIT_CONF + " " + config_obj.APPORBIT_CONF + "-" + logtimestamp
+            cmd_desc = "Backup old setup configuration"
+            code, out, err = self.utilityobj.cmdExecute(cmd_backup, cmd_desc, True)
+        else:
+            logging.warning( "Nothing to backup in setupconfig directory : " + config_obj.APPORBIT_CONF )
+            code = True
+        return code
+
     def removeSetupConfig(self, config_obj):
         if config_obj.APPORBIT_CONF and config_obj.APPORBIT_CONF != '/':
             cmd_removeconf = "rm -rf " + config_obj.APPORBIT_CONF
+            cmd_desc = "Remove old setup configuration"
+            code, out, err = self.utilityobj.cmdExecute(cmd_removeconf, cmd_desc, True)
         else:
             logging.warning( "Nothing to remove in setupconfig directory : " + config_obj.APPORBIT_CONF )
-        cmd_desc = "Remove old setup configuration"
-        code, out, err = self.utilityobj.cmdExecute(cmd_removeconf, cmd_desc, True)
+            code = True
         return code
 
     def removeKeys(self, config_obj):
         if config_obj.APPORBIT_KEY and config_obj.APPORBIT_KEY != '/':
             cmd_removekey = "rm -rf " + config_obj.APPORBIT_KEY
+            cmd_desc = "Remove old key"
+            code, out, err = self.utilityobj.cmdExecute(cmd_removekey, cmd_desc, True)
         else:
             logging.warning( "Nothing to remove in key directory : " + config_obj.APPORBIT_KEY )
-        cmd_desc = "Remove old key"
-        code, out, err = self.utilityobj.cmdExecute(cmd_removekey, cmd_desc, True)
+            code = True
         return code
 
 
@@ -478,7 +491,7 @@ class Action:
         return_code, out, err = self.utilityobj.cmdExecute(cmd_pull_images, "Pulling new images",True)
         if (not return_code):
             logging.error("Could not pull appOrbit containers. Exiting")
-            print "Unable to pull new images. Check Log."
+            print "Unable to pull new images. Check free disk space for docker.  Check Log."
             sys.exit(1)
         return True
 

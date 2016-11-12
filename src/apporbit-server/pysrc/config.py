@@ -13,7 +13,7 @@ from string import Template
 class Config():
 
     def __init__(self):
-        self.NUM_CONTAINERS = 13
+        self.NUM_CONTAINERS = 10
         self.APPORBIT_HOME = '/opt/apporbit'
         self.APPORBIT_BIN = self.APPORBIT_HOME + '/bin'
         self.APPORBIT_CONF = self.APPORBIT_HOME + '/conf'
@@ -51,6 +51,7 @@ class Config():
         self.build_deploy_mode = '3'
         self.deploy_mode = 'onprem'
         self.theme_name = 'apporbit-v2'
+        self.log_level = 'DEBUG'
         self.api_version = 'v2'
         self.self_signed_crt = '1'
         self.self_signed_crt_dir = ''
@@ -77,7 +78,6 @@ class Config():
             os.makedirs(self.APPORBIT_CONF)   
         self.downloadCompose(utilityobj)
         self.touch(self.apporbit_ini )
-        self.createMonitoringConfig()
         self.createComposeFile(utilityobj, max_api_users)
         self.createConfigFile(self.apporbit_serverconf)
 
@@ -150,6 +150,11 @@ class Config():
                elif key == 'chef_host':
                   self.chef_host = val
 
+           if self.apporbit_host and not self.consul_host:
+               self.consul_host = self.apporbit_host
+           if self.apporbit_host and not self.chef_host:
+               self.chef_host = self.apporbit_host
+
            for key in config.options('Deployment Setup'):
                val = config.get('Deployment Setup', key)
                if key == 'remote_data':
@@ -189,6 +194,8 @@ class Config():
                   self.theme_name = val
                elif key == 'api_version':
                   self.api_version = val
+               elif key == 'log_level':
+                  self.log_level = val
 
         except ConfigParser.NoSectionError, ConfigParser.NoOptionError:
             logging.warning("warning No section or No option error were found in the file...")
@@ -237,110 +244,12 @@ class Config():
         config.set('Software Setup', 'apporbit_loginid', self.apporbit_loginid)
         config.set('Software Setup', 'themeName', self.theme_name)
         config.set('Software Setup', 'api_version', self.api_version)
+        config.set('Software Setup', 'log_level', self.log_level)
 
         config.write(cfg_file)
         cfg_file.close()
 
         logging.info("Create config file success!")
-        return
-
-    def createMonitoringConfig(self):
-
-        logging.info("Create Monitoring configuration files")
-        flags = os.O_CREAT | os.O_EXCL | os.O_WRONLY
-        try:
-            rules_file = os.open(self.APPORBIT_CONF + '/alert.rules',flags)
-        except OSError as e:
-            if e.errno == errno.EEXIST:
-               pass
-            else:
-               raise
-        else:
-            with os.fdopen(rules_file, 'w' ) as file_obj:
-                 content = '''
-ALERT rabbitmq_down
-  IF node_external_rabbitmq_state == 0
-    FOR 1m
-      LABELS {
-              severity="page"
-                    }
-  ANNOTATIONS {
-        summary = "Instance {{$labels.instance}} down",
-                  description = "{{$labels.instance}} of job {{$labels.job}} has been down for more than 1 minutes.",
-                    }
-                 '''
-                 file_obj.write (content)
-                 file_obj.close()
-                 logging.info("Create alert.rules success!")
-
-        try:
-            manager_file = os.open(self.APPORBIT_CONF + '/alertmanager.yml',flags)
-        except OSError as e:
-            if e.errno == errno.EEXIST:
-               pass
-            else:
-               raise
-        else:
-            with os.fdopen(manager_file, 'w' ) as file_obj:
-                 content = Template('''
-route:
- repeat_interval: 1m
- receiver: default
- routes:
-   - receiver: 'email-demo'
-     match:
-       severity: page
-
-receivers:
- - name: default
- - name: 'email-demo'
-   email_configs:
-       - to: '${APPORBIT_LOGINID}'
-         from: '${APPORBIT_LOGINID}'
-         smarthost: '${APPORBIT_HOST}'
-         require_tls: false
-         send_resolved: true
-                 ''')
-                 content = content.safe_substitute(
-                            APPORBIT_HOST = self.apporbit_host,
-                            APPORBIT_LOGINID = self.apporbit_loginid)
-                 file_obj.write (content)
-                 file_obj.close()
-                 logging.info("Create alertmanager.yml success!")
-
-        try:
-            prometheus_file = os.open(self.APPORBIT_CONF + '/prometheus.yml',flags)
-        except OSError as e:
-            if e.errno == errno.EEXIST:
-               pass
-            else:
-               raise
-        else:
-            with os.fdopen(prometheus_file, 'w' ) as file_obj:
-                 content = '''
-global:
-  scrape_interval: 1m
-  evaluation_interval: 1m
-
-  external_labels:
-    monitor: 'apporbit'
-
-scrape_configs:
-- job_name: 'host'
-  consul_sd_configs:
-      - server: 'consul:8500'
-  relabel_configs:
-    - source_labels: [__meta_consul_tags]
-      regex: .*,monitor,.*
-      action: keep
-
-rule_files:
-  - 'etc/prometheus/alert.rules'
-'''
-                 file_obj.write(content)
-                 file_obj.close()
-                 logging.info("Create prometheus.yml success!")
-
         return
 
 
@@ -422,7 +331,7 @@ services:
     ports:
       - "9443:9443"
     environment:
-      - UPGRADE=2
+      - UPGRADE
     volumes:
       - ${APPORBIT_LIB}/chef-server:/var/opt/chef-server:Z
       - ${APPORBIT_KEY}:/var/opt/chef-server/nginx/ca/:Z
@@ -511,6 +420,7 @@ services:
       - MYSQL_PASSWORD=admin
       - MYSQL_DATABASE=apporbit_mist
       - GEMINI_STACK_IPANEMA=1
+      - LOG_LEVEL=${APPORBIT_LOGLEVEL}
     links:
       - apporbit-db:db 
       - apporbit-rmq:rmq
@@ -570,70 +480,6 @@ services:
     volumes:
       - ${APPORBIT_LOG}/svcd:/var/log/apporbit:Z
 
-  apporbit-alertmanager:
-    container_name: apporbit-alertmanager
-    image: prom/alertmanager:master
-    command: "-config.file=/alertmanager.yml -storage.path=/alert-data"
-    hostname: alertmanager
-    dns:  
-      - 8.8.8.8
-      - ${APPORBIT_DNS}
-    dns_search: 
-      - ${APPORBIT_DNSSEARCH}
-    restart: always
-    network_mode: "bridge"
-    ports:
-      - "9093:9093"
-    volumes:
-      - ${APPORBIT_CONF}/alertmanager.yml:/alertmanager.yml:Z
-      - ${APPORBIT_LIB}/monitoring/alert-data:/alert-data:Z 
-
-
-  apporbit-prometheus:
-    container_name: apporbit-prometheus
-    image: prom/prometheus:v1.0.1
-    command: "-config.file=/etc/prometheus/prometheus.yml -storage.local.path=/prom-data -alertmanager.url=http://alertmanager:9093"
-    restart: always
-    hostname: prometheus
-    dns:  
-      - 8.8.8.8
-      - ${APPORBIT_DNS}
-    dns_search: 
-      - ${APPORBIT_DNSSEARCH}
-    network_mode: "bridge"
-    ports:
-      - "9090:9090"
-    links:
-      - apporbit-consul:consul 
-      - apporbit-alertmanager:alertmanager 
-    volumes:
-      - ${APPORBIT_CONF}/prometheus.yml:/etc/prometheus/prometheus.yml:Z
-      - ${APPORBIT_CONF}/alert.rules:/etc/prometheus/alert.rules:Z
-      - ${APPORBIT_LIB}/monitoring/prom-data:/prom-data:Z
-      - ${APPORBIT_LIB}/monitoring/targets:/var/lib/apporbit/monitoring/targets:Z
-
-  apporbit-grafana:
-    container_name: apporbit-grafana
-    image: ${APPORBIT_REGISTRY}apporbit/apporbit-grafana:3.1.0
-    restart: always
-    hostname: grafana
-    dns:  
-      - 8.8.8.8
-      - ${APPORBIT_DNS}
-    dns_search: 
-      - ${APPORBIT_DNSSEARCH}
-    network_mode: "bridge"
-    ports:
-      - "3000:3000"
-    environment:
-      - GF_AUTH_ANONYMOUS_ENABLED=true 
-      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin 
-      - GF_USERS_DEFAULT_THEME=light 
-    depends_on:
-      - apporbit-prometheus
-    volumes:
-      - ${APPORBIT_LIB}/monitoring/grafana-data:/var/lib/grafana:Z
-
 
   apporbit-captain:
     container_name: apporbit-captain
@@ -677,7 +523,7 @@ services:
       - THEME_NAME=apporbit-v2
       - CURRENT_API_VERSION=v2
       - ONPREM_EMAIL_ID=${APPORBIT_LOGINID}
-      - LOG_LEVEL=WARN
+      - LOG_LEVEL=${APPORBIT_LOGLEVEL}
       - MAX_POOL_SIZE=${MAX_API_USERS}
       - CHEF_URL=https://${APPORBIT_CHEFHOST}:9443
       - AO_HOST=${APPORBIT_HOST}
@@ -788,6 +634,7 @@ volumes:
                             APPORBIT_LIB = self.APPORBIT_DATA,
                             APPORBIT_LOG = self.APPORBIT_LOG,
                             APPORBIT_LOGINID = self.apporbit_loginid,
+                            APPORBIT_LOGLEVEL = self.log_level,
                             APPORBIT_REGISTRY = aoreg,
                             APPORBIT_REPO = self.apporbit_repo,
                             APPORBIT_BUILDID = self.buildid,
