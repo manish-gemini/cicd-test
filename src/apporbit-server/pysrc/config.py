@@ -594,11 +594,11 @@ volumes:
                  # { if (match($i, /\$\{([a-z|A-Z|0-9|_]+)\}/))  {print substr($i,RSTART+2,RLENGTH-3)} } }' |sort |uniq
                  if self.volume_mount:
                      logging.warning("DEVELOPER MOUNT ENABLED")
-                     services_devmount = '- ' + self.volume_mount + '/Gemini-poc-stack:/home/apporbit/apporbit-services:Z'
+                     services_devmount = '- ' + self.volume_mount + '/Gemini-poc-stack:/home/apporbit/apporbit-services:z'
                      if not os.path.isfile(self.volume_mount + "/Gemini-poc-stack/mist-cgp/run.jar"):
                          pull_mist_binary = "wget -P " + self.volume_mount + "/Gemini-poc-stack/mist-cgp http://repos.gsintlab.com/repos/mist/integration/run.jar"
                          utilityobj.cmdExecute(pull_mist_binary, 'pull mist binary ', True)
-                     controller_devmount = '- ' + self.volume_mount + '/Gemini-poc-mgnt:/home/apporbit/apporbit-controller:Z'
+                     controller_devmount = '- ' + self.volume_mount + '/Gemini-poc-mgnt:/home/apporbit/apporbit-controller:z'
                      gemfile = self.volume_mount  + "/Gemini-poc-mgnt/Gemfile"
                      if not os.path.isfile(gemfile):
                         rename_gemfile = "cp -f " + gemfile + "-master " + gemfile
