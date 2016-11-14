@@ -421,6 +421,7 @@ services:
       - MYSQL_DATABASE=apporbit_mist
       - GEMINI_STACK_IPANEMA=1
       - LOG_LEVEL=${APPORBIT_LOGLEVEL}
+      - AO_CONTROLLER_HOST=${APPORBIT_HOST}
     links:
       - apporbit-db:db 
       - apporbit-rmq:rmq
