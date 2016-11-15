@@ -115,7 +115,10 @@ class UserInteract:
             config_obj.initial_install = True
 
         if config_obj.apporbit_host == "":
-           config_obj.apporbit_host = urllib2.urlopen("http://whatismyip.akamai.com").read()
+           try:
+              config_obj.apporbit_host = urllib2.urlopen("http://whatismyip.akamai.com").read()
+           except:
+              logging.warning ("Could not figure out self public ip using web service. Asking user for ip")
         config_obj.apporbit_host = raw_input("   DNS/FQDN/IP for apporbit host [%s]:" %config_obj.apporbit_host) or config_obj.apporbit_host
         hostIp = config_obj.apporbit_host
         consulDomain = raw_input("   DNS Domain that will be managed by appOrbit Server [%s]:" %config_obj.apporbit_domain ) or config_obj.apporbit_domain
