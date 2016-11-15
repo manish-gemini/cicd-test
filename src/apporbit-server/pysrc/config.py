@@ -35,7 +35,7 @@ class Config():
         self.chef_host = ''
         self.apporbit_deploy = 'all'
         self.apporbit_registry = 'registry.apporbit.com'
-        self.datasvc_registry = 'docker.io'
+        self.datasvc_registry = 'apporbit-apps.gsintlab.com'
         self.remove_data= False
         self.initial_setup= False
         self.apporbit_repo = 'http://repos.gsintlab.com/release'
@@ -537,6 +537,7 @@ services:
       - MYSQL_USERNAME=root
       - MYSQL_PASSWORD=admin
       - MYSQL_DATABASE=apporbit_controller
+      - AO_REGISTRY=${DATASVC_REGISTRY}
     links:
       - apporbit-db:db 
       - apporbit-rmq:rmq
