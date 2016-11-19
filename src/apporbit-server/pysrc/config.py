@@ -35,7 +35,7 @@ class Config():
         self.chef_host = ''
         self.apporbit_deploy = 'all'
         self.apporbit_registry = 'registry.apporbit.com'
-        self.datasvc_registry = 'apporbit-apps.gsintlab.com:5000'
+        self.datasvc_registry = 'apporbit-apps.apporbit.io:5000'
         self.remove_data= False
         self.initial_setup= False
         self.apporbit_repo = 'http://repos.gsintlab.com/release'
