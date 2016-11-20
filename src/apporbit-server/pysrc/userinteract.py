@@ -56,9 +56,8 @@ class UserInteract:
             chef_ssldir = raw_input("Enter location where current SSL certificate and the key files for Chef exist [/opt/chefcerts]:") or "/opt/chefcerts"
             config_obj.hostipcrt = hostipcrt
             config_obj.hostipkey = hostipkey
-            config_obj.chef_ssldir = chef_ssldir
+            config_obj.chef_self_signed_crt_dir = chef_ssldir
             config_obj.create_keys = False
-            config_obj.import_keys_from_dir = chef_ssldir
 
         return
 
@@ -70,7 +69,6 @@ class UserInteract:
         on_prem_emailid = ""
         hostIp = ""
         ssldir = ""
-        chef_ssldir = ""
         is_fresh_install = True
         chef_self_signed_crt = '0'
         consul_ip_port= ""
@@ -131,12 +129,11 @@ class UserInteract:
         print '    Configure SSL certificate for the apporbit server:'
         print '    1. Create new SSL certificate '
         print '    2. Use existing certificate '
-        self_signed_crt = raw_input ("    Choose the type of SSL configuration [1]:") or '1'
-        logging.info ("self signed certificate : %s", self_signed_crt)
-        if self_signed_crt == '2':
+        config_obj.self_signed_crt = raw_input ("    Choose the type of SSL configuration [1]:") or '1'
+        logging.info ("self signed certificate : %s", config_obj.self_signed_crt)
+        if config_obj.self_signed_crt == '2':
             print "    Rename your SSL certificate file as apporbitserver.crt and SSL key file as apporbitserver.key"
             ssldir = raw_input("    Enter location of certificate/key files [/opt/certs]:") or "/opt/certs"
-            config_obj.import_keys_from_dir = ssldir
             config_obj.create_keys = False
             config_obj.self_signed_crt_dir = ssldir
             logging.info ("SSL Certs Directory is : %s", ssldir )
@@ -168,14 +165,14 @@ class UserInteract:
             print '    Configure the SSL certificate for chef-server:'
             print '    1. Create new SSL certificate'
             print '    2. Use an existing certificater'
-            chef_self_signed_crt = raw_input("    Choose SSL configurationfor Chef [1]:") or '1'
+            config_obj.chef_self_signed_crt = raw_input("    Choose SSL configurationfor Chef [1]:") or '1'
 
-            if chef_self_signed_crt == '2':
+            if config_obj.chef_self_signed_crt == '2':
                 hostipcrt = hostIp + ".crt"
                 hostipkey = hostIp + ".key"
                 print "    Rename your SSL certificate file for Chef as " + hostipcrt + " and SSL key file as " + hostipkey
-                chef_ssldir = raw_input("    Enter the location of SSL certificate/ key files for Chef [/opt/chefcerts]:") or "/opt/chefcerts"
-                logging.info ("Chef SSL Certs Directory is  : %s", chef_ssldir )
+                config_obj.chef_self_signed_crt_dir = raw_input("    Enter the location of SSL certificate/ key files for Chef [/opt/chefcerts]:") or config_obj.chef_self_signed_crt_dir
+                logging.info ("Chef SSL Certs Directory is  : %s", config_obj.chef_self_signed_crt_dir )
 
         utility_obj.createTempFile(config_obj)
         print ""

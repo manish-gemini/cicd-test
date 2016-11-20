@@ -47,7 +47,6 @@ class Config():
         self.deploy_consul = True
         self.upgrade = False
         self.create_keys = True
-        self.import_keys_from_dir = ''
         self.build_deploy_mode = '3'
         self.deploy_mode = 'onprem'
         self.theme_name = 'apporbit-v2'
