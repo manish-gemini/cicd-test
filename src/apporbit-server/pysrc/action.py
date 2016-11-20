@@ -174,6 +174,7 @@ class Action:
         if is_chef == True:
             sslkeyfile = dir + "/" + hostIP + ".key"
             sslkeycrt = dir + "/" + hostIP + ".crt"
+            logging.debug('Copying %s Chef SSL key file.', sslkeyfile)
             cmd_cpysslkey = "cp -f " + sslkeyfile + " " + config_obj.APPORBIT_KEY  + "/."
             cmd_cpysslcrt = "cp -f " + sslkeycrt + " " + config_obj.APPORBIT_KEY + "/."
             cmd_desckey = "Copying Chef SSL key"
@@ -182,6 +183,7 @@ class Action:
         else:
             sslkeyfile = dir + "/apporbitserver.key"
             sslkeycrt = dir + "/apporbitserver.crt"
+            logging.debug('Copying %s SSL key file.', sslkeyfile)
             cmd_cpysslkey = "cp -f " + dir +"/apporbitserver.key " + config_obj.APPORBIT_KEY + "/apporbitserver.key"
             cmd_cpysslcrt = "cp -f " + dir +"/apporbitserver.crt " + config_obj.APPORBIT_KEY + "/apporbitserver.crt"
             cmd_desckey = "Copying SSL key"
@@ -273,15 +275,18 @@ class Action:
         if config_obj.chef_self_signed_crt == '1':
             self.createSelfSignedCert(config_obj, True, config_obj.apporbit_host)
         elif config_obj.chef_self_signed_crt == '2':
+            logging.info("Copying Chef SSL Certificate from the dir %s", config_obj.self_signed_crt_dir)
             self.copySSLCertificate(config_obj, config_obj.chef_self_signed_crt_dir, config_obj.apporbit_host, True)
         else:
             logging.info("Skipping chef certificate creation on upgrade.")
 
-        if config_obj.self_signed_crt == '1' or config_obj.create_keys:
+        if config_obj.self_signed_crt == '2':
+            logging.info("Copying SSL Certificate from the dir %s", config_obj.self_signed_crt_dir)
+            self.copySSLCertificate(config_obj, config_obj.self_signed_crt_dir)
+        elif config_obj.self_signed_crt == '1' or config_obj.create_keys:
             self.createSelfSignedCert(config_obj)
         else:
-            logging.info("Copying SSL Certificate from the dir %s", config_obj.import_keys_from_dir)
-            self.copySSLCertificate(config_obj, config_obj.import_keys_from_dir)
+            logging.error("No SSL Certificate copied or created for apporbitserver")
 
         self.utilityobj.progressBar(18)
 
@@ -419,9 +424,9 @@ class Action:
     def upgradeV1Volumes(self,config_obj):
         logging.info("Checking if old installer volumes exists and need to be migrated")
         try:
-            logging.info("Found /var/dbstore. Doing upgrade routine")
             os.stat("/var/dbstore")
             config_obj.upgrade = True
+            logging.info("Found /var/dbstore. Doing upgrade routine")
         except:
             logging.info("Upgrade not required as /var/dbstore does not exist")
             return True

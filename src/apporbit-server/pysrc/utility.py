@@ -54,9 +54,10 @@ class Utility:
         return
 
 
-    def cmdExecute(self, cmd_str, cmd_desc = '', bexit = False, show = False):
+    def cmdExecute(self, cmd_str, cmd_desc = '', bexit = False, show = False, sensitive = False):
         try:
-            logging.debug("CMD: %s",  cmd_str)
+            if not sensitive:
+                logging.debug("CMD: %s",  cmd_str)
             result = []
             process = subprocess.Popen(cmd_str, bufsize=4096, shell=True, stdout=subprocess.PIPE,
                                    stderr=subprocess.STDOUT)
@@ -68,7 +69,8 @@ class Utility:
                 else:
                     line = line.rstrip()
                     result.append(line)
-                    logging.debug(line)
+                    if not sensitive:
+                        logging.debug(line)
                     if show:
                         print line
             while process.poll() == None:
@@ -202,7 +204,7 @@ class Utility:
         # print "Login to Docker Registry " + repo_str
         if passwd:
             cmd_str = 'docker login -u=' + uname + ' -p=' + passwd +' '+ repo_str
-            self.cmdExecute(cmd_str, "Docker login ", True)
+            self.cmdExecute(cmd_str, "Docker login ", True, sensitive=True)
         else:
             logging.error("Docker Login Failed ")
             print 'Docker login -[Failed!]'
