@@ -6,7 +6,7 @@ NOTE: In general Rename the file example.local.conf to local.conf and edit the f
 1) For Master Build Verification., use master.local.conf and rename to local.conf, Provide Hostip and modify cleansetup attribute as per requirment
 2) For Integration Build Verification, use integration.local.conf and rename to local.conf , Provide Hostip and modify cleansetup attribute as per requirement
 
-[Docker Login]
+[Registry Login]
 username:
 	User Name of appOrbit Docker Registry
 password :
@@ -32,9 +32,9 @@ build_deploy_mode:
 	
 build_id :
 	latest
-clean_setup : 
-    # 1 - Install
-    # 2 - Upgrade
+remove_data : 
+    # True  - Python case sensitive boolean - REMOVES /var/lib/apporbit
+    # False - Default option - Reuse data already existing
 self_signed_crt :
     # 1 - Create new SSL
     # 2 - Use Existing SSL
