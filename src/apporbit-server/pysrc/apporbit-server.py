@@ -9,7 +9,7 @@ import argparse
 import datetime
 import time
 # Project Modules
-import config, utility, action, userinteract
+import config, utility, action, userinteract, resourcefetcher, offlinedeploy, provider
 
 
 def main():
@@ -37,6 +37,10 @@ def main():
     parser.add_argument("--removeconfig", action='store_true', help='Remove Config in appOrbit Server')
     parser.add_argument("--removeall", action='store_true', help='Remove Data, Config and Keys in appOrbit Server')
     parser.add_argument("--upgrade", action='store_true', help='Upgrade Setup')
+    parser.add_argument("--buildinstallpackages", action='store_true', help='Fetch rsources for offline installation')
+    parser.add_argument("--setupprovider", action='store_true', help='Set up provider machine for offline installation')
+    parser.add_argument("--deployoffline", action='store_true', help='Deploy apporbit on an offline host')
+    parser.add_argument("--offline", action='store_true', help='Install apporbit host offline (guided)')
     parser.add_argument("--status", action='store_true', help='Show status of appOrbit Server')
     parser.add_argument("list",  nargs='*', help='List of components')
     args = parser.parse_args()
@@ -87,7 +91,7 @@ def main():
         action_obj.removeSetupConfig(config_obj)
         config_obj.upgrade = True
         setupRequired = True
-    elif not args.setuponly and (args.stop or args.kill or args.status or args.removedata or args.removeconfig or args.removeall):
+    elif not args.setuponly and (args.stop or args.kill or args.status or args.removedata or args.removeconfig or args.removeall or args.buildinstallpackages or args.setupprovider or args.deployoffline or args.offline):
        skipSetup = True
 
     if  args.setuponly or (setupRequired and not skipSetup):
@@ -298,6 +302,33 @@ def main():
         if os.path.isfile(config_obj.apporbit_serverconf):
             print "Showing status of appOrbit Server"
             action_obj.showStatus(config_obj, show=True)
+    elif args.buildinstallpackages:
+        rf = resourcefetcher.ResourceFetcher()
+        rf.fetch_resources()
+        print "Transfer appOrbitResources.tar to a system that will act as resource provider for appOrbit Application and run installer with --setupprovider."
+        print "Transfer appOrbitPackages.tar.gz to a system where appOrbit Application will run and run installer with --deployoffline."
+    elif args.setupprovider:
+        ps = provider.Provider()
+        ps.setup_provider()
+        print "Copy apporbit-server and appOrbitPackages.tar.gz to appOrbit host"
+        print "and execute ./apporbit-server --deployoffline"
+    elif args.deployoffline:
+        od = offlinedeploy.OfflineDeploy()
+        od.deploy_apporbit()
+    elif args.offline:
+        opt = raw_input("Are the resources fetched [y]/n : ") or "y"
+        if opt in ['n', 'N']:
+            rf = resourcefetcher.ResourceFetcher()
+            rf.fetch_resources()
+            sys.exit(1)
+        opt = raw_input("Is the provider set up done [y]/n : ") or "y"
+        if opt in ['n', 'N']:
+            ps = provider.Provider()
+            ps.setup_provider()
+        opt = raw_input("Do you want to install appOrbit on this host [y]/n : ") or "y"
+        if opt in ['y', 'Y']:
+            od = offlinedeploy.OfflineDeploy()
+            od.deploy_apporbit()
     elif args.list:
         # if I am here I have not given any valid option but did enter a list argument
         complist = ' '.join(args.list)

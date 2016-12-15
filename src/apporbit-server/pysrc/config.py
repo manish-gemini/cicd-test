@@ -38,6 +38,7 @@ class Config():
         self.datasvc_registry = 'apporbit-apps.apporbit.io:5000'
         self.remove_data= False
         self.initial_setup= False
+        self.offline_mode=False
         self.apporbit_repo = 'http://repos.gsintlab.com/release'
         self.registry_uname = ''
         self.registry_passwd = ''
@@ -135,7 +136,7 @@ class Config():
                   self.apporbit_registry = val
                elif key == 'apporbit_repo':
                   self.apporbit_repo = val
-               elif key == 'datasvc_registry':
+               elif key == 'datasvc_registry' and val <> '':
                   self.datasvc_registry = val
 
            for key in config.options('System Setup'):
@@ -413,6 +414,7 @@ services:
       - TERM=xterm
       - GEMINI_INT_REPO=${APPORBIT_REPO}
       - CHEF_URL=https://${APPORBIT_CHEFHOST}:9443
+      - OFFLINE_MODE=${OFFLINE_MODE}
       - UPGRADE
       - MYSQL_HOST=db
       - MYSQL_USERNAME=root
@@ -520,6 +522,7 @@ services:
     environment:
       - TERM=xterm
       - ON_PREM_MODE=true
+      - OFFLINE_MODE=${OFFLINE_MODE}
       - THEME_NAME=apporbit-v2
       - CURRENT_API_VERSION=v2
       - ONPREM_EMAIL_ID=${APPORBIT_LOGINID}
@@ -531,6 +534,7 @@ services:
       - CONSUL_PORT=8500
       - CAPTAIN_TCP_ADDR=captain
       - CAPTAIN_TCP_PORT=8080
+      - GEMINI_INT_REPO=${APPORBIT_REPO}
       - MYSQL_HOST=db
       - MYSQL_PORT=3306
       - MYSQL_USERNAME=root
@@ -644,6 +648,7 @@ volumes:
                             DATASVC_REGISTRY = datareg,
                             SERVICES_DEVMOUNT = services_devmount,
                             CONTROLLER_DEVMOUNT = controller_devmount,
+                            OFFLINE_MODE=self.offline_mode,
                             )
                  file_obj.write(content)
                  file_obj.close()

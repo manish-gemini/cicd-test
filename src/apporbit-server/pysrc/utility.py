@@ -299,6 +299,7 @@ class Utility:
 
         osname = osname.lower()
 
+        self.osname = osname
         if "centos" in osname:
             logging.info("OS is Centos")
         elif "red hat" in osname:

@@ -3,7 +3,7 @@
 block_cipher = None
 
 
-a = Analysis(['action.py', 'apporbit-server.py', 'config.py', 'userinteract.py', 'utility.py'],
+a = Analysis(['action.py', 'apporbit-server.py', 'config.py', 'userinteract.py', 'utility.py', 'docker.py', 'offlinedeploy.py', 'provider.py', 'resourcefetcher.py'],
              pathex=['pysrc'],
              binaries=None,
              datas=None,
