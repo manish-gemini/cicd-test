@@ -548,6 +548,7 @@ services:
     volumes:
       - ${APPORBIT_LOG}/controller:/var/log/apporbit:Z
       - ${APPORBIT_KEY}:/home/apporbit/apporbit-controller/sslkeystore:Z
+      - ${APPORBIT_DATA}/controller/ui:/var/lib/apporbit/ui:Z
       ${CONTROLLER_DEVMOUNT}
 
   apporbit-docs:
