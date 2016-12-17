@@ -3,8 +3,18 @@
 block_cipher = None
 
 
-a = Analysis(['pysrc/apporbit-server.py', 'pysrc/action.py', 'pysrc/apporbit-server.py', 'pysrc/config.py', 'pysrc/userinteract.py', 'pysrc/utility.py', 'pysrc/docker.py', 'pysrc/offlinedeploy.py', 'pysrc/provider.py', 'pysrc/resourcefetcher.py'],
-             pathex=['/home/jshah/Gemini-sys/cicd/src/apporbit-server'],
+path = 'pysrc/'
+a = Analysis([path + 'apporbit-server.py', 
+          path + 'action.py',
+          path + 'apporbit-server.py',
+          path + 'config.py',
+          path + 'userinteract.py',
+          path + 'utility.py',
+          path + 'docker.py',
+          path + 'offlinedeploy.py',
+          path + 'provider.py',
+          path + 'resourcefetcher.py'],
+             pathex=['/home/jshah/Gemini-sys/cicd/src/apporbit-server/pysrc'],
              binaries=None,
              datas=None,
              hiddenimports=['action', 'config', 'utility', 'userinteract'],

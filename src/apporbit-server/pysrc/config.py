@@ -36,9 +36,9 @@ class Config():
         self.apporbit_deploy = 'all'
         self.apporbit_registry = 'registry.apporbit.com'
         self.datasvc_registry = 'apporbit-apps.apporbit.io:5000'
-        self.remove_data= False
-        self.initial_setup= False
-        self.offline_mode=False
+        self.remove_data = False
+        self.initial_setup = False
+        self.offline_mode = False
         self.apporbit_repo = 'http://repos.gsintlab.com/release'
         self.registry_uname = ''
         self.registry_passwd = ''
@@ -136,7 +136,7 @@ class Config():
                   self.apporbit_registry = val
                elif key == 'apporbit_repo':
                   self.apporbit_repo = val
-               elif key == 'datasvc_registry' and val <> '':
+               elif key == 'datasvc_registry' and val != '':
                   self.datasvc_registry = val
 
            for key in config.options('System Setup'):
