@@ -235,7 +235,8 @@ PROVIDER IP: ${host}
         self.run_registry_container()
 
         print "set docker daemon for insecure registry"
-        self.setup_docker_daemon_insecure_reg()
+        self.docker_obj.setup_docker_daemon_insecure_reg(
+            self.docker_registry_url)
 
         print "Load Infra containers"
         self.load_infra_containers()

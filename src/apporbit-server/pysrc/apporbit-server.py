@@ -37,9 +37,9 @@ def main():
     parser.add_argument("--removeconfig", action='store_true', help='Remove Config in appOrbit Server')
     parser.add_argument("--removeall", action='store_true', help='Remove Data, Config and Keys in appOrbit Server')
     parser.add_argument("--upgrade", action='store_true', help='Upgrade Setup')
-    parser.add_argument("--build-packages", action='store_true', help='Fetch resources for offline installation')
-    parser.add_argument("--setup-provider", action='store_true', help='Set up provider machine for offline installation')
-    parser.add_argument("--deploy-offline", action='store_true', help='Deploy apporbit on an offline host')
+    parser.add_argument("--buildpackages", action='store_true', help='Fetch resources for offline installation')
+    parser.add_argument("--setupprovider", action='store_true', help='Set up provider machine for offline installation')
+    parser.add_argument("--deployoffline", action='store_true', help='Deploy apporbit on an offline host')
     parser.add_argument("--offline", action='store_true', help='Install apporbit host offline (guided)')
     parser.add_argument("--status", action='store_true', help='Show status of appOrbit Server')
     parser.add_argument("list",  nargs='*', help='List of components')
@@ -91,7 +91,7 @@ def main():
         action_obj.removeSetupConfig(config_obj)
         config_obj.upgrade = True
         setupRequired = True
-    elif not args.setuponly and (args.stop or args.kill or args.status or args.removedata or args.removeconfig or args.removeall or args.build-packages or args.setup-provider or args.deploy-offline or args.offline):
+    elif not args.setuponly and (args.stop or args.kill or args.status or args.removedata or args.removeconfig or args.removeall or args.buildpackages or args.setupprovider or args.deployoffline or args.offline):
        skipSetup = True
 
     if  args.setuponly or (setupRequired and not skipSetup):
@@ -302,18 +302,18 @@ def main():
         if os.path.isfile(config_obj.apporbit_serverconf):
             print "Showing status of appOrbit Server"
             action_obj.showStatus(config_obj, show=True)
-    elif args.build-packages:
+    elif args.buildpackages:
         import resourcefetcher
         rf = resourcefetcher.ResourceFetcher()
         rf.fetch_resources()
-    elif args.setup-provider:
+    elif args.setupprovider:
         import provider
         ps = provider.Provider()
         ps.setup_provider()
         finalMessage = ("Copy apporbit-server and appOrbitPackages.tar.gz to "
               "appOrbit host\nand execute ./apporbit-server --deploy-offline")
         print finalMessage
-    elif args.deploy-offline:
+    elif args.deployoffline:
         import offlinedeploy
         od = offlinedeploy.OfflineDeploy()
         od.deploy_apporbit()

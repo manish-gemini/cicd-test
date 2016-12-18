@@ -181,7 +181,7 @@ class ResourceFetcher:
         self.docker_obj.docker_save(self.hub_images, self.PACKAGESDIR)
         self.docker_obj.docker_save(
             self.apporbit_images,
-            self.PACKAGESDI,
+            self.PACKAGESDIR,
             "apporbit/"
         )
         self.docker_obj.docker_save(
@@ -244,7 +244,7 @@ class ResourceFetcher:
             return False
 
         return_code, out, err = self.utility_obj.cmdExecute(
-            "wget -c 'https://s3.amazonaws.com/phusion-passenger/binaries" +
+            "wget -c 'https://s3.amazonaws.com/phusion-passenger/binaries" +\
             "/passenger/by_release/5.0.7/nginx-1.6.3-x86_64-linux.tar.gz'",
             " Downloading aws_nginx package", show=False
         )
@@ -269,8 +269,8 @@ class ResourceFetcher:
             print "Configuring RHEL repos for syncing..."
             sub_id = ""
             return_code, out, err = self.utility_obj.cmdExecute(
-                "basename `ls /etc/pki/entitlement/*-key.pem |" +
-                " head -1` | cut -d'-' -f1", "", False
+                "basename `ls /etc/pki/entitlement/*-key.pem |" +\
+                    " head -1` | cut -d'-' -f1", "", show=True 
             )
             if return_code:
                 sub_id = out
@@ -340,7 +340,7 @@ include=rhel-pkglist.conf
         os.remove(self.RPMSDIR + "docker-pkglist.conf")
         os.remove(self.RPMSDIR + "rhel-pkglist.conf")
         self.utility_obj.cmdExecute(
-            "wget -c 'https://opscode-omnibus-packages.s3.amazonaws.com/" +
+            "wget -c 'https://opscode-omnibus-packages.s3.amazonaws.com/" +\
             "el/7/x86_64/chef-12.6.0-1.el7.x86_64.rpm'", "", show=False
         )
         self.utility_obj.cmdExecute("createrepo .", "", show=True)
@@ -406,7 +406,7 @@ include=rhel-pkglist.conf
     def finalizing_resources_and_packages(self):
         print "finalizing the tars"
         tars = [
-            "tar -cvf appOrbitResources.tar apporbit-offline.tar " +
+            "tar -cvf appOrbitResources.tar apporbit-offline.tar " +\
             "registry.tar appOrbitRPMs.tar.gz appOrbitGems.tar.gz infra_images"
         ]
         for tar in tars:
@@ -446,7 +446,8 @@ include=rhel-pkglist.conf
         print "[OK]"
 
         print "Setting docker daemon for insecure registry"
-        self.setup_docker_daemon_insecure_reg(self.apps_insecure_reg)
+        self.docker_obj.setup_docker_daemon_insecure_reg(
+            self.apps_insecure_reg)
 
         print "Making directories"
         self.make_dirs()

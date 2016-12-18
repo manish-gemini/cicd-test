@@ -371,7 +371,7 @@ class Utility:
                 logging.info ("Upgrading docker to " + self.docker_version)
         else:
             print "Apporbit supports minimum docker version  " + self.docker_version 
-            print "FAILED - Installtion failed due to docker version conflict"
+            print "FAILED - Installation failed due to docker version conflict"
             sys.exit(1)
 
         logging.info ("Verify NTP Installation!")

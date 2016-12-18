@@ -1,16 +1,17 @@
 from distutils.version import LooseVersion
 import os
+import re
 import sys
 import time
 import utility
-
+import fileinput
 
 class DockerAO:
     def __init__(self):
         self.utility_obj = utility.Utility()
         self.do_dockerinstall = 0
         self.remove_olddocker = 0
-        self.docker_version = "1.10.3"
+        self.docker_version = "1.11.2"
         self.do_sesettings = 0
 
     def install_docker(self, utility_obj, enablerepo=False):
@@ -58,7 +59,7 @@ class DockerAO:
         else:
             print "Apporbit supports minimum docker version  " +\
                 self.docker_version
-            print "FAILED - Installtion failed due to docker version conflict"
+            print "FAILED - Installation failed due to docker version conflict"
             sys.exit(1)
 
         # BUG: https://bugzilla.redhat.com/show_bug.cgi?id=1294128
@@ -96,10 +97,10 @@ class DockerAO:
             print 'Installing docker version %s' % self.docker_version
             if enablerepo:
                 cmd_dockerInstall = 'yum install -y --disablerepo="*" ' +\
-                    '--enablerepo="apporbit-local" docker-' +\
+                    '--enablerepo="apporbit-local" docker-engine-' +\
                     self.docker_version
             else:
-                cmd_dockerInstall = 'yum install -y docker-' +\
+                cmd_dockerInstall = 'yum install -y docker-engine-' +\
                      self.docker_version
             return_code, out, err = self.utility_obj.cmdExecute(
                 cmd_dockerInstall, "Docker Install", show=True)
@@ -137,7 +138,7 @@ class DockerAO:
         return_code, out, err = self.utility_obj.cmdExecute(
             cmd_dockerservice, " Docker service start", show=False)
         if not return_code:
-            print "Docker not started :- " + str(err)
+            print "Docker not started :- " + str(out)
             return False
 
     def docker_pull(self, images, registry=""):
@@ -174,7 +175,7 @@ class DockerAO:
         os.chdir(directory)
         for k, v in images.iteritems():
             print "Saving " + k
-            cmd_save = "docker save " + registry + v + " > " + v + ".tar"
+            cmd_save = "docker save " + registry + v + " > " + v.replace("/", "-") + ".tar"
             return_code, out, err = self.utility_obj.cmdExecute(
                 cmd_save, " Docker save " + k, show=False)
             if not return_code:
@@ -190,7 +191,7 @@ class DockerAO:
         return_code, out, err = self.utility_obj.cmdExecute(
             cmd_build_offline_container, "", show=True)
         if not return_code:
-            print "Error in building container :- " + str(err)
+            print "Error in building container :- " + str(out)
         os.chdir(cwd)
 
     def docker_load(self, path_of_image_tar):
@@ -199,7 +200,7 @@ class DockerAO:
         cmd_load = "docker load < " + path_of_image_tar
         return_code, out, err = self.utility_obj.cmdExecute(cmd_load, "", True)
         if not return_code:
-            print "Error in loading image :- " + str(err)
+            print "Error in loading image :- " + str(out)
             return False
         return True
 
@@ -231,5 +232,37 @@ class DockerAO:
         return_code, out, err = self.utility_obj.cmdExecute(
             cmd_run, "", show=True)
         if not return_code:
-            print "Error in running container :- " + str(err)
+            print "Error in running container :- " + str(out)
         return True
+
+    def setup_docker_daemon_insecure_reg(self, docker_reg):
+        docker_config_path = "/etc/sysconfig/docker"
+        regex_find = r'^INSECURE_REGISTRY.*'
+        regex_replace = "INSECURE_REGISTRY='--insecure-registry " +\
+            docker_reg + "'"
+        if self.docker_version == "1.11.2":
+            docker_config_path = "/usr/lib/systemd/system/docker.service"
+            regex_find = "ExecStart=.*docker daemon -H fd://.*"
+            regex_append = ' --insecure-registry ' + docker_reg
+
+        flag = False
+        for line in fileinput.input(docker_config_path, inplace=True):
+            if re.compile(regex_find).match(line):
+                flag = True
+                if 'regex_append' in locals():
+                    if docker_reg not in line:
+                        line = line.rstrip() + regex_append
+                else:
+                    line = re.sub(regex_find, regex_replace, line.rstrip())
+            print line.rstrip()
+
+        if not flag and 'regex_append' not in locals():
+            with open(docker_config_path, "a") as myfile:
+                myfile.write(regex_replace)
+        elif not flag:
+            print "Docker not configured, check file " + docker_config_path
+            sys.exit(1)
+        self.utility_obj.cmdExecute(
+            "systemctl daemon-reload && systemctl restart docker.service",
+            "", False
+        )

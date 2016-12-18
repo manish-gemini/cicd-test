@@ -317,7 +317,7 @@ rm -rf "/var/log/apporbit/" && rm -rf "/opt/apporbit/"'
 
         containers = rf.hub_images.values()
         for container in containers:
-            self.docker_obj.docker_load(path + container + ".tar")
+            self.docker_obj.docker_load(path + container.replace("/", "-") + ".tar")
         self.docker_obj.docker_tag(
             rf.hub_images, "", self.internal_docker_reg + '/')
         self.docker_obj.docker_push(
@@ -439,7 +439,8 @@ api_version = v2
         self.generate_ssl_certs()
 
         print "Setting docker daemon for insecure registry"
-        self.setup_docker_daemon_insecure_reg()
+        self.docker_obj.setup_docker_daemon_insecure_reg(
+            self.internal_docker_reg)
 
         print "loading images"
         self.load_containers()
