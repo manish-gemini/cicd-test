@@ -259,7 +259,7 @@ include=rhel-pkglist.conf
                     f.write(content)
             except OSError as e:
                 logging.info("Could not create/open reposync.conf. Exitting")
-                print "Could not createi/open reposync.conf, check logs"
+                print "Could not create/open reposync.conf, check logs"
                 sys.exit(1)
 
     def generate_rpm_packages(self):

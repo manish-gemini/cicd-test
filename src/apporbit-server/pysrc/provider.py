@@ -19,6 +19,7 @@ class Provider:
         self.AO_DOWNLOADS_PATH = ""
         self.AO_RESOURCE_PATH = ""
         self.resource_fetcher = resourcefetcher.ResourceFetcher()
+        self.compose_file = "compose.yml"
 
     def makedirs(self, path):
         try:
@@ -84,25 +85,55 @@ gpgcheck=0
             self.AO_RESOURCE_PATH + "apporbit-offline.tar")
         self.docker_obj.docker_load(self.AO_RESOURCE_PATH + "registry.tar")
 
-    def run_offline_containers(self):
-        print "Starting apporbit-offline service..."
-        vol_map = {
-            self.AO_RESOURCE_PATH + "appOrbitGems": "/opt/rubygems/",
-            self.AO_RESOURCE_PATH + "appOrbitRPMs": "/opt/repos/"
-        }
-        self.docker_obj.docker_run(
-            "apporbit-offline", "apporbit/apporbit-offline",
-            vol_map, "-d --restart=always -p 9291:9291 -p 9292:9292", True)
+    def create_compose_file(self):
+        content = ('''
 
-    def run_registry_container(self):
-        print "Starting apporbit-registry service..."
+version: "2"
+services:
+
+
+  apporbit-offline:
+    container_name: apporbit-offline
+    image: apporbit/apporbit-offline
+    mem_limit: 2100000000
+    hostname: ${host}
+    restart: always
+    network_mode: "bridge"
+    ports:
+      - "9291:9291"
+      - "9292:9292"
+    volumes:
+      - {AO_RESOURCE_PATH}appOrbitGems:/opt/rubygems/:Z
+      - {AO_RESOURCE_PATH}appOrbitRPMs:/opt/repos/:Z
+
+  apporbit-registry:
+    container_name: apporbit-registry
+    image: registry:2
+    restart: always
+    network_mode: "bridge"
+    ports:
+      - "5000:5000"
+    mem_limit: 2100000000
+    volumes:
+      - {AO_RESOURCE_PATH}registry-data:/var/lib/registry:Z
+        ''').format(AO_REOURCE_PATH=self.AO_RESOURCE_PATH)
+
+        try:
+            with open(self.compose_file, "w") as f:
+                f.write(content)
+        except OSError as e:
+            logging.info("Couldn't create offline compose file")
+            print "Couldn't create offline compose file, check logs"
+            sys.exit(1)
+
+    def run_offline_containers(self):
+        print "Creating compose file for registry and offline container"
+        self.create_compose_file()
+        print "Starting apporbit-offline and registry service..."
         self.makedirs(self.AO_RESOURCE_PATH + "registry-data")
-        vol_map = {
-            self.AO_RESOURCE_PATH + "registry-data": "/var/lib/registry"
-        }
-        self.docker_obj.docker_run(
-            "apporbit-registry", "registry:2",
-            vol_map, "-d -p 5000:5000 --restart=always", True)
+        command = 'COMPOSE_HTTP_TIMEOUT=300 docker-compose -f ' +\
+            self.compose_file + ' up -d'
+        self.utility_obj.cmdExecute(command, "", bexit=True, show=True)
 
     def get_host_ip(self):
         self.host = raw_input("Enter IP of this host: ")
@@ -191,11 +222,8 @@ PROVIDER IP: ${host}
         print "loading offline and registry containers"
         self.load_containers()
 
-        print "Run offline container"
+        print "Run offline and registry container"
         self.run_offline_containers()
-
-        print "Run Registry container"
-        self.run_registry_container()
 
         print "set docker daemon for insecure registry"
         self.docker_obj.setup_docker_daemon_insecure_reg(
