@@ -1,4 +1,5 @@
 from string import Template
+import logging
 import errno
 import os
 import docker
@@ -44,7 +45,6 @@ class OfflineDeploy(object):
         self.internal_gems_repo = "http://" + self.repohost + ":9292"
         self.internal_docker_reg = self.reposhost + ":5000"
 
-        print self.internal_repo
         try:
             if urllib.urlopen(self.internal_repo).getcode() == 200:
                 print "Verified connection with the repos... OK"
@@ -66,34 +66,16 @@ name=appOrbit Repository
 baseurl=${internal_repo}
 enabled=1
 gpgcheck=0
-''')
+''').safe_substitute(internal_repo=self.internal_repo)
 
         try:
-            flags = os.O_CREAT | os.O_EXCL | os.O_WRONLY
-            ao_repo_file = os.open(
-                "/etc/yum.repos.d/apporbit-offline.repo", flags)
+            with open("/etc/yum.repos.d/apporbit-offline.repo", "w") as f:
+                f.write(content)
         except OSError as e:
-            if e.errno == errno.EEXIST:
-                pass
-            else:
-                raise
-        else:
-            with os.fdopen(ao_repo_file, 'w') as file_obj:
-                content = content.safe_substitute(
-                    internal_repo=self.internal_repo,
-                )
-                file_obj.write(content)
-                file_obj.close()
-
-    def set_selinux(self):
-        print "Setting sestatus to permissive"
-        cmd_sesettings = "setenforce 0"
-        return_code, out, err = self.utility_obj.cmdExecute(
-            cmd_sesettings, "Setenforce to permissive", False)
-        if not return_code:
-            print "Error setting selinux :- " + str(err)
-            return False
-        return True
+            logging.info("Could not create apporbit-offline repo. Exitting [" +
+                e + "]")
+            print "Could not create apporbit-offline repo, check logs"
+            sys.exit(1)
 
     def setup_ntp(self):
         print "Time will be synchronized with time.nist.gov for this host"
@@ -101,22 +83,20 @@ gpgcheck=0
         return_code, out, err = self.utility_obj.cmdExecute(
             command, "", show=True)
         if not return_code:
-            return False
-        return True
+            logging.warning("Time not in sync, sync time via date command")
 
     def install_docker(self):
         self.docker_obj.install_docker(self.utility_obj, enablerepo=True)
 
     def set_iptables(self):
         print "Setting up iptables rules..."
-        command = "iptables -D INPUT -j REJECT --reject-with \
-icmp-host-prohibited && iptables -D  FORWARD -j \
-REJECT --reject-with icmp-host-prohibited"
+        command = '''
+iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited
+iptables -D  FORWARD -j REJECT --reject-with icmp-host-prohibited'''
         return_code, out, err = self.utility_obj.cmdExecute(
             command, "", show=True)
         if not return_code:
-            return False
-        return True
+            logging.warning("Iptables not set " + out)
 
     def uncompress_resources(self):
         print "Enter path to Packages tar"
@@ -128,11 +108,7 @@ REJECT --reject-with icmp-host-prohibited"
             sys.exit(1)
         command = "tar -xvf " + self.AO_PACKAGES_PATH + " -C " + self.TMPDIR
         return_code, out, err = self.utility_obj.cmdExecute(
-            command, " Untar appOrbitPackages.tar.gz", show=True)
-        if not return_code:
-            print "Untar appOrbitPackages.tar.gz failed :- " + str(err)
-            sys.exit(1)
-        return True
+            command, "Extract " + self.AO_PACKAGES_PATH, bexit=True, show=True)
 
     def add_chef_port_to_firewall(self):
         if os.path.isfile("/usr/bin/firewall-cmd"):
@@ -140,12 +116,11 @@ REJECT --reject-with icmp-host-prohibited"
             command = "firewall-cmd --permanent --add-port=" +\
                 str(self.chef_port) + "/tcp"
             return_code, out, err = self.utility_obj.cmdExecute(
-                command, "", show=True)
-            if not return_code:
-                print "Chef port not added to firewall :- " + str(err)
+                command, "Adding Chef port to firewall", bexit=True, show=True)
+
         print "Saving Iptables"
         return_code, out, err = self.utility_obj.cmdExecute(
-            "/sbin/service iptables save", "", show=True)
+            "/sbin/service iptables save", "", bexit=True, show=True)
 
     def set_config_info(self):
         emailid = "admin@apporbit.com"
@@ -154,54 +129,53 @@ REJECT --reject-with icmp-host-prohibited"
         self.emailid = raw_input(
             "Enter the User Email id for On Prem Deployment. Default(" +
             emailid + "):") or emailid
-        offline_mode = "true"
 
     def setup_logrotate(self):
         if not os.path.isfile("/etc/logrotate.d/apporbitLogRotate"):
-            command = '''echo "/var/log/apporbit/controller/*log /var/log/apporbit/services/*log {
+            content = '''\
+/var/log/apporbit/controller/*log /var/log/apporbit/services/*log {
           daily
           missingok
           size 50M
           rotate 20
           compress
           copytruncate
-        }" > /etc/logrotate.d/apporbitLogRotate'''
-            return_code, out, err = self.utility_obj.cmdExecute(
-                command, "", show=True)
-            if not return_code:
-                print "logrotate setup failed :- " + str(err)
-                return False
-            return True
+        }'''
+
+        try:
+            with open('/etc/logrotate.d/apporbitLogRotate', 'a') as f:
+                f.write(content)
+        except OSError as e:
+            logging.info("Couldn't create logrotate file. Exiting [" + e + "]")
+            print "Couldn't create logrotate file, check logs"
+            sys.exit(1)
 
     def get_host_ip(self):
         self.host = raw_input("Enter the Host IP: ")
         if self.host == "":
             print "Host IP is Mandatory.. Exiting.."
-            return False
-        return True
+            sys.exit(1)
 
     def generate_ssl_certs(self):
+        AO_KEYPATH = self.config_obj.APPORBIT_KEY
         if not os.path.isfile(
-                "/opt/apporbit/key/apporbitserver.key") or not os.path.isfile(
-                "/opt/apporbit/key/apporbitserver.crt"):
-            print "1) use existing certificate"
-            print "2) Create a self signed certificate"
+                AO_KEYPATH + "apporbitserver.key") or not os.path.isfile(
+                AO_KEYPATH + "apporbitserver.crt"):
+            print "1) Use existing certificate"
+            print "2) Create a self-signed certificate"
             ssltype = raw_input(
                 "Enter the type of ssl certificate [Default:2]:") or 2
             if ssltype == 2:
                 # Generate SSL Certiticate for https and
                 # put it in a volume mount controller location.
-                command = 'openssl req -new -newkey rsa:4096 -days 365 ' +\
-                    '-nodes -x509 -subj "/C=US/ST=NY/L=appOrbit/O=Dis/' +\
-                    'CN=www.apporbit.com"' +\
-                    ' -keyout /opt/apporbit/key/apporbitserver.key ' +\
-                    '-out /opt/apporbit/key/apporbitserver.crt'
+                command = '''
+openssl req -new -newkey rsa:4096 -days 365 -nodes -x509\
+ -subj "/C=US/ST=NY/L=appOrbit/O=Dis/CN=www.apporbit.com"\
+ -keyout /opt/apporbit/key/apporbitserver.key\
+ -out /opt/apporbit/key/apporbitserver.crt'''
                 return_code, out, err = self.utility_obj.cmdExecute(
-                    command, "", show=True)
-                if not return_code:
-                    print "Openssl certificate generation failed."
-                    return False
-                return True
+                    command, "Generate SSL key and Certificate",
+                    bexit=True, show=True)
             else:
                 print "Rename your certificate files as apporbitserver.crt\
  and key as apporbitserver.key"
@@ -209,104 +183,95 @@ REJECT --reject-with icmp-host-prohibited"
                     "Enter the location where certificate and key file exist:")
                 if not os.path.exists(sslkeydir):
                     print "Dir does not exist, Exiting..."
-                    return False
+                    sys.exit(1)
 
                 os.chdir(sslkeydir)
                 if not os.path.isfile(
                         "apporbitserver.key") or not os.path.isfile(
                         "apporbitserver.crt"):
-                    print "key and certificate files are missing."
-                    print "Note that key and crt file name should be apporbitserver.key \
-and apporbitserver.crt. Rename your files accordingly and retry."
-                    return False
+                    print '''Key and certificate files are missing.
+Note that key and crt file name should be apporbitserver.key
+and apporbitserver.crt. Rename your files accordingly and retry.'''
+                    sys.exit(1)
                 src = os.getcwd()
-                dest = "/opt/apporbit/key/"
+                dest = self.config_obj.APPORBIT_KEY
                 shutil.copyfile(
-                    src + "apporbitserver.key", dest + "apporbitserver.key")
+                    src + "/apporbitserver.key", dest + "/apporbitserver.key")
                 shutil.copyfile(
-                    src + "apporbitserver.crt", dest + "apporbitserver.crt")
+                    src + "/apporbitserver.crt", dest + "/apporbitserver.crt")
 
     def clean_setup_maybe(self):
-        print "Do you want to clean up the setup (removes db, Rabbitmq etc.)?"
-        print "press 1 to clean the setup."
-        print "press 2 to retain the older entries.."
+        opt = raw_input("Do you want to clean up the setup [y]/n ?") or 'y'
+        if str(opt).lower() in ['n', 'no']:
+            cleanSetup = 1
+        else:
+            cleanSetup = 2
         cleanSetup = raw_input("Default(2):") or 2
 
         if cleanSetup == 1:
-            command = 'rm -rf "/var/lib/apporbit/" && \
-rm -rf "/var/log/apporbit/" && rm -rf "/opt/apporbit/"'
+            command = '''
+rm -rf "{apporbit_data}"
+rm -rf "{apporbit_log}"
+rm -rf "{apporbit_home}"'''
+            command = command.format(
+                apporbit_data=self.config_obj.APPORBIT_DATA,
+                apporbit_log=self.config_obj.APPORBIT_LOG,
+                apporbit_home=self.config_obj.APPORBIT_HOME
+            )
             return_code, out, err = self.utility_obj.cmdExecute(
-                command, "", show=True)
+                command, "", bexit=True, show=True)
             self.chef_upgrade = 1
         else:
             self.chef_upgrade = 2
 
         directories = [
-            "/var/lib/apporbit/mysql",
-            "/var/log/apporbit/controller",
-            "/var/log/apporbit/services",
-            "/var/log/apporbit/rmq",
-            "/var/log/apporbit/consul",
-            "/var/log/apporbit/locator",
-            "/var/log/apporbit/svcd",
-            "/var/log/apporbit/captain",
-            "/var/lib/apporbit/sshKey_root",
-            "/var/lib/apporbit/sslkeystore",
-            "/var/lib/apporbit/consul",
-            "/var/lib/apporbit/locator",
-            "/var/lib/apporbit/services",
-            "/var/lib/apporbit/chefconf",
-            "/var/lib/apporbit/chef-server",
-            "var/lib/apporbit/controller/ui",
-            "/opt/apporbit/bin",
-            "/opt/apporbit/conf",
-            "/opt/apporbit/key"
+            self.config_obj.APPORBIT_DATA + "/mysql",
+            self.config_obj.APPORBIT_LOG + "/controller",
+            self.config_obj.APPORBIT_LOG + "/services",
+            self.config_obj.APPORBIT_LOG + "/rmq",
+            self.config_obj.APPORBIT_LOG + "/consul",
+            self.config_obj.APPORBIT_LOG + "/locator",
+            self.config_obj.APPORBIT_LOG + "/svcd",
+            self.config_obj.APPORBIT_LOG + "/captain",
+            self.config_obj.APPORBIT_DATA + "/sshKey_root",
+            self.config_obj.APPORBIT_DATA + "/sslkeystore",
+            self.config_obj.APPORBIT_DATA + "/consul",
+            self.config_obj.APPORBIT_DATA + "/locator",
+            self.config_obj.APPORBIT_DATA + "/services",
+            self.config_obj.APPORBIT_DATA + "/chefconf",
+            self.config_obj.APPORBIT_DATA + "/chef-server",
+            self.config_obj.APPORBIT_DATA + "/controller/ui",
+            self.config_obj.APPORBIT_BIN,
+            self.config_obj.APPORBIT_CONF,
+            self.config_obj.APPORBIT_KEY
         ]
 
         print "Creating Directories"
         for dirs in directories:
             self.makedirs(dirs)
             command = "chcon -Rt svirt_sandbox_file_t " + dirs
-            self.utility_obj.cmdExecute(command, "", show=True)
+            self.utility_obj.cmdExecute(command, "", bexit=True, show=True)
 
-        command = 'touch -a "/opt/apporbit/conf/apporbit.ini" && ' +\
-            'chcon -Rt svirt_sandbox_file_t /opt/apporbit/conf/apporbit.ini'
-        self.utility_obj.cmdExecute(command, "", show=True)
+        apporbit_ini = self.config_obj.APPORBIT_CONF + '/apporbit.ini'
+        command = ('''
+touch -a "{apporbit_ini}"
+chcon -Rt svirt_sandbox_file_t {apporbit_ini}''')
+        command = command.format(apporbit_ini=apporbit_ini)
+        self.utility_obj.cmdExecute(command, "", bexit=True, show=True)
 
     def remove_conflicting_containers(self):
         rf = resourcefetcher.ResourceFetcher()
-        containers = rf.apporbit_images.values()
-        for container in containers:
-            cmd = "docker ps -a | grep " + container
+        containers = rf.apporbit_images.keys()
+        for c in containers:
+            cmd = "docker ps --filter=name=" + c + " | grep " + c
             return_code, out, err = self.utility_obj.cmdExecute(
-                cmd, "", show=True)
+                cmd, "", bexit=True, show=True)
             if out:
-                print "Container " + container +\
+                print "Container " + c +\
                      " is already runnning. The container will removed first."
                 return_code, out, err = self.utility_obj.cmdExecute(
-                    "docker rm -f " + container, "", show=True)
-                if not return_code:
-                    print "Container not removed."
-                    return
-
-    def setup_docker_daemon_insecure_reg(self):
-        docker_config_path = "/etc/sysconfig/docker"
-        flag = False
-        insecure_reg = "INSECURE_REGISTRY='--insecure-registry " +\
-            self.internal_docker_reg + "'"
-        for line in fileinput.input(docker_config_path, inplace=True):
-            if re.compile(r'^INSECURE_REGISTRY.*').match(line):
-                flag = True
-            line = re.sub(
-                r'^INSECURE_REGISTRY.*',
-                insecure_reg, line.rstrip())
-            print line
-
-        if not flag:
-            with open(docker_config_path, "a") as myfile:
-                myfile.write(insecure_reg)
-        self.utility_obj.cmdExecute(
-            "systemctl restart docker.service", "", False)
+                    "docker rm -f " + c, "Removing " + c,
+                    bexit=True, show=True)
 
     def load_containers(self):
         rf = resourcefetcher.ResourceFetcher()
@@ -317,7 +282,8 @@ rm -rf "/var/log/apporbit/" && rm -rf "/opt/apporbit/"'
 
         containers = rf.hub_images.values()
         for container in containers:
-            self.docker_obj.docker_load(path + container.replace("/", "-") + ".tar")
+            self.docker_obj.docker_load(
+                path + container.replace("/", "-") + ".tar")
         self.docker_obj.docker_tag(
             rf.hub_images, "", self.internal_docker_reg + '/')
         self.docker_obj.docker_push(
@@ -381,7 +347,7 @@ api_version = v2
         config_obj.loadConfig("install.tmp")
         if self.chef_upgrade == 2:
             config_obj.upgrade = True
-        config_obj.offline_mode = offline_mode
+        config_obj.offline_mode = True
         os.remove("install.tmp")
         config_obj.createComposeFile(self.utility_obj)
         shutil.copyfile(
@@ -389,7 +355,7 @@ api_version = v2
             config_obj.APPORBIT_BIN + '/docker-compose')
         self.utility_obj.cmdExecute(
             "chmod a+x " + config_obj.APPORBIT_BIN + '/docker-compose',
-            "", True)
+            "", bexit=True, show=False)
         self.action_obj.removeCompose(config_obj, True)
         self.action_obj.deployCompose(config_obj, True)
         print "Apporbit server is deployed"
@@ -405,7 +371,9 @@ api_version = v2
         self.setup_internal_apporbit_repo()
 
         print "Set enforce Selinux"
-        self.set_selinux()
+        if not self.action_obj.set_selinux(utility_obj):
+            print "Could not set enforce selinux to 0"
+            system.exit(1)
 
         print "Install docker"
         self.install_docker()
@@ -415,7 +383,8 @@ api_version = v2
 
         print "Uncompressing resources"
         self.uncompress_resources()
-        # self.remove_conflicting_containers()
+
+        self.remove_conflicting_containers()
 
         print "Clean setup details"
         self.clean_setup_maybe()
@@ -425,12 +394,10 @@ api_version = v2
             sys.exit(1)
 
         print "Add chef port to firewall"
-        # self.deploy_chef()
         self.add_chef_port_to_firewall()
 
         print "Set config info"
         self.set_config_info()
-        # self.set_passenger_config()
 
         print "Setup log rotate"
         self.setup_logrotate()

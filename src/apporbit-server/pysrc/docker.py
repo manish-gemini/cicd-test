@@ -6,6 +6,7 @@ import time
 import utility
 import fileinput
 
+
 class DockerAO:
     def __init__(self):
         self.utility_obj = utility.Utility()
@@ -72,9 +73,10 @@ class DockerAO:
             cmd_upgradelvm, "lvm upgrade", show=True)
         if not return_code:
             if not self.redhat_subscription:
+                logginf.error("Red Hat is not having a valid subscription")
                 print "FAILED- Red Hat is not having a valid subscription. " +\
                     "Get a valid subscription and retry installation."
-            return False
+            sys.exit(1)
 
         if self.do_dockerinstall:
             if self.remove_olddocker:
@@ -83,16 +85,14 @@ class DockerAO:
                     "yum remove -y docker docker-selinux docker-common"
                 return_code, out, err = self.utility_obj.cmdExecute(
                     cmd_dockerremove, "Docker Remove older version if present",
-                    show=True
+                    bexit=True, show=True
                 )
-                if not return_code:
-                    return False
             elif "centos" in utility_obj.osname:
                 cmd_update = "yum -y update"
                 return_code, out, err = self.utility_obj.cmdExecute(
-                    cmd_update, " yum update", True)
+                    cmd_update, " yum update")
                 if not return_code:
-                    return False
+                    logger.warning("Yum update failed [" + out + "]")
 
             print 'Installing docker version %s' % self.docker_version
             if enablerepo:
@@ -103,16 +103,14 @@ class DockerAO:
                 cmd_dockerInstall = 'yum install -y docker-engine-' +\
                      self.docker_version
             return_code, out, err = self.utility_obj.cmdExecute(
-                cmd_dockerInstall, "Docker Install", show=True)
-            if not return_code:
-                return False
+                cmd_dockerInstall, "Docker Install", bexit=True, show=True)
 
         if self.do_sesettings:
             cmd_sesettings = "setenforce 0"
             return_code, out, err = self.utility_obj.cmdExecute(
                 cmd_sesettings, "Setenforce to permissive", show=False)
             if not return_code:
-                return False
+                logging.warning("Set enforce not done" + str(out))
 
         if os.path.isfile('/etc/sysconfig/docker'):
             dockerConfig = '/etc/sysconfig/docker'
@@ -132,23 +130,18 @@ class DockerAO:
         cmd_dockerservice = "systemctl enable docker.service"
         self.utility_obj.cmdExecute(
                 cmd_dockerservice,
-                "Enable Docker service on restart", show=False)
+                "Enable Docker service on restart", bexit=True, show=False)
 
         cmd_dockerservice = "systemctl start docker.service"
         return_code, out, err = self.utility_obj.cmdExecute(
-            cmd_dockerservice, " Docker service start", show=False)
-        if not return_code:
-            print "Docker not started :- " + str(out)
-            return False
+            cmd_dockerservice, " Docker service start", bexit=True, show=False)
 
     def docker_pull(self, images, registry=""):
         for k, v in images.iteritems():
             print "Downloading image " + k
             cmd_pull = "docker pull " + registry + v
             return_code, out, err = self.utility_obj.cmdExecute(
-                cmd_pull, " Docker pull " + k, show=False)
-            if not return_code:
-                print "Image " + v + " download failed :- " + str(out)
+                cmd_pull, " Image " + k + " download", bexit=True, show=False)
             time.sleep(1)
 
     def docker_push(self, images, registry=""):
@@ -157,29 +150,24 @@ class DockerAO:
             cmd_push = "docker push " + registry + v
             print cmd_push
             return_code, out, err = self.utility_obj.cmdExecute(
-                cmd_push, " Docker push " + k, show=False)
-            if not return_code:
-                print "Docker push failed :- " + str(out)
+                cmd_push, " Docker push " + k, bexit=True, show=False)
 
     def docker_tag(self, images, registry, new_registry):
         for k, v in images.iteritems():
             cmd_tag = "docker tag " + registry + v + " " + new_registry + v
             print cmd_tag
             return_code, out, err = self.utility_obj.cmdExecute(
-                cmd_tag, " Docker tag " + k, show=False)
-            if not return_code:
-                print "Docker tag failed :- " + str(out)
+                cmd_tag, " Docker tag " + k, bexit=True, show=False)
 
     def docker_save(self, images, directory, registry=""):
         cwd = os.getcwd()
         os.chdir(directory)
         for k, v in images.iteritems():
             print "Saving " + k
-            cmd_save = "docker save " + registry + v + " > " + v.replace("/", "-") + ".tar"
+            cmd_save = "docker save " + registry + v + " > " +\
+                v.replace("/", "-") + ".tar"
             return_code, out, err = self.utility_obj.cmdExecute(
-                cmd_save, " Docker save " + k, show=False)
-            if not return_code:
-                print "Docker save failed :- " + str(out)
+                cmd_save, " Docker save " + k, bexit=True, show=False)
         os.chdir(cwd)
 
     def docker_build(self, dockerfile_directory, dockerfile, image):
@@ -189,20 +177,15 @@ class DockerAO:
         cmd_build_offline_container =\
             "docker build -t " + image + " -f " + dockerfile + " ."
         return_code, out, err = self.utility_obj.cmdExecute(
-            cmd_build_offline_container, "", show=True)
-        if not return_code:
-            print "Error in building container :- " + str(out)
+            cmd_build_offline_container, "", bexit=True, show=True)
         os.chdir(cwd)
 
     def docker_load(self, path_of_image_tar):
-        print "loading " +\
+        print "Loading " +\
             os.path.splitext(os.path.basename(path_of_image_tar))[0]
         cmd_load = "docker load < " + path_of_image_tar
-        return_code, out, err = self.utility_obj.cmdExecute(cmd_load, "", True)
-        if not return_code:
-            print "Error in loading image :- " + str(out)
-            return False
-        return True
+        return_code, out, err = self.utility_obj.cmdExecute(
+            cmd_load, "", bexit=True, show=True)
 
     def docker_run(
             self,
@@ -217,23 +200,19 @@ class DockerAO:
         cmd_run += " " + image
 
         if removeContainerIfExists:
-            cmd = "docker ps -a | grep " + image
+            cmd = "docker ps --filter=name=" + name_of_container +\
+                " | grep " + name_of_container
             return_code, out, err = self.utility_obj.cmdExecute(
-                cmd, "", show=True)
+                cmd, "", bexit=True, show=True)
             if out:
                 print "Container " + name_of_container +\
                      " is already runnning. The container will removed first."
                 return_code, out, err = self.utility_obj.cmdExecute(
-                    "docker rm -f " + name_of_container, "", show=True)
-                if not return_code:
-                    print "Container not removed."
-                    return
+                    "docker rm -f " + name_of_container,
+                    "", bexit=True, show=True)
 
         return_code, out, err = self.utility_obj.cmdExecute(
-            cmd_run, "", show=True)
-        if not return_code:
-            print "Error in running container :- " + str(out)
-        return True
+            cmd_run, "", bexit=True, show=True)
 
     def setup_docker_daemon_insecure_reg(self, docker_reg):
         docker_config_path = "/etc/sysconfig/docker"
@@ -264,5 +243,5 @@ class DockerAO:
             sys.exit(1)
         self.utility_obj.cmdExecute(
             "systemctl daemon-reload && systemctl restart docker.service",
-            "", False
+            "", bexit=True, show=False
         )

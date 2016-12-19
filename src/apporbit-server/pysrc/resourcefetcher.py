@@ -1,4 +1,5 @@
-from string import Template
+import uuid
+import logging
 import sys
 import errno
 import os
@@ -10,6 +11,7 @@ import getpass
 import utility
 import docker
 import config
+import action
 
 
 class ResourceFetcher:
@@ -18,8 +20,10 @@ class ResourceFetcher:
         self.docker_obj = docker.DockerAO()
         self.utility_obj = utility.Utility()
         self.config_obj = config.Config()
-        self.REMOTE_SERVER = "www.google.com"
+        self.action_obj = action.Action()
         self.internal_registry = ""
+        self.apporbit_repo = "http://repos.gsintlab.com/"
+        self.ao_noarch = self.apporbit_repo + "release/noarch/"
         self.CWD = os.getcwd() + "/"
 
         self.PACKAGESDIR = self.CWD + "appOrbitPackages/"
@@ -31,6 +35,11 @@ class ResourceFetcher:
         self.MIST = self.RPMSDIR + "mist/"
         self.MISTMASTER = self.MIST + "master/"
 
+        self.AO_RESOURCE_TAR = 'appOrbitResources.tar'
+        self.AO_PACKAGES_TAR = 'appOrbitPackages.tar.gz'
+        self.AO_GEMS_TAR = 'appOrbitGems.tar.gz'
+        self.AO_RPMS_TAR = 'appOrbitRPMs.tar.gz'
+
         self.apporbit_apps = {
             'moneyball-exports': 'moneyball-exports',
             'moneyball-api': 'moneyball-api',
@@ -38,6 +47,18 @@ class ResourceFetcher:
             'grafana-app': 'apporbit/apporbit-grafana-app',
             'prometheus-app': 'apporbit/apporbit-prometheus-app'
         }
+
+        self.support_packages = {
+            self.ao_noarch + "nginx-1.6.3.tar.gz": self.NOARCHDIR,
+            self.ao_noarch + "passenger-5.0.10.tar.gz": self.NOARCHDIR,
+            self.ao_noarch + "5.0.7/agent-x86_64-linux.tar.gz":
+                self.NOARCH507DIR,
+            self.ao_noarch + "5.0.7/nginx-1.6.3-x86_64-linux.tar.gz":
+                self.NOARCH507DIR,
+            "1.5.1/chef-12.17.44-1.el7.x86_64.rpm": self.RPMSDIR,
+            "release/mist/master/run.jar": self.MISTMASTER
+        }
+
         self.apps_insecure_reg = "apporbit-apps.gsintlab.com:5000"
 
         self.hub_images = {
@@ -49,15 +70,15 @@ class ResourceFetcher:
         }
 
         self.apporbit_images = {
-            'services': 'apporbit-services',
-            'controller': 'apporbit-controller',
-            'rmq': 'apporbit-rmq',
-            'docs': 'apporbit-docs',
-            'chef': 'apporbit-chef:2.0',
-            'consul': 'consul',
-            'locator': 'locator',
-            'svcd': 'svcd',
-            'captain': 'captain'
+            'apporbit-services': 'apporbit-services',
+            'apporbit-controller': 'apporbit-controller',
+            'apporbit-rmq': 'apporbit-rmq',
+            'apporbit-docs': 'apporbit-docs',
+            'apporbit-chef': 'apporbit-chef:2.0',
+            'apporbit-consul': 'consul',
+            'apporbit-locator': 'locator',
+            'apporbit-svcd': 'svcd',
+            'apporbit-captain': 'captain'
         }
 
         self.infra_containers = {
@@ -70,21 +91,25 @@ class ResourceFetcher:
 
     def makedirs(self, path):
         try:
-            print "Creating " + path
+            logging.info("Creating " + path)
             os.makedirs(path)
         except OSError as exc:
             if exc.errno == errno.EEXIST and os.path.isdir(path):
                 pass
             else:
-                raise
+                logging.error(path + " creation failed")
+                sys.exit(1)
 
     def make_dirs(self):
-        self.makedirs(self.INFRADIR)
-        self.makedirs(self.NOARCH507DIR)
-        self.makedirs(self.MISTMASTER)
-        self.makedirs(self.RPMSDIR)
-        self.makedirs(self.GEMDIR)
-        self.makedirs(self.PACKAGESDIR)
+        dir_list = [self.INFRADIR,
+                    self.NOARCH507DIR,
+                    self.MISTMASTER,
+                    self.RPMSDIR,
+                    self.GEMDIR,
+                    self.PACKAGESDIR]
+
+        for dirs in dir_list:
+            self.makedirs(dirs)
 
     def clean_dirs(self):
         shutil.rmtree(self.RPMSDIR)
@@ -92,19 +117,21 @@ class ResourceFetcher:
         shutil.rmtree(self.PACKAGESDIR)
 
     def check_internet(self):
-        REMOTE_SERVER = "www.google.com"
-        try:
-            host = socket.gethostbyname(REMOTE_SERVER)
-            s = socket.create_connection((host, 80), 2)
-
-            host = socket.gethostbyname("8.8.8.8")
-            # s = socket.create_connection((host,80),2)
-            print "Internet Connectivity OK"
-            return True
-        except:
-            pass
-        print "Not connected to internet. Exiting."
-        sys.exit(1)
+        remote_servers = {
+            "www.google.com": 80,
+            "8.8.8.8": 53,
+            "repos.gsintlab.com": 80
+        }
+        for server, port in remote_servers.iteritems():
+            try:
+                host = socket.gethostbyname(server)
+                s = socket.create_connection((host, port), 2)
+            except:
+                logging.error("Could not connect to" + server + " Exiting.")
+                print "Could not connect to" + server + " Exiting."
+                sys.exit(1)
+        logging.info("Internet Connectivity OK")
+        print "Internet Connectivity OK"
 
     def verifyOS(self):
         self.utility_obj.verifyOSRequirement()
@@ -123,30 +150,8 @@ class ResourceFetcher:
         self.utility_obj.loginDockerRegistry(
             uname, pwd,
             self.internal_registry)
-        print "Docker login successfull to https://" + self.internal_registry
-
-    def setup_docker_daemon_insecure_reg(self, docker_reg):
-        docker_config_path = "/etc/sysconfig/docker"
-        flag = False
-        for line in fileinput.input(docker_config_path, inplace=True):
-            if re.compile(r'^INSECURE_REGISTRY.*').match(line):
-                flag = True
-                line = re.sub(
-                    r'^INSECURE_REGISTRY.*',
-                    "INSECURE_REGISTRY='--insecure-registry " +
-                    docker_reg + "'", line.rstrip())
-                print line
-
-            if not flag:
-                with open(docker_config_path, "a") as myfile:
-                    myfile.write(
-                        "INSECURE_REGISTRY='--insecure-registry " +
-                        docker_reg + "'"
-                    )
-            self.utility_obj.cmdExecute(
-                "systemctl restart docker.service",
-                "", False
-            )
+        print "Docker login successfull to " + self.internal_registry
+        logging.info("Docker login successfull to " + self.internal_registry)
 
     def download_and_tag_images(self):
 
@@ -173,10 +178,11 @@ class ResourceFetcher:
 
         self.docker_obj.docker_pull(
             self.apporbit_apps,
-            "apporbit-apps.apporbit.io:5000/"
+            "apporbit-apps.apporbit.io:5000/apporbit/"
         )
 
     def save_images_and_create_tar(self):
+        logging.info("Saving images ")
         print "Saving images "
         self.docker_obj.docker_save(self.hub_images, self.PACKAGESDIR)
         self.docker_obj.docker_save(
@@ -192,201 +198,119 @@ class ResourceFetcher:
 
         os.chdir(self.CWD)
         return_code, out, err = self.utility_obj.cmdExecute(
-            "tar -czvf appOrbitPackages.tar.gz appOrbitPackages",
-            " Creating appOrbitPAckages.tar.gz", show=False
+            "tar -czvf " + self.AO_PACKAGES_TAR + " appOrbitPackages",
+            "Creating " + self.AO_PACKAGES_TAR, bexit=True, show=False
         )
-        if not return_code:
-            print "appOrbitPackages.tar.gz creation failed :- " + str(err)
-            sys.exit(1)
         print "Apporbit images tar created successfully"
 
     def install_required_packages(self):
         packages = "yum-utils createrepo wget"
         return_code, out, err = self.utility_obj.cmdExecute(
             "yum install -y " + packages,
-            " Installing " + packages, False
+            " Installing " + packages, bexit=True, show=False
         )
-        if not return_code:
-            print packages + " installation Failed :- " + str(err)
-            sys.exit(1)
         print packages + " installed successfully"
 
     def download_general_packages(self):
         os.chdir(self.NOARCHDIR)
-        repo = "http://repos.gsintlab.com/release"
-        base_cmd = "wget -c '" + repo + "/noarch/"
-        return_code, out, err = self.utility_obj.cmdExecute(
-            base_cmd + "nginx-1.6.3.tar.gz'",
-            " Downloading Nginx package", show=False
-        )
-        if not return_code:
-            print "Nginx download Failed :- " + str(err)
-            sys.exit(1)
-        print "Nginx downloaded successfully"
 
-        return_code, out, err = self.utility_obj.cmdExecute(
-            base_cmd + "passenger-5.0.10.tar.gz'", "", show=False)
-        if not return_code:
-            print "Download Failed :- " + str(err)
-            return False
-
-        print "Downloading Passenger agent"
-
-        os.chdir(self.NOARCH507DIR)
-        base_cmd = base_cmd + "5.0.7/"
-
-        return_code, out, err = self.utility_obj.cmdExecute(
-            base_cmd + "agent-x86_64-linux.tar.gz'",
-            " Downloading agent package", show=False
-        )
-        if not return_code:
-            print "Download Failed :- " + str(err)
-            return False
-
-        return_code, out, err = self.utility_obj.cmdExecute(
-            "wget -c 'https://s3.amazonaws.com/phusion-passenger/binaries" +\
-            "/passenger/by_release/5.0.7/nginx-1.6.3-x86_64-linux.tar.gz'",
-            " Downloading aws_nginx package", show=False
-        )
-        if not return_code:
-            print "Download Failed :- " + str(err)
-            return False
-
-        print "Downloading mist jar"
-
-        os.chdir(self.MISTMASTER)
-        base_cmd = "wget -c '" + repo + "/mist/master/run.jar'"
-        return_code, out, err = self.utility_obj.cmdExecute(
-            base_cmd, " Downloading mist jar", show=False
-        )
-        if not return_code:
-            print "Download Failed :- " + str(err)
-            return False
+        for source, destination in self.support_packages.iteritems():
+            os.chdir(destination)
+            base_cmd = "wget -c '" + self.apporbit_repo
+            return_code, out, err = self.utility_obj.cmdExecute(
+                base_cmd + source, "", bexit=True, show=False
+            )
+            print source + " downloaded successfully"
 
     def rhel_package_setup(self):
         os.chdir(self.CWD)
         if "red hat" in self.utility_obj.osname:
-            print "Configuring RHEL repos for syncing..."
+            logging.info("Configuring RHEL repos for syncing...")
             sub_id = ""
             return_code, out, err = self.utility_obj.cmdExecute(
-                "basename `ls /etc/pki/entitlement/*-key.pem |" +\
-                    " head -1` | cut -d'-' -f1", "", show=True 
+                "basename `ls /etc/pki/entitlement/*-key.pem |" +
+                " head -1` | cut -d'-' -f1", "", bexit=True, show=True
             )
             if return_code:
                 sub_id = out
 
-            content = Template('''
+            sub_id = str(uuid.uuid4())
+            content = ('''
 
 [rhel-7-server-rpms]
 name=Red Hat Enterprise Linux 7 Server (RPMs)
 baseurl='https://cdn.redhat.com/content/dist/rhel/server/7/$releasever/$basearch/os'
 sslverify=0
-sslclientkey=/etc/pki/entitlement/${sub_id}-key.pem
-sslclientcert=/etc/pki/entitlement/${sub_id}.pem
+sslclientkey=/etc/pki/entitlement/{sub_id}-key.pem
+sslclientcert=/etc/pki/entitlement/{sub_id}.pem
 gpgcheck=0
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
 includepkgs=
 include=rhel-pkglist.conf
-                ''')
+                ''').format(sub_id=sub_id)
 
-            try:
-                flags = os.O_WRONLY | os.O_APPEND
-                reposync_file = os.open("reposync.conf", flags)
-            except OSError as e:
-                if e.errno == errno.EEXIST:
-                    pass
-                else:
-                    raise
+            reposync_file = 'reposync.conf'
+            if os.path.exists(reposync_file):
+                mode = 'a'
             else:
-                with os.fdopen(reposync_file, 'a') as file_obj:
-                    content = content.safe_substitute(
-                        sub_id=sub_id,
-                    )
-                    file_obj.write(content)
-                    file_obj.close()
+                mode = 'w'
+            try:
+                with open(reposync_file, mode) as f:
+                    f.write(content)
+            except OSError as e:
+                logging.info("Could not create/open reposync.conf. Exitting")
+                print "Could not createi/open reposync.conf, check logs"
+                sys.exit(1)
 
     def generate_rpm_packages(self):
-        src = os.getcwd()
+        src = self.CWD
+        fileList = [
+                    'reposync.conf',
+                    'offline-pkglist.conf',
+                    'updates-pkglist.conf',
+                    'docker-pkglist.conf',
+                    'rhel-pkglist.conf'
+                    ]
 
-        shutil.copyfile(src + "/reposync.conf", self.RPMSDIR + "reposync.conf")
-        shutil.copyfile(
-            src + "/offline-pkglist.conf",
-            self.RPMSDIR + "offline-pkglist.conf"
-        )
-        shutil.copyfile(
-            src + "/updates-pkglist.conf",
-            self.RPMSDIR + "updates-pkglist.conf"
-        )
-        shutil.copyfile(
-            src + "/docker-pkglist.conf",
-            self.RPMSDIR + "docker-pkglist.conf"
-        )
-        shutil.copyfile(
-            src + "/rhel-pkglist.conf",
-            self.RPMSDIR + "rhel-pkglist.conf"
-        )
+        for f in fileList:
+            shutil.copyfile(src + f, sel.RPMSDIR + f)
 
         os.chdir(self.RPMSDIR)
         return_code, out, err = self.utility_obj.cmdExecute(
             "reposync -c reposync.conf",
-            "", show=True
+            "", bexit=True, show=True
         )
-        if not return_code:
-            print "Error in running reposync :- " + str(err)
-            return False
 
-        os.remove(self.RPMSDIR + "offline-pkglist.conf")
-        os.remove(self.RPMSDIR + "updates-pkglist.conf")
-        os.remove(self.RPMSDIR + "docker-pkglist.conf")
-        os.remove(self.RPMSDIR + "rhel-pkglist.conf")
-        self.utility_obj.cmdExecute(
-            "wget -c 'https://opscode-omnibus-packages.s3.amazonaws.com/" +\
-            "el/7/x86_64/chef-12.6.0-1.el7.x86_64.rpm'", "", show=False
-        )
-        self.utility_obj.cmdExecute("createrepo .", "", show=True)
+        for f in fileList:
+            os.remove(self.RPMSDIR + f)
+
+        self.utility_obj.cmdExecute("createrepo .", "", bexit=True, show=True)
 
         os.chdir(self.CWD)
 
         return_code, out, err = self.utility_obj.cmdExecute(
-            "tar -cvzf appOrbitRPMs.tar.gz appOrbitRPMs", "", show=True)
-        if not return_code:
-            print "Error in creating RPMs :- " + str(err)
-            return False
+            "tar -cvzf " + self.AO_RPMS_TAR + " appOrbitRPMs",
+            "", bexit=True, show=True)
 
     def build_offline_container(self):
-        print "Building apporbit offline container"
+        logging.info("Building apporbit offline container")
         self.docker_obj.docker_build(
             self.CWD + "Dockerfiles",
             "offline-container", "apporbit/apporbit-offline"
         )
 
-    def set_selinux(self):
-        print "Setting sestatus to permissive"
-        cmd_sesettings = "setenforce 0"
-        return_code, out, err = self.utility_obj.cmdExecute(
-            cmd_sesettings, "Setenforce to permissive", False)
-        if not return_code:
-            print "Error setting selinux :- " + str(err)
-            return False
-
     def download_generate_gems(self):
-        print "Downloading ruby gems"
+        logging.info("Downloading ruby gems")
         command = "docker run -v " + self.GEMDIR +\
             ":/opt/rubygems apporbit/apporbit-offline gem mirror"
         return_code, out, err = self.utility_obj.cmdExecute(
-            command, "Downloading ruby gems", show=False)
-        if not return_code:
-            print "Error downloading ruby gems :- " + str(err)
-            return False
+            command, "Downloading ruby gems", bexit=True, show=False)
 
-        print "Generating ruby gems"
+        logging.info("Generating ruby gems")
         os.chdir(self.CWD)
-        command = "tar -cvzf appOrbitGems.tar.gz appOrbitGems"
+        command = "tar -cvzf " + self.AO_GEMS_TAR + " appOrbitGems"
         return_code, out, err = self.utility_obj.cmdExecute(
-            command, "", show=True)
-        if not return_code:
-            print "Error creating appOrbitGems.tar :- " + str(err)
-            return False
+            command, "", bexit=True, show=True)
 
     def save_containers(self):
         os.chdir(self.CWD)
@@ -396,36 +320,33 @@ include=rhel-pkglist.conf
         ]
         for command in commands:
             return_code, out, err = self.utility_obj.cmdExecute(
-                command, "", show=True
+                command, "", bexit=True, show=True
             )
-            if not return_code:
-                print "Error in saving containers :- " + str(err)
-                return False
-        print "Saved apporbit-offline and registry containers"
+        logging.info("Saved apporbit-offline and registry containers")
 
     def finalizing_resources_and_packages(self):
-        print "finalizing the tars"
-        tars = [
-            "tar -cvf appOrbitResources.tar apporbit-offline.tar " +\
-            "registry.tar appOrbitRPMs.tar.gz appOrbitGems.tar.gz infra_images"
-        ]
-        for tar in tars:
-            return_code, out, err = self.utility_obj.cmdExecute(
-                tar, "", show=True)
-            if not return_code:
-                print "Error in saving containers :- " + str(err)
-                return False
+        logging.info("Finalizing the commands")
+        resource_list = " ".join(["apporbit-offline.tar",
+                          "registry.tar",
+                          self.AO_RPMS_TAR,
+                          self.AO_GEMS_TAR,
+                          "infra_images"])
+
+        tar_cmd = "tar -cvf"
+        cmd = " ".join([tar_cmd, AO_RESOURCE_TAR, resource_list])
+        return_code, out, err = self.utility_obj.cmdExecute(
+            cmd, "", bexit=True, show=True)
 
         print "###############################################################"
         print
         print "Dependent resources of appOrbit successfully downloaded."
         print
-        print "Transfer appOrbitResources.tar to a system that will act as "
-        print "resource provider for appOrbit Application and run installer"
-        print "with --setup-provider."
+        print "Transfer " + self.AO_RESOURCE_TAR + "to a system that will "
+        print " act as resource provider for appOrbit Application and run"
+        print " installer with --setup-provider."
         print
-        print "Transfer appOrbitPackages.tar.gz to a system where apporbit"
-        print "server will run and run installer with --deploy-offline."
+        print "Transfer " + self.AO_PACKAGES_TAR + " to apporbit host"
+        print " and run installer with --deploy-offline option."
         print
         print "###############################################################"
 
@@ -438,7 +359,10 @@ include=rhel-pkglist.conf
         self.verifyOS()
         print "[OK]"
 
-        self.set_selinux()
+        if not self.action_obj.set_selinux(utility_obj):
+            print "Setting selinux failed"
+            sys.exit(1)
+
         self.get_internal_registry()
 
         print "Installing Docker"

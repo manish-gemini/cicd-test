@@ -56,10 +56,7 @@ class Provider:
             "tar -xvf " + self.AO_RESOURCE_PATH + "appOrbitGems.tar.gz"
 
         return_code, out, err = self.utility_obj.cmdExecute(
-            command, " Uncompressing resources", show=True)
-        if not return_code:
-            print "Uncompress Failed :- " + err
-            return False
+            command, " Uncompressing resources", bexit=True, show=True)
 
     def setup_local_apporbit_repo(self):
         if not os.path.isfile("/etc/yum.repos.d/apporbit-local.repo"):
@@ -69,24 +66,15 @@ name=appOrbit Repository
 baseurl=file://${AO_RESOURCE_PATH}appOrbitRPMs
 enabled=1
 gpgcheck=0
-''')
+''').safe_substitue(AO_RESOURCE_PATH=self.AO_RESOURCE_PATH)
 
-            try:
-                flags = os.O_CREAT | os.O_EXCL | os.O_WRONLY
-                ao_repo_file =\
-                    os.open("/etc/yum.repos.d/apporbit-local.repo", flags)
-            except OSError as e:
-                if e.errno == errno.EEXIST:
-                    pass
-                else:
-                    raise
-            else:
-                with os.fdopen(ao_repo_file, 'w') as file_obj:
-                    content = content.safe_substitute(
-                        AO_RESOURCE_PATH=self.AO_RESOURCE_PATH,
-                    )
-                    file_obj.write(content)
-                    file_obj.close()
+        try:
+            with open("/etc/yum.repos.d/apporbit-local.repo", "w") as f:
+                f.write(content)
+        except OSError as e:
+            logging.info("Could not create apporbit-local repo. Exitting")
+            print "Could not create apporbit-local repo, check logs"
+            sys.exit(1)
 
     def install_docker(self):
         self.docker_obj.install_docker(self.utility_obj, enablerepo=True)
@@ -119,26 +107,6 @@ gpgcheck=0
     def get_host_ip(self):
         self.host = raw_input("Enter IP of this host: ")
         self.docker_registry_url = self.host + ":5000"
-
-    def setup_docker_daemon_insecure_reg(self):
-        docker_config_path = "/etc/sysconfig/docker"
-        flag = False
-        for line in fileinput.input(docker_config_path, inplace=True):
-            if re.compile(r'^INSECURE_REGISTRY.*').match(line):
-                flag = True
-            line = re.sub(
-                r'^INSECURE_REGISTRY.*',
-                "INSECURE_REGISTRY='--insecure-registry " +
-                self.docker_registry_url + "'", line.rstrip())
-            print line
-
-        if not flag:
-            with open(docker_config_path, "a") as myfile:
-                myfile.write(
-                    "INSECURE_REGISTRY='--insecure-registry " +
-                    self.docker_registry_url + "'")
-        self.utility_obj.cmdExecute(
-            "systemctl restart docker.service", "", False)
 
     def load_infra_containers(self):
         for k, v in self.resource_fetcher.infra_containers.iteritems():
@@ -175,15 +143,6 @@ gpgcheck=0
             self.resource_fetcher.apporbit_apps,
             self.docker_registry_url + "/")
 
-    def set_selinux(self):
-        print "Setting sestatus to permissive"
-        cmd_sesettings = "setenforce 0"
-        return_code, out, err = self.utility_obj.cmdExecute(
-            cmd_sesettings, "Setenforce to permissive", True)
-        if not return_code:
-            print "Error setting selinux :- " + err
-            return False
-
     def show_setup_information(self):
         content = Template('''
 
@@ -215,7 +174,11 @@ PROVIDER IP: ${host}
         self.verifyOS()
 
         self.get_host_ip()
-        self.set_selinux()
+
+        if not self.action_obj.set_selinux(utility_obj):
+            print "Set enforce linux failed, check logs, Exitting"
+            sys.exit(1)
+
         print "Uncompressing resources"
         self.uncompress_resources()
 
