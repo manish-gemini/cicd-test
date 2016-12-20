@@ -6,16 +6,6 @@ command_exists() {
 	command -v "$@" > /dev/null 2>&1
 }
 
-##if  ! command_exists curl 
-#then
-#   yum install -y curl
-#fi
-#
-#if  ! command_exists python 
-#then
-#   yum install -y python
-#fi
-
 if  ! command_exists nslookup
 then
    yum install -y bind-utils
