@@ -19,7 +19,7 @@ class Provider:
         self.AO_DOWNLOADS_PATH = ""
         self.AO_RESOURCE_PATH = ""
         self.resource_fetcher = resourcefetcher.ResourceFetcher()
-        self.compose_file = "compose.yml"
+        self.compose_file = "provider-compose.yml"
 
     def makedirs(self, path):
         try:
@@ -73,8 +73,9 @@ gpgcheck=0
             with open("/etc/yum.repos.d/apporbit-local.repo", "w") as f:
                 f.write(content)
         except OSError as e:
-            logging.info("Could not create apporbit-local repo. Exitting")
-            print "Could not create apporbit-local repo, check logs"
+            logging.info("Couldn't create apporbit-local repo. Exiting")
+            logging.error(e)
+            print "Couldn't create apporbit-local repo, check logs for details"
             sys.exit(1)
 
     def install_docker(self):
@@ -96,7 +97,6 @@ services:
     container_name: apporbit-offline
     image: apporbit/apporbit-offline
     mem_limit: 2100000000
-    hostname: ${host}
     restart: always
     network_mode: "bridge"
     ports:
@@ -123,6 +123,7 @@ services:
                 f.write(content)
         except OSError as e:
             logging.info("Couldn't create offline compose file")
+            logging.error(e)
             print "Couldn't create offline compose file, check logs"
             sys.exit(1)
 
@@ -201,31 +202,30 @@ PROVIDER IP: ${host}
             print "File not found or unreadable. Exiting.."
             sys.exit(1)
 
-        print "Checking Platform Compatibility"
+        print "Checking platform compatibility"
         self.verifyOS()
 
         self.get_host_ip()
 
         if not self.action_obj.set_selinux(utility_obj):
-            print "Set enforce linux failed, check logs, Exitting"
             sys.exit(1)
 
         print "Uncompressing resources"
         self.uncompress_resources()
 
-        print "set up local apporbit repo"
+        print "Set up local apporbit repo"
         self.setup_local_apporbit_repo()
 
         print "Install docker"
         self.install_docker()
 
-        print "loading offline and registry containers"
+        print "Loading offline and registry containers"
         self.load_containers()
 
         print "Run offline and registry container"
         self.run_offline_containers()
 
-        print "set docker daemon for insecure registry"
+        print "Set docker daemon for insecure registry"
         self.docker_obj.setup_docker_daemon_insecure_reg(
             self.docker_registry_url)
 

@@ -1,4 +1,3 @@
-import uuid
 import logging
 import sys
 import errno
@@ -126,9 +125,13 @@ class ResourceFetcher:
             try:
                 host = socket.gethostbyname(server)
                 s = socket.create_connection((host, port), 2)
-            except:
-                logging.error("Could not connect to" + server + " Exiting.")
-                print "Could not connect to" + server + " Exiting."
+            except socket.timeout as e:
+                logging.error("Unable to reach Internet, Exiting..")
+                print "Unable to reach Internet, Exiting.."
+                sys.exit(1)
+            except socket.gaierror as e:
+                logging.error("DNS resolution failed. Exiting : " + str(e))
+                print "DNS resolution failed, check logs for details."
                 sys.exit(1)
         logging.info("Internet Connectivity OK")
         print "Internet Connectivity OK"
@@ -150,8 +153,10 @@ class ResourceFetcher:
         self.utility_obj.loginDockerRegistry(
             uname, pwd,
             self.internal_registry)
-        print "Docker login successfull to " + self.internal_registry
-        logging.info("Docker login successfull to " + self.internal_registry)
+        print "Successfully logged in to Docker Registry: " +\
+            self.internal_registry
+        logging.info("Successfully logged in to Docker Registry: " +
+                     self.internal_registry)
 
     def download_and_tag_images(self):
 
@@ -234,7 +239,6 @@ class ResourceFetcher:
             if return_code:
                 sub_id = out
 
-            sub_id = str(uuid.uuid4())
             content = ('''
 
 [rhel-7-server-rpms]
@@ -250,29 +254,25 @@ include=rhel-pkglist.conf
                 ''').format(sub_id=sub_id)
 
             reposync_file = 'reposync.conf'
-            if os.path.exists(reposync_file):
-                mode = 'a'
-            else:
-                mode = 'w'
             try:
-                with open(reposync_file, mode) as f:
+                with open(reposync_file, 'a') as f:
                     f.write(content)
             except OSError as e:
-                logging.info("Could not create/open reposync.conf. Exitting")
-                print "Could not create/open reposync.conf, check logs"
+                logging.info("Could not create/open reposync.conf. Exiting")
+                logginf.error(e)
+                print "Could not create/open reposync.conf, " +\
+                      "check logs for more details"
                 sys.exit(1)
 
     def generate_rpm_packages(self):
         src = self.CWD
-        fileList = [
-                    'reposync.conf',
-                    'offline-pkglist.conf',
-                    'updates-pkglist.conf',
-                    'docker-pkglist.conf',
-                    'rhel-pkglist.conf'
-                    ]
+        file_list = ['reposync.conf',
+                     'offline-pkglist.conf',
+                     'updates-pkglist.conf',
+                     'docker-pkglist.conf',
+                     'rhel-pkglist.conf']
 
-        for f in fileList:
+        for f in file_list:
             shutil.copyfile(src + f, sel.RPMSDIR + f)
 
         os.chdir(self.RPMSDIR)
@@ -325,15 +325,15 @@ include=rhel-pkglist.conf
         logging.info("Saved apporbit-offline and registry containers")
 
     def finalizing_resources_and_packages(self):
-        logging.info("Finalizing the commands")
+        logging.info("Generating resource packages")
         resource_list = " ".join(["apporbit-offline.tar",
-                          "registry.tar",
-                          self.AO_RPMS_TAR,
-                          self.AO_GEMS_TAR,
-                          "infra_images"])
+                                  "registry.tar",
+                                  self.AO_RPMS_TAR,
+                                  self.AO_GEMS_TAR,
+                                  "infra_images"])
 
         tar_cmd = "tar -cvf"
-        cmd = " ".join([tar_cmd, AO_RESOURCE_TAR, resource_list])
+        cmd = " ".join([tar_cmd, self.AO_RESOURCE_TAR, resource_list])
         return_code, out, err = self.utility_obj.cmdExecute(
             cmd, "", bexit=True, show=True)
 
@@ -360,7 +360,6 @@ include=rhel-pkglist.conf
         print "[OK]"
 
         if not self.action_obj.set_selinux(utility_obj):
-            print "Setting selinux failed"
             sys.exit(1)
 
         self.get_internal_registry()
@@ -382,7 +381,7 @@ include=rhel-pkglist.conf
         print "Saving Images and generating tars"
         self.save_images_and_create_tar()
 
-        print "Installing utils"
+        print "Installing required packages"
         self.install_required_packages()
 
         print "Downloading compressed tar of RPMs"

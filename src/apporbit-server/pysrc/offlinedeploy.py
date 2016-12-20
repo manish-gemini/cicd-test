@@ -72,8 +72,8 @@ gpgcheck=0
             with open("/etc/yum.repos.d/apporbit-offline.repo", "w") as f:
                 f.write(content)
         except OSError as e:
-            logging.info("Could not create apporbit-offline repo. Exitting [" +
-                e + "]")
+            logging.info("Could not create apporbit-offline repo. Exiting")
+            logging.error(e)
             print "Could not create apporbit-offline repo, check logs"
             sys.exit(1)
 
@@ -90,9 +90,10 @@ gpgcheck=0
 
     def set_iptables(self):
         print "Setting up iptables rules..."
-        command = '''
-iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited
-iptables -D  FORWARD -j REJECT --reject-with icmp-host-prohibited'''
+        cmd_list = [
+            "iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited",
+            "iptables -D FORWARD -j REJECT --reject-with icmp-host-prohibited"]
+        command = " && ".join(cmd_list)
         return_code, out, err = self.utility_obj.cmdExecute(
             command, "", show=True)
         if not return_code:
@@ -143,10 +144,11 @@ iptables -D  FORWARD -j REJECT --reject-with icmp-host-prohibited'''
         }'''
 
         try:
-            with open('/etc/logrotate.d/apporbitLogRotate', 'a') as f:
+            with open('/etc/logrotate.d/apporbitLogRotate', 'w') as f:
                 f.write(content)
         except OSError as e:
-            logging.info("Couldn't create logrotate file. Exiting [" + e + "]")
+            logging.info("Couldn't create logrotate file. Exiting")
+            logging.error(e)
             print "Couldn't create logrotate file, check logs"
             sys.exit(1)
 
@@ -206,45 +208,28 @@ and apporbitserver.crt. Rename your files accordingly and retry.'''
             cleanSetup = 1
         else:
             cleanSetup = 2
-        cleanSetup = raw_input("Default(2):") or 2
 
         if cleanSetup == 1:
-            command = '''
-rm -rf "{apporbit_data}"
-rm -rf "{apporbit_log}"
-rm -rf "{apporbit_home}"'''
-            command = command.format(
-                apporbit_data=self.config_obj.APPORBIT_DATA,
-                apporbit_log=self.config_obj.APPORBIT_LOG,
-                apporbit_home=self.config_obj.APPORBIT_HOME
-            )
+            cmd_list = ['rm -rf ' + self.config_obj.APPORBIT_DATA,
+                        'rm -rf ' + self.config_obj.APPORBIT_LOG,
+                        'rm -rf ' + self.config_obj.APPORBIT_HOME]
+            command = " && ".join(cmd_list)
             return_code, out, err = self.utility_obj.cmdExecute(
                 command, "", bexit=True, show=True)
             self.chef_upgrade = 1
         else:
             self.chef_upgrade = 2
+        containers = ['controller', 'services',
+                      'rmq', 'consul', 'locator', 'svcd', 'captain']
+        datas = ['mysql', 'sshKey_root', 'sslkeystore', 'consul', 'locator',
+                 'services', 'chefconf', 'chef-server', 'controller/ui']
+        log_dirs = [self.config_obj.APPORBIT_LOG + "/" + d for d in containers]
+        data_dirs = [self.config_obj.APPORBIT_DATA + "/" + d for d in datas]
+        bin_dir = [self.config_obj.APPORBIT_BIN]
+        conf_dir = [self.config_obj.APPORBIT_CONF]
+        key_dir = [self.config_obj.APPORBIT_KEY]
 
-        directories = [
-            self.config_obj.APPORBIT_DATA + "/mysql",
-            self.config_obj.APPORBIT_LOG + "/controller",
-            self.config_obj.APPORBIT_LOG + "/services",
-            self.config_obj.APPORBIT_LOG + "/rmq",
-            self.config_obj.APPORBIT_LOG + "/consul",
-            self.config_obj.APPORBIT_LOG + "/locator",
-            self.config_obj.APPORBIT_LOG + "/svcd",
-            self.config_obj.APPORBIT_LOG + "/captain",
-            self.config_obj.APPORBIT_DATA + "/sshKey_root",
-            self.config_obj.APPORBIT_DATA + "/sslkeystore",
-            self.config_obj.APPORBIT_DATA + "/consul",
-            self.config_obj.APPORBIT_DATA + "/locator",
-            self.config_obj.APPORBIT_DATA + "/services",
-            self.config_obj.APPORBIT_DATA + "/chefconf",
-            self.config_obj.APPORBIT_DATA + "/chef-server",
-            self.config_obj.APPORBIT_DATA + "/controller/ui",
-            self.config_obj.APPORBIT_BIN,
-            self.config_obj.APPORBIT_CONF,
-            self.config_obj.APPORBIT_KEY
-        ]
+        directories = log_dirs + data_dirs + bin_dir + conf_dir + key_dir
 
         print "Creating Directories"
         for dirs in directories:
@@ -254,7 +239,7 @@ rm -rf "{apporbit_home}"'''
 
         apporbit_ini = self.config_obj.APPORBIT_CONF + '/apporbit.ini'
         command = ('''
-touch -a "{apporbit_ini}"
+touch -a "{apporbit_ini}" &&
 chcon -Rt svirt_sandbox_file_t {apporbit_ini}''')
         command = command.format(apporbit_ini=apporbit_ini)
         self.utility_obj.cmdExecute(command, "", bexit=True, show=True)
@@ -372,7 +357,6 @@ api_version = v2
 
         print "Set enforce Selinux"
         if not self.action_obj.set_selinux(utility_obj):
-            print "Could not set enforce selinux to 0"
             system.exit(1)
 
         print "Install docker"
