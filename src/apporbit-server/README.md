@@ -8,14 +8,13 @@ AppOrbit Installer Documentation
 - 4 vCPU
 - 8 GB RAM
 - 100 GB disk space recommended disk space in the host machine
-- 10 GB minimum free disk space in the host machine
 
 Network public IP or private IP
 A private IP can be used only when the entire cloud is running in a private, on premise environment without public IPs. If the platform needs to create any clusters in the public cloud or private cloud on the public network, the configuration management server needs to use public IPs, and be accessible to all created virtual machines and the appOrbit Platform.
 
 ## Supported Operating System
 
-CentOS 7.0, 7.1, 7.2  or Redhat Enterprise Linux 7.0, 7.1, 7.2
+CentOS 7.1, 7.2  or Redhat Enterprise Linux 7.1, 7.2
 
 ## Ports Used
 The appOrbit Platform requires the following ports in the host firewall accessible from the internet:
@@ -23,7 +22,7 @@ The appOrbit Platform requires the following ports in the host firewall accessib
 - 443
 - 9443
 - 9080 
-- 3000 (Prometheus)
+- 8500 (consul)
 - 53 /tcp/udp (consul)
 
 ## Software
@@ -40,58 +39,96 @@ Run the below command.
 bash <(curl -s http://repos.apporbit.com/install/appOrbitKit/install.sh)
 ```
 
-* This will Start to download the installer binaries in /opt/apporbit/bin
+This command:
+    
+    - Starts to download installer binaries.
+        Downloads the appOrbit installer.
+    - This verifies the system requirements as specified in the “Prerequisite requirements”.
+        
+    - After the installation begins, the following prompt displays:
 
-* System requirements as specified in the requirement documentations is verified. On success the installation proceeds, in case of failure error message is displayed and you can verify the detailed installation logs at /opt/apporbit/bin/appOrbitInstall.log
+	appOrbit server is not installed.
+	apporbit-server will install/upgrade the appOrbit server in this machine
+	Installation log will be in : /var/log/apporbit/apporbit-server.log
+	Verifying system information.
+	[====================] 100%   -- [Done]
 
-* Login to the appOrbit registry using the credentials sent to you by email by your appOrbit sales representative.
-	
-     Enter the user name and password
-		
-* Enter the build ID, by default it is "latest".
-	
-* Re-install or upgrade
-   1. Re-install
-   2. Upgrade
-   Re-install will remove all your previous installation data.
-   Upgrade retains your previous installation data.
-   Choose the installation type from the above [2]:
+	appOrbit Registry setup (sent to you by email, by appOrbit support team):
+	    appOrbit registry name [registry.apporbit.com]: 
+	    Registry user name[]: 
+	    Password:
+	    dataservice registry name [apporbit-apps.apporbit.io:5000]: 
 
-* Enter the chef server deployment mode :
-   1. Deploy on the same host
-   2. Do not deploy, will configure it later
-   choose the deployment mode from the above [1] :1
+	appOrbit Deployment setup:
 
-* Enter the type of SSL certificate type:
-   1. Create a new SSL Certificate
-   2. Use Existing Certificate
-   Choose the type of SSL Certificate [1]:1
+     DNS/FQDN/IP for apporbit host [X.X.X.X]:
 
-* Enter the user email id for single-tenant deployment [admin@apporbit.com] :
-	
-* Enter hostname or host-IP [Default:YOUR-HOST-IP] :
-	
-* Now, the appOrbit management server starts to deploy.
+     DNS Domain that will be managed by appOrbit Server []:
+        
+     Configure SSL certificate for the apporbit server:
 
-##Login to appOrbit Management server
+        [1] Create new SSL certificate
 
-* On Successful deployment, you will be able to login into the User Management Console in the UI at https://YOUR-HOST-IP using default password 'admin1234'. 
-   In case your host IP is 192.168.1.52, that will be the value of "YOUR-HOST-IP" 
+        [2] Use existing certificate
  
-* Please change your default password 'admin1234' by logging into the User Management Console in the UI at https://YOUR-HOST-IP/users
+     Choose the type of SSL configuration [1]:
 
-* Now you can refer to the product documentation in  http://YOUR-HOST-IP:9080. It is recommended to change the chef-server password. 
+	Deploy Chef on this host:
 
-   Refer the below link for details.
-   http://YOUR-HOST-IP:9080deploying-the-apporbit-platform.html#to-change-the-apporbit-chef-default-password 
+	   [1] Yes: Deploy on the same host
 
-##Installation Logs
+	   [2] No: Chef is deployed on another server
 
-In case of Installation issues, you can refer to /opt/apporbit/bin/apporbit-server.log .
+	   Choose Chef deployment [1]:
+	    
+	Configure the SSL certificate for chef-server:
+
+	   [1] Create new SSL certificate
+
+	   [2] Use an existing certificater
+
+	   Choose SSL configurationfor Chef [1]:
+
+	Deploy Consul server on this host:
+
+	   [1] Yes: Deploy on the same host
+
+	   [2] No: Use existing consul deployed on different host
+
+	   Choose the deployment mode from the above [1]:
+
+	appOrbit Software Setup
+
+	    appOrbit version [latest]:
+
+	    Enter admin user email id for server login [admin@apporbit.com]:
+
+	Configuring appOrbit setup
+
+	Preparing and removing old containers for appOrbit server.
+
+	[====================] 100%   -- [Done]
+	
+	Download appOrbit Server container images
+
+	[====================] 100%   -- [Done]
+	
+	Deploying appOrbit server.
+
+	[====================] 100%   -- [Done]
+	
+	Waiting for appOrbit server to be active
+
+	[====================] 100%   -- [Done]
+	
+	Now login to the appOrbit server using
+
+	https://X.X.X.X
+
+	Login: admin@apporbit.com
+
+	and default password 'admin1234'
+
+	Server logs moved to /var/log/apporbit/apporbit-server-XXXXXXXX.log
 
 
-# Updating Chef Server
-
- In case chef server need to be updated, the following command needs to be executed.
- bash <(curl -s http://repos.apporbit.com/install/appOrbitKit/install.sh deploychef)
- 
