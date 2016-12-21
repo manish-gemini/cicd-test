@@ -305,10 +305,11 @@ def main():
         parser.print_help()
     else:
         # No options and no list and product is already installed. Just show the status and help command
-        print "appOrbit server is already configured."
-	print "Run the installer again with --upgrade if you wish to upgrade. For example:\n" 
-	print "bash <(curl -s  http://repos.apporbit.com/install/appOrbitKit/install.sh) --upgrade \n OR"
-	print "/opt/apporbit/bin/apporbit-server --upgrade\n"
+        print "appOrbit server is already configured.\n"
+        print "Run the installer again with --upgrade if you wish to upgrade.\n"
+        print "For example:\n" 
+        print "bash <(curl -s  http://repos.apporbit.com/install/appOrbitKit/install.sh) --upgrade\n OR"
+        print "/opt/apporbit/bin/apporbit-server --upgrade\n"
         action_obj.showStatus(config_obj,show=True)
         print ""
         parser.print_help()
