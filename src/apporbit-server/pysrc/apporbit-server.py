@@ -308,7 +308,8 @@ def main():
         print "appOrbit server is already configured.\n"
         print "Run the installer again with --upgrade if you wish to upgrade.\n"
         print "For example:\n" 
-        print "bash <(curl -s  http://repos.apporbit.com/install/appOrbitKit/install.sh) --upgrade\n OR"
+        print "bash <(curl -s  http://repos.apporbit.com/install" +\
+	    "/appOrbitKit/install.sh) --upgrade OR"
         print "/opt/apporbit/bin/apporbit-server --upgrade\n"
         action_obj.showStatus(config_obj,show=True)
         print ""
