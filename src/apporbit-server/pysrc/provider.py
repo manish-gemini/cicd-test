@@ -1,25 +1,30 @@
 from string import Template
-import re
-import fileinput
 import os
-import docker
 import sys
+import time
 import errno
 import urllib2
+import logging
+import docker
 import utility
+import action
 import resourcefetcher
 
 
 class Provider:
 
     def __init__(self):
+        self.action_obj = action.Action()
         self.utility_obj = utility.Utility()
         self.docker_obj = docker.DockerAO()
         self.CWD = os.getcwd() + "/"
+        self.APPORBIT_COMPOSE = self.CWD + "docker-compose"
         self.AO_DOWNLOADS_PATH = ""
         self.AO_RESOURCE_PATH = ""
         self.resource_fetcher = resourcefetcher.ResourceFetcher()
         self.compose_file = "provider-compose.yml"
+        self.docker_registry_url = ""
+        self.host = ""
 
     def makedirs(self, path):
         try:
@@ -43,6 +48,7 @@ class Provider:
             sys.exit(1)
         if not self.AO_RESOURCE_PATH.endswith('/'):
             self.AO_RESOURCE_PATH += '/'
+        self.compose_file = self.AO_RESOURCE_PATH + "provider-compose.yml"
 
     def verifyOS(self):
         self.utility_obj.verifyOSRequirement()
@@ -57,7 +63,7 @@ class Provider:
             "tar -xvf " + self.AO_RESOURCE_PATH + "appOrbitGems.tar.gz"
 
         return_code, out, err = self.utility_obj.cmdExecute(
-            command, " Uncompressing resources", bexit=True, show=True)
+            command, " Uncompressing resources", bexit=True, show=False)
 
     def setup_local_apporbit_repo(self):
         if not os.path.isfile("/etc/yum.repos.d/apporbit-local.repo"):
@@ -67,16 +73,16 @@ name=appOrbit Repository
 baseurl=file://${AO_RESOURCE_PATH}appOrbitRPMs
 enabled=1
 gpgcheck=0
-''').safe_substitue(AO_RESOURCE_PATH=self.AO_RESOURCE_PATH)
+''').safe_substitute(AO_RESOURCE_PATH=self.AO_RESOURCE_PATH)
 
-        try:
-            with open("/etc/yum.repos.d/apporbit-local.repo", "w") as f:
-                f.write(content)
-        except OSError as e:
-            logging.info("Couldn't create apporbit-local repo. Exiting")
-            logging.error(e)
-            print "Couldn't create apporbit-local repo, check logs for details"
-            sys.exit(1)
+            try:
+                with open("/etc/yum.repos.d/apporbit-local.repo", "w") as f:
+                    f.write(content)
+            except OSError as e:
+                logging.info("Couldn't create apporbit-local repo. Exiting")
+                logging.error(e)
+                print "Couldn't create apporbit-local repo, check logs for details"
+                sys.exit(1)
 
     def install_docker(self):
         self.docker_obj.install_docker(self.utility_obj, enablerepo=True)
@@ -96,7 +102,6 @@ services:
   apporbit-offline:
     container_name: apporbit-offline
     image: apporbit/apporbit-offline
-    mem_limit: 2100000000
     restart: always
     network_mode: "bridge"
     ports:
@@ -116,7 +121,7 @@ services:
     mem_limit: 2100000000
     volumes:
       - {AO_RESOURCE_PATH}registry-data:/var/lib/registry:Z
-        ''').format(AO_REOURCE_PATH=self.AO_RESOURCE_PATH)
+        ''').format(AO_RESOURCE_PATH=self.AO_RESOURCE_PATH)
 
         try:
             with open(self.compose_file, "w") as f:
@@ -132,8 +137,11 @@ services:
         self.create_compose_file()
         print "Starting apporbit-offline and registry service..."
         self.makedirs(self.AO_RESOURCE_PATH + "registry-data")
-        command = 'COMPOSE_HTTP_TIMEOUT=300 docker-compose -f ' +\
-            self.compose_file + ' up -d'
+        command = 'COMPOSE_HTTP_TIMEOUT=300 ' + self.APPORBIT_COMPOSE +\
+            ' -f ' + self.compose_file + ' down'
+        self.utility_obj.cmdExecute(command, "", bexit=True, show=True)
+        command = 'COMPOSE_HTTP_TIMEOUT=300 ' + self.APPORBIT_COMPOSE +\
+            ' -f ' + self.compose_file + ' up -d'
         self.utility_obj.cmdExecute(command, "", bexit=True, show=True)
 
     def get_host_ip(self):
@@ -143,7 +151,7 @@ services:
     def load_infra_containers(self):
         for k, v in self.resource_fetcher.infra_containers.iteritems():
             self.docker_obj.docker_load(
-                self.AO_RESOURCE_PATH + "infra_images/" + k + ".tar")
+                self.AO_RESOURCE_PATH + "infra_images/" + v.replace("/", "-") + ".tar")
 
     def tag_push_infra_containers(self):
         print "Waiting for registry container to come up.."
@@ -168,7 +176,7 @@ services:
         print "Tagging apporbit apps..."
         self.docker_obj.docker_tag(
             self.resource_fetcher.apporbit_apps,
-            "apporbit-apps.apporbit.io:5000/",
+            self.resource_fetcher.apps_insecure_reg + "/",
             self.docker_registry_url + "/"
         )
         self.docker_obj.docker_push(
@@ -207,7 +215,7 @@ PROVIDER IP: ${host}
 
         self.get_host_ip()
 
-        if not self.action_obj.set_selinux(utility_obj):
+        if not self.action_obj.set_selinux(self.utility_obj):
             sys.exit(1)
 
         print "Uncompressing resources"
@@ -227,7 +235,7 @@ PROVIDER IP: ${host}
 
         print "Set docker daemon for insecure registry"
         self.docker_obj.setup_docker_daemon_insecure_reg(
-            self.docker_registry_url)
+            self.utility_obj, self.docker_registry_url)
 
         print "Load Infra containers"
         self.load_infra_containers()

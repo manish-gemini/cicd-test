@@ -508,7 +508,7 @@ class Action:
     def set_selinux(self, utility_obj, show=False):
         logging.info("Setting sestatus to permissive")
         cmd_sesettings = "setenforce 0"
-        return_code, out, err = self.utility_obj.cmdExecute(
+        return_code, out, err = utility_obj.cmdExecute(
             cmd_sesettings, "Setenforce to permissive", show=show)
         if not return_code:
             logging.error("Error setting selinux :- " + str(out))

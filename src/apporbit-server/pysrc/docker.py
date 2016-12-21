@@ -3,6 +3,7 @@ import os
 import re
 import sys
 import time
+import logging
 import utility
 import fileinput
 
@@ -64,20 +65,6 @@ class DockerAO:
             sys.exit(1)
 
         # BUG: https://bugzilla.redhat.com/show_bug.cgi?id=1294128
-        if enablerepo:
-            cmd_upgradelvm = 'yum -y --disablerepo="*" ' +\
-                '--enablerepo="apporbit-local" upgrade lvm2'
-        else:
-            cmd_upgradelvm = 'yum -y upgrade lvm2'
-        return_code, out, err = self.utility_obj.cmdExecute(
-            cmd_upgradelvm, "lvm upgrade", show=True)
-        if not return_code:
-            if not self.redhat_subscription:
-                logginf.error("Red Hat is not having a valid subscription")
-                print "FAILED- Red Hat is not having a valid subscription. " +\
-                    "Get a valid subscription and retry installation."
-            sys.exit(1)
-
         if self.do_dockerinstall:
             if self.remove_olddocker:
                 print 'Removing older version of docker'
@@ -92,7 +79,7 @@ class DockerAO:
                 return_code, out, err = self.utility_obj.cmdExecute(
                     cmd_update, " yum update")
                 if not return_code:
-                    logger.warning("Yum update failed [" + out + "]")
+                    logging.warning("Yum update failed [" + out + "]")
 
             print 'Installing docker version %s' % self.docker_version
             if enablerepo:
@@ -214,7 +201,7 @@ class DockerAO:
         return_code, out, err = self.utility_obj.cmdExecute(
             cmd_run, "", bexit=True, show=True)
 
-    def setup_docker_daemon_insecure_reg(self, docker_reg):
+    def setup_docker_daemon_insecure_reg(self, utility_obj, docker_reg):
         docker_config_path = "/etc/sysconfig/docker"
         regex_find = r'^INSECURE_REGISTRY.*'
         regex_replace = "INSECURE_REGISTRY='--insecure-registry " +\
@@ -241,7 +228,7 @@ class DockerAO:
         elif not flag:
             print "Docker not configured, check file " + docker_config_path
             sys.exit(1)
-        self.utility_obj.cmdExecute(
+        utility_obj.cmdExecute(
             "systemctl daemon-reload && systemctl restart docker.service",
             "", bexit=True, show=False
         )

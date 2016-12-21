@@ -2,11 +2,11 @@ from string import Template
 import logging
 import errno
 import os
-import docker
 import shutil
 import urllib
 import sys
 
+import docker
 import config
 import utility
 import resourcefetcher
@@ -17,10 +17,17 @@ class OfflineDeploy(object):
     """docstring for OfflineDeploy"""
     def __init__(self):
         self.action_obj = action.Action()
+        self.config_obj = config.Config()
         self.utility_obj = utility.Utility()
         self.docker_obj = docker.DockerAO()
-        self.CWD = os.getcwd() + "/"
+        self.emailid = "admin@apporbit.com"
         self.host = ""
+        self.repohost = ""
+        self.chef_upgrade = 1
+        self.internal_repo = ""
+        self.internal_docker_reg = ""
+        self.internal_gems_repo = ""
+        self.CWD = os.getcwd() + "/"
         self.TMPDIR = "/tmp/"
         self.AO_PACKAGES_PATH = ""
         self.EXTRACTED_PACKAGES = self.TMPDIR + "appOrbitPackages/"
@@ -43,7 +50,7 @@ class OfflineDeploy(object):
         self.repohost = raw_input("Enter IP of internal repo host : ")
         self.internal_repo = "http://" + self.repohost + ":9291/repos"
         self.internal_gems_repo = "http://" + self.repohost + ":9292"
-        self.internal_docker_reg = self.reposhost + ":5000"
+        self.internal_docker_reg = self.repohost + ":5000"
 
         try:
             if urllib.urlopen(self.internal_repo).getcode() == 200:
@@ -58,7 +65,6 @@ class OfflineDeploy(object):
             sys.exit(1)
 
     def setup_internal_apporbit_repo(self):
-        content = Template('''''')
         if not os.path.isfile("/etc/yum.repos.d/apporbit-offline.repo"):
             content = Template('''
 [apporbit-offline]
@@ -68,14 +74,14 @@ enabled=1
 gpgcheck=0
 ''').safe_substitute(internal_repo=self.internal_repo)
 
-        try:
-            with open("/etc/yum.repos.d/apporbit-offline.repo", "w") as f:
-                f.write(content)
-        except OSError as e:
-            logging.info("Could not create apporbit-offline repo. Exiting")
-            logging.error(e)
-            print "Could not create apporbit-offline repo, check logs"
-            sys.exit(1)
+            try:
+                with open("/etc/yum.repos.d/apporbit-offline.repo", "w") as f:
+                    f.write(content)
+            except OSError as e:
+                logging.info("Could not create apporbit-offline repo. Exiting")
+                logging.error(e)
+                print "Could not create apporbit-offline repo, check logs"
+                sys.exit(1)
 
     def setup_ntp(self):
         print "Time will be synchronized with time.nist.gov for this host"
@@ -121,7 +127,7 @@ gpgcheck=0
 
         print "Saving Iptables"
         return_code, out, err = self.utility_obj.cmdExecute(
-            "/sbin/service iptables save", "", bexit=True, show=True)
+            "/sbin/iptables-save", "", show=True)
 
     def set_config_info(self):
         emailid = "admin@apporbit.com"
@@ -143,14 +149,14 @@ gpgcheck=0
           copytruncate
         }'''
 
-        try:
-            with open('/etc/logrotate.d/apporbitLogRotate', 'w') as f:
-                f.write(content)
-        except OSError as e:
-            logging.info("Couldn't create logrotate file. Exiting")
-            logging.error(e)
-            print "Couldn't create logrotate file, check logs"
-            sys.exit(1)
+            try:
+                with open('/etc/logrotate.d/apporbitLogRotate', 'w') as f:
+                    f.write(content)
+            except OSError as e:
+                logging.info("Couldn't create logrotate file. Exiting")
+                logging.error(e)
+                print "Couldn't create logrotate file, check logs"
+                sys.exit(1)
 
     def get_host_ip(self):
         self.host = raw_input("Enter the Host IP: ")
@@ -162,7 +168,7 @@ gpgcheck=0
         AO_KEYPATH = self.config_obj.APPORBIT_KEY
         if not os.path.isfile(
                 AO_KEYPATH + "apporbitserver.key") or not os.path.isfile(
-                AO_KEYPATH + "apporbitserver.crt"):
+                    AO_KEYPATH + "apporbitserver.crt"):
             print "1) Use existing certificate"
             print "2) Create a self-signed certificate"
             ssltype = raw_input(
@@ -190,7 +196,7 @@ openssl req -new -newkey rsa:4096 -days 365 -nodes -x509\
                 os.chdir(sslkeydir)
                 if not os.path.isfile(
                         "apporbitserver.key") or not os.path.isfile(
-                        "apporbitserver.crt"):
+                            "apporbitserver.crt"):
                     print '''Key and certificate files are missing.
 Note that key and crt file name should be apporbitserver.key
 and apporbitserver.crt. Rename your files accordingly and retry.'''
@@ -205,11 +211,11 @@ and apporbitserver.crt. Rename your files accordingly and retry.'''
     def clean_setup_maybe(self):
         opt = raw_input("Do you want to clean up the setup [y]/n ?") or 'y'
         if str(opt).lower() in ['n', 'no']:
-            cleanSetup = 1
+            clean_setup = 1
         else:
-            cleanSetup = 2
+            clean_setup = 2
 
-        if cleanSetup == 1:
+        if clean_setup == 1:
             cmd_list = ['rm -rf ' + self.config_obj.APPORBIT_DATA,
                         'rm -rf ' + self.config_obj.APPORBIT_LOG,
                         'rm -rf ' + self.config_obj.APPORBIT_HOME]
@@ -238,32 +244,19 @@ and apporbitserver.crt. Rename your files accordingly and retry.'''
             self.utility_obj.cmdExecute(command, "", bexit=True, show=True)
 
         apporbit_ini = self.config_obj.APPORBIT_CONF + '/apporbit.ini'
-        command = ('''
-touch -a "{apporbit_ini}" &&
+        command = ('''\
+touch -a "{apporbit_ini}" && \
 chcon -Rt svirt_sandbox_file_t {apporbit_ini}''')
         command = command.format(apporbit_ini=apporbit_ini)
         self.utility_obj.cmdExecute(command, "", bexit=True, show=True)
-
-    def remove_conflicting_containers(self):
-        rf = resourcefetcher.ResourceFetcher()
-        containers = rf.apporbit_images.keys()
-        for c in containers:
-            cmd = "docker ps --filter=name=" + c + " | grep " + c
-            return_code, out, err = self.utility_obj.cmdExecute(
-                cmd, "", bexit=True, show=True)
-            if out:
-                print "Container " + c +\
-                     " is already runnning. The container will removed first."
-                return_code, out, err = self.utility_obj.cmdExecute(
-                    "docker rm -f " + c, "Removing " + c,
-                    bexit=True, show=True)
 
     def load_containers(self):
         rf = resourcefetcher.ResourceFetcher()
         containers = rf.apporbit_images.values()
         path = self.EXTRACTED_PACKAGES
         for container in containers:
-            self.docker_obj.docker_load(path + container + '.tar')
+            self.docker_obj.docker_load(
+                path + container.replace("/", "-") + '.tar')
 
         containers = rf.hub_images.values()
         for container in containers:
@@ -344,6 +337,10 @@ api_version = v2
         self.action_obj.removeCompose(config_obj, True)
         self.action_obj.deployCompose(config_obj, True)
         print "Apporbit server is deployed"
+        print "Now login to the appOrbit server using"
+        print "Login: " + self.emailid
+        print "and default password 'admin1234'"
+        logging.info("END OF DEPLOYMENT")
 
     def deploy_apporbit(self):
         print "Checking Platform Compatibility"
@@ -356,8 +353,8 @@ api_version = v2
         self.setup_internal_apporbit_repo()
 
         print "Set enforce Selinux"
-        if not self.action_obj.set_selinux(utility_obj):
-            system.exit(1)
+        if not self.action_obj.set_selinux(self.utility_obj):
+            sys.exit(1)
 
         print "Install docker"
         self.install_docker()
@@ -368,14 +365,11 @@ api_version = v2
         print "Uncompressing resources"
         self.uncompress_resources()
 
-        self.remove_conflicting_containers()
-
         print "Clean setup details"
         self.clean_setup_maybe()
 
         print "Get host ip"
-        if not self.get_host_ip():
-            sys.exit(1)
+        self.get_host_ip()
 
         print "Add chef port to firewall"
         self.add_chef_port_to_firewall()
@@ -391,7 +385,7 @@ api_version = v2
 
         print "Setting docker daemon for insecure registry"
         self.docker_obj.setup_docker_daemon_insecure_reg(
-            self.internal_docker_reg)
+            self.utility_obj, self.internal_docker_reg)
 
         print "loading images"
         self.load_containers()

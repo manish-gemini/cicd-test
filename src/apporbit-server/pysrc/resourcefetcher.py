@@ -3,7 +3,6 @@ import sys
 import errno
 import os
 import socket
-import platform
 import shutil
 import getpass
 
@@ -23,6 +22,9 @@ class ResourceFetcher:
         self.internal_registry = ""
         self.apporbit_repo = "http://repos.gsintlab.com/"
         self.ao_noarch = self.apporbit_repo + "release/noarch/"
+        self.mist_url = self.apporbit_repo + "release/mist/master/run.jar"
+        self.chef_url = self.apporbit_repo +\
+            "1.5.1/chef-12.17.44-1.el7.x86_64.rpm"
         self.CWD = os.getcwd() + "/"
 
         self.PACKAGESDIR = self.CWD + "appOrbitPackages/"
@@ -43,8 +45,8 @@ class ResourceFetcher:
             'moneyball-exports': 'moneyball-exports',
             'moneyball-api': 'moneyball-api',
             'moneyball-router': 'moneyball-router',
-            'grafana-app': 'apporbit/apporbit-grafana-app',
-            'prometheus-app': 'apporbit/apporbit-prometheus-app'
+            'grafana-app': 'apporbit-grafana-app',
+            'prometheus-app': 'apporbit-prometheus-app'
         }
 
         self.support_packages = {
@@ -54,8 +56,8 @@ class ResourceFetcher:
                 self.NOARCH507DIR,
             self.ao_noarch + "5.0.7/nginx-1.6.3-x86_64-linux.tar.gz":
                 self.NOARCH507DIR,
-            "1.5.1/chef-12.17.44-1.el7.x86_64.rpm": self.RPMSDIR,
-            "release/mist/master/run.jar": self.MISTMASTER
+            self.chef_url: self.RPMSDIR,
+            self.mist_url: self.MISTMASTER
         }
 
         self.apps_insecure_reg = "apporbit-apps.gsintlab.com:5000"
@@ -183,7 +185,7 @@ class ResourceFetcher:
 
         self.docker_obj.docker_pull(
             self.apporbit_apps,
-            "apporbit-apps.apporbit.io:5000/apporbit/"
+            self.apps_insecure_reg + "/apporbit/"
         )
 
     def save_images_and_create_tar(self):
@@ -221,9 +223,9 @@ class ResourceFetcher:
 
         for source, destination in self.support_packages.iteritems():
             os.chdir(destination)
-            base_cmd = "wget -c '" + self.apporbit_repo
+            base_cmd = "wget -c '" 
             return_code, out, err = self.utility_obj.cmdExecute(
-                base_cmd + source, "", bexit=True, show=False
+                base_cmd + source + "'", "", bexit=True, show=False
             )
             print source + " downloaded successfully"
 
@@ -259,7 +261,7 @@ include=rhel-pkglist.conf
                     f.write(content)
             except OSError as e:
                 logging.info("Could not create/open reposync.conf. Exiting")
-                logginf.error(e)
+                logging.error(e)
                 print "Could not create/open reposync.conf, " +\
                       "check logs for more details"
                 sys.exit(1)
@@ -273,7 +275,7 @@ include=rhel-pkglist.conf
                      'rhel-pkglist.conf']
 
         for f in file_list:
-            shutil.copyfile(src + f, sel.RPMSDIR + f)
+            shutil.copyfile(src + f, self.RPMSDIR + f)
 
         os.chdir(self.RPMSDIR)
         return_code, out, err = self.utility_obj.cmdExecute(
@@ -281,7 +283,7 @@ include=rhel-pkglist.conf
             "", bexit=True, show=True
         )
 
-        for f in fileList:
+        for f in file_list:
             os.remove(self.RPMSDIR + f)
 
         self.utility_obj.cmdExecute("createrepo .", "", bexit=True, show=True)
@@ -359,7 +361,7 @@ include=rhel-pkglist.conf
         self.verifyOS()
         print "[OK]"
 
-        if not self.action_obj.set_selinux(utility_obj):
+        if not self.action_obj.set_selinux(self.utility_obj):
             sys.exit(1)
 
         self.get_internal_registry()
@@ -370,7 +372,7 @@ include=rhel-pkglist.conf
 
         print "Setting docker daemon for insecure registry"
         self.docker_obj.setup_docker_daemon_insecure_reg(
-            self.apps_insecure_reg)
+            self.utility_obj, self.apps_insecure_reg)
 
         print "Making directories"
         self.make_dirs()
