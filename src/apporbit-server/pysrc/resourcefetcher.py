@@ -7,7 +7,7 @@ import shutil
 import getpass
 
 import utility
-import docker
+import docker_ao
 import config
 import action
 
@@ -15,7 +15,7 @@ import action
 class ResourceFetcher:
 
     def __init__(self):
-        self.docker_obj = docker.DockerAO()
+        self.docker_obj = docker_ao.DockerAO()
         self.utility_obj = utility.Utility()
         self.config_obj = config.Config()
         self.action_obj = action.Action()
@@ -24,7 +24,7 @@ class ResourceFetcher:
         self.ao_noarch = self.apporbit_repo + "release/noarch/"
         self.mist_url = self.apporbit_repo + "release/mist/master/run.jar"
         self.chef_url = self.apporbit_repo +\
-            "1.5.1/chef-12.17.44-1.el7.x86_64.rpm"
+            "1.5.1/chef-12.6.0-1.el7.x86_64.rpm"
         self.CWD = os.getcwd() + "/"
 
         self.PACKAGESDIR = self.CWD + "appOrbitPackages/"
@@ -223,7 +223,7 @@ class ResourceFetcher:
 
         for source, destination in self.support_packages.iteritems():
             os.chdir(destination)
-            base_cmd = "wget -c '" 
+            base_cmd = "wget -c '"
             return_code, out, err = self.utility_obj.cmdExecute(
                 base_cmd + source + "'", "", bexit=True, show=False
             )

@@ -6,7 +6,7 @@ import shutil
 import urllib
 import sys
 
-import docker
+import docker_ao
 import config
 import utility
 import resourcefetcher
@@ -19,7 +19,7 @@ class OfflineDeploy(object):
         self.action_obj = action.Action()
         self.config_obj = config.Config()
         self.utility_obj = utility.Utility()
-        self.docker_obj = docker.DockerAO()
+        self.docker_obj = docker_ao.DockerAO()
         self.emailid = "admin@apporbit.com"
         self.host = ""
         self.repohost = ""
@@ -127,7 +127,13 @@ gpgcheck=0
 
         print "Saving Iptables"
         return_code, out, err = self.utility_obj.cmdExecute(
-            "/sbin/iptables-save", "", show=True)
+            "/sbin/iptables-save", "", show=False)
+        if not return_code:
+            print "WARNING : Iptables not saved" +\
+                "The rule will reset after machine restarts"
+            logging.warning("Iptables not saved")
+        else:
+            logging.info("Iptables saved")
 
     def set_config_info(self):
         emailid = "admin@apporbit.com"
@@ -325,7 +331,7 @@ api_version = v2
         config_obj.loadConfig("install.tmp")
         if self.chef_upgrade == 2:
             config_obj.upgrade = True
-        config_obj.offline_mode = True
+        config_obj.offline_mode = "true"
         os.remove("install.tmp")
         config_obj.createComposeFile(self.utility_obj)
         shutil.copyfile(

@@ -4,8 +4,8 @@ import re
 import sys
 import time
 import logging
-import utility
 import fileinput
+import utility
 
 
 class DockerAO:
@@ -116,8 +116,8 @@ class DockerAO:
 
         cmd_dockerservice = "systemctl enable docker.service"
         self.utility_obj.cmdExecute(
-                cmd_dockerservice,
-                "Enable Docker service on restart", bexit=True, show=False)
+            cmd_dockerservice,
+            "Enable Docker service on restart", bexit=True, show=False)
 
         cmd_dockerservice = "systemctl start docker.service"
         return_code, out, err = self.utility_obj.cmdExecute(
@@ -179,7 +179,7 @@ class DockerAO:
             name_of_container,
             image,
             vol_map,
-            otherFlag="",
+            otherFlags="",
             removeContainerIfExists=False):
         cmd_run = "docker run " + otherFlags + " --name " + name_of_container
         for k, v in vol_map.iteritems():

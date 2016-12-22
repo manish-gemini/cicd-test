@@ -5,7 +5,7 @@ import time
 import errno
 import urllib2
 import logging
-import docker
+import docker_ao
 import utility
 import action
 import resourcefetcher
@@ -16,7 +16,7 @@ class Provider:
     def __init__(self):
         self.action_obj = action.Action()
         self.utility_obj = utility.Utility()
-        self.docker_obj = docker.DockerAO()
+        self.docker_obj = docker_ao.DockerAO()
         self.CWD = os.getcwd() + "/"
         self.APPORBIT_COMPOSE = self.CWD + "docker-compose"
         self.AO_DOWNLOADS_PATH = ""
