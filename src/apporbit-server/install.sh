@@ -6,16 +6,6 @@ command_exists() {
 	command -v "$@" > /dev/null 2>&1
 }
 
-if  ! command_exists curl 
-then
-   yum install -y curl
-fi
-
-if  ! command_exists python 
-then
-   yum install -y python
-fi
-
 if  ! command_exists nslookup
 then
    yum install -y bind-utils
@@ -53,13 +43,16 @@ cmdstr="/opt/apporbit/bin/apporbit-server"
 
    for arg in "$@"; do
    case $arg in
-     "deploychef")
+     "--deploychef")
        cmdstr+=" --deploychef"
       ;;
-     "consul")
+     "--consul")
        cmdstr+=" --consul"
      ;;
-     *) echo "Invalid options ..!!(Flags: deploychef, consul)" 
+     "--upgrade")
+       cmdstr+=" --upgrade"
+     ;; 
+     *) echo "Invalid options ..!!(Flags: --upgrade, --deploychef, --consul)" 
        exit
      ;;
    esac

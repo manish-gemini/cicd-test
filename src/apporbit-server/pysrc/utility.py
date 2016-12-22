@@ -49,7 +49,7 @@ class Utility:
         self.do_ntpinstall = 0
         self.do_bindutilsinstall = 0
         self.do_wgetinstall = 0
-        self.do_sesettings = 0
+        self.do_sesettings = 1
         self.redhat_subscription = True
         return
 

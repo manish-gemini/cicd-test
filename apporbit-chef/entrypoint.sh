@@ -16,10 +16,10 @@ fi
  
 # Now start Chef Server
 /opt/chef-server/embedded/bin/runsvdir-start &
-#UPGRADE value that is significat
+#UPGRADE value that is significant
 # UPGRADE = 0 or 1 - Clean Install
 # UPGRADE = 2 - Upgrade Chef.
-if [ "$UPGRADE" == 2 ]
+if [ "$UPGRADE" == 2  || ! -f /etc/chef-server/admin.pem ] 
 then
     cp -pa /var/opt/chef-server/*.json /etc/chef-server/
     cp -pa /var/opt/chef-server/*.pem  /etc/chef-server/
