@@ -52,7 +52,10 @@ cmdstr="/opt/apporbit/bin/apporbit-server"
      "--upgrade")
        cmdstr+=" --upgrade"
      ;; 
-     *) echo "Invalid options ..!!(Flags: --upgrade, --deploychef, --consul)" 
+     "--offline")
+       cmdstr+=" --offline"
+     ;;
+     *) echo "Invalid options ..!!(Flags: --upgrade, --deploychef, --consul, --offline)" 
        exit
      ;;
    esac
