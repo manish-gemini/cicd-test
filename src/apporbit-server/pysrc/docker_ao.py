@@ -74,12 +74,6 @@ class DockerAO:
                     cmd_dockerremove, "Docker Remove older version if present",
                     bexit=True, show=True
                 )
-            elif "centos" in utility_obj.osname:
-                cmd_update = "yum -y update"
-                return_code, out, err = self.utility_obj.cmdExecute(
-                    cmd_update, " yum update")
-                if not return_code:
-                    logging.warning("Yum update failed [" + out + "]")
 
             print 'Installing docker version %s' % self.docker_version
             if enablerepo:

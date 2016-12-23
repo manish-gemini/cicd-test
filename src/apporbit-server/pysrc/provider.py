@@ -51,6 +51,7 @@ class Provider:
         self.compose_file = self.AO_RESOURCE_PATH + "provider-compose.yml"
 
     def verifyOS(self):
+        self.utility_obj.cmdExecute("yum makecache", "", show=True)
         self.utility_obj.verifyOSRequirement()
 
     def uncompress_resources(self):

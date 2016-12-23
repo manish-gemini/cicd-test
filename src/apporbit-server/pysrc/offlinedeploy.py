@@ -44,6 +44,7 @@ class OfflineDeploy(object):
                 raise
 
     def verifyOS(self):
+        self.utility_obj.cmdExecute("yum makecache", "", show=True)
         self.utility_obj.verifyOSRequirement()
 
     def get_internal_apporibit_repo_uri(self):

@@ -216,6 +216,7 @@ def main():
         print "https://" + config_obj.apporbit_host 
         print "Login: " + config_obj.apporbit_loginid 
         print "and default password 'admin1234'"
+        print "In case of upgrade login using existing credentials"
         logging.info("END OF DEPLOYMENT")
 
         logtimestamp = str(datetime.datetime.now().strftime('%Y%m%d%H%M%S'))
