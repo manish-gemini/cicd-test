@@ -299,6 +299,7 @@ class Utility:
 
         osname = osname.lower()
 
+        self.osname = osname
         if "centos" in osname:
             logging.info("OS is Centos")
         elif "red hat" in osname:
@@ -314,6 +315,8 @@ class Utility:
             logging.info("OS Version is 7.1")
         elif "7.2" in osversion:
             logging.info("OS Version is 7.2")
+        elif "7.3" in osversion:
+            logging.info("OS Version is 7.3")
         else:
             logging.error("Incompatible Operating System Version. Check the System Requirement Documentation.")
             print "Incompatible Operating System Version. Check logs for more information"
@@ -370,7 +373,7 @@ class Utility:
                 logging.info ("Upgrading docker to " + self.docker_version)
         else:
             print "Apporbit supports minimum docker version  " + self.docker_version 
-            print "FAILED - Installtion failed due to docker version conflict"
+            print "FAILED - Installation failed due to docker version conflict"
             sys.exit(1)
 
         logging.info ("Verify NTP Installation!")
