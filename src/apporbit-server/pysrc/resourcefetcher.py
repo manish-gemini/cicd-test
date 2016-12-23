@@ -188,12 +188,23 @@ class ResourceFetcher:
             self.apps_insecure_reg + "/apporbit/"
         )
 
+        self.docker_obj.docker_tag(
+            self.apporbit_apps,
+            self.apps_insecure_reg + "/apporbit/",
+            "apporbit/"
+        )
+
     def save_images_and_create_tar(self):
         logging.info("Saving images ")
         print "Saving images "
         self.docker_obj.docker_save(self.hub_images, self.PACKAGESDIR)
         self.docker_obj.docker_save(
             self.apporbit_images,
+            self.PACKAGESDIR,
+            "apporbit/"
+        )
+        self.docker_obj.docker_save(
+            self.apporbit_apps,
             self.PACKAGESDIR,
             "apporbit/"
         )
