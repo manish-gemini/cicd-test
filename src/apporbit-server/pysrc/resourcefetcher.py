@@ -62,14 +62,16 @@ class ResourceFetcher:
             self.mist_url: self.MISTMASTER
         }
 
-        self.apps_insecure_reg = "apporbit-apps.gsintlab.com:5000"
+        self.apps_insecure_reg = "apporbit-apps.apporbit.io:5000"
 
         self.hub_images = {
             'centos': 'centos:centos7.0.1406',
             'mysql': 'mysql:5.6.24',
             'registry': 'registry:2',
             'cadvisor': 'google/cadvisor:v0.23.2',
-            'node-exporter': 'prom/node-exporter:0.12.0'
+            'node-exporter': 'prom/node-exporter:0.12.0',
+            'postgres': 'postgres',
+            'redis': 'redis'
         }
 
         self.apporbit_images = {
@@ -149,6 +151,11 @@ class ResourceFetcher:
             raw_input("Default(https://offline-registry.gsintlab.com): ")\
             or "offline-registry.gsintlab.com"
 
+        print "Enter the url of registry for AO apps(without https://)"
+        self.apps_insecure_reg =\
+            raw_input("Default(https://" + self.apps_insecure_reg + "): ")\
+            or self.apps_insecure_reg
+
     def install_docker_and_login(self):
         self.config_obj.createRepoFile()
         self.docker_obj.install_docker(self.utility_obj)
@@ -190,12 +197,23 @@ class ResourceFetcher:
             self.apps_insecure_reg + "/apporbit/"
         )
 
+        self.docker_obj.docker_tag(
+            self.apporbit_apps,
+            self.apps_insecure_reg + "/apporbit/",
+            "apporbit/"
+        )
+
     def save_images_and_create_tar(self):
         logging.info("Saving images ")
         print "Saving images "
         self.docker_obj.docker_save(self.hub_images, self.PACKAGESDIR)
         self.docker_obj.docker_save(
             self.apporbit_images,
+            self.PACKAGESDIR,
+            "apporbit/"
+        )
+        self.docker_obj.docker_save(
+            self.apporbit_apps,
             self.PACKAGESDIR,
             "apporbit/"
         )

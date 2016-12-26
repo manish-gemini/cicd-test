@@ -265,6 +265,16 @@ chcon -Rt svirt_sandbox_file_t {apporbit_ini}''')
             self.docker_obj.docker_load(
                 path + container.replace("/", "-") + '.tar')
 
+        containers = rf.apporbit_apps.values()
+        for container in containers:
+            self.docker_obj.docker_load(
+                path + container.replace("/", "-") + '.tar')
+        self.docker_obj.docker_tag(
+            rf.apporbit_apps, "apporbit/",
+            self.internal_docker_reg + '/')
+        self.docker_obj.docker_push(
+            rf.apporbit_apps, self.internal_docker_reg + '/')
+
         containers = rf.hub_images.values()
         for container in containers:
             self.docker_obj.docker_load(
