@@ -162,7 +162,10 @@ class Config():
                elif key == 'apporbit_deploy':
                   self.apporbit_deploy = val
                elif key == 'systemreqs':
-                  self.systemreqs = val
+                  if str(val).lower() == 'false':
+                      self.systemreqs = False
+                  else:
+                      self.systemreqs = True
                elif key == 'build_deploy_mode':
                   self.build_deploy_mode = val
                elif key == 'build_id':
