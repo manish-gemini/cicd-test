@@ -463,7 +463,7 @@ class Utility:
             cmd_sesettings = "setenforce 0"
             return_code, out, err = self.cmdExecute(cmd_sesettings, "Setenforce to permissive", False)
             if not return_code:
-                return False
+                logging.warning("Error setting Setenforce to permissive : ", out)
 
         self.progressBar(17)
        
