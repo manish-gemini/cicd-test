@@ -121,7 +121,7 @@ def main():
                     sys.exit(1)
                 utility_obj.progressBar(20)
             logging.info("fix System Requirements is completed!")
-            config_obj.systemreqs = True
+            #config_obj.systemreqs = True
             print "   -- [Done]"
             utility_obj.createTempFile(config_obj)
 
