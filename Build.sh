@@ -35,7 +35,7 @@ fi
 
 if [ $sourceType -eq 2 ]
 then
-	echo "Enter the directory where Gemini-poc-mgnt, Gemini-poc-stack and deta exist :"
+	echo "Enter the directory where Gemini-poc-mgnt, Gemini-poc-stack and appos exist :"
 	echo "Example: /opt/Mydir/"
 	read -p "Default(${PWD}):" dirToCheckOut
         dirToCheckOut=${dirToCheckOut:-${PWD}}
@@ -46,9 +46,9 @@ then
 		exit
 	fi
 	cd $dirToCheckOut
-	if [ ! -d Gemini-poc-mgnt ] || [ ! -d Gemini-poc-stack ] || [ ! -d deta ]
+	if [ ! -d Gemini-poc-mgnt ] || [ ! -d Gemini-poc-stack ] || [ ! -d appos ]
 	then
-		echo "Check if Gemini-poc-mgnt, Gemini-poc-stack and deta exist.... Quitting..."
+		echo "Check if Gemini-poc-mgnt, Gemini-poc-stack and appos exist.... Quitting..."
 		exit
 	fi
 		
@@ -133,11 +133,11 @@ else
 		echo "git checkout completed..."
 	fi
   cd $dirToCheckOut
-  if [ -d deta ]
+  if [ -d appos ]
     then
       echo "pull..."
       # pull instead of clone
-      cd deta
+      cd appos
       git checkout master
       git reset --hard
       git fetch --all
@@ -150,7 +150,7 @@ else
       fi
       else
         echo "clone..."
-        git clone -b integration "https://$gituserName@github.com/Gemini-sys/deta.git"
+        git clone -b integration "https://$gituserName@github.com/apporbit/appos.git"
       fi
   fi
 echo -n "Enter the SECRET_KEY:"
@@ -181,7 +181,7 @@ else
 	quickBuildStack=2
 fi
 
-echo  "Enter 1 for Quick Build apporbit-services, apporbit-controller and deta or 2 for to build all "
+echo  "Enter 1 for Quick Build apporbit-services, apporbit-controller and appos or 2 for to build all "
 read -p "Default($quickBuildStack):" quickBuild
 quickBuild=${quickBuild:-$quickBuildStack}
 echo $quickBuild
@@ -343,8 +343,8 @@ fi
 
 if [ $buildType -eq 4 ]
 then
-        cd $dirToCheckOut/deta
-        echo "Compiling deta.."
+        cd $dirToCheckOut/appos
+        echo "Compiling appos"
         make setup
         make 
 fi
