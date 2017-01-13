@@ -3,6 +3,7 @@ import logging
 import errno
 import os
 import shutil
+import time
 import urllib
 import sys
 
@@ -23,7 +24,6 @@ class OfflineDeploy(object):
         self.emailid = "admin@apporbit.com"
         self.host = ""
         self.repohost = ""
-        self.chef_upgrade = 1
         self.internal_repo = ""
         self.internal_docker_reg = ""
         self.internal_gems_repo = ""
@@ -47,23 +47,29 @@ class OfflineDeploy(object):
         self.utility_obj.cmdExecute("yum makecache", "", show=True)
         self.utility_obj.verifyOSRequirement()
 
+    def check_repo_status(self):
+        try:
+            if urllib.urlopen(self.internal_repo).getcode() == 200:
+                return True
+            else:
+                return False
+        except Exception as exc:
+            print "Internal repo not hosted.\
+                Please run apporbit-server --setupprovider"
+            sys.exit(1)
+
     def get_internal_apporibit_repo_uri(self):
         self.repohost = raw_input("Enter IP of internal repo host : ")
         self.internal_repo = "http://" + self.repohost + ":9291/repos"
         self.internal_gems_repo = "http://" + self.repohost + ":9292"
         self.internal_docker_reg = self.repohost + ":5000"
 
-        try:
-            if urllib.urlopen(self.internal_repo).getcode() == 200:
-                print "Verified connection with the repos... OK"
-            else:
-                print "Unable to connect repositories. Check Network settings\
-                     and enable connection to " + self.internal_repo
-                sys.exit(1)
-        except Exception as exc:
-            print "Internal repo not hosted.\
-                Please run apporbit-server --setupprovider"
+        if not self.check_repo_status():
+            print "Unable to connect repositories. Check Network settings\
+                 and enable connection to " + self.internal_repo
             sys.exit(1)
+        else:
+            print "Verified connection with the repos... OK"
 
     def setup_internal_apporbit_repo(self):
         if not os.path.isfile("/etc/yum.repos.d/apporbit-offline.repo"):
@@ -216,8 +222,8 @@ and apporbitserver.crt. Rename your files accordingly and retry.'''
                     src + "/apporbitserver.crt", dest + "/apporbitserver.crt")
 
     def clean_setup_maybe(self):
-        opt = raw_input("Do you want to clean up the setup [y]/n ?") or 'y'
-        if str(opt).lower() in ['n', 'no']:
+        opt = raw_input("Do you want to clean up the setup y/[n] ?") or 'n'
+        if str(opt).lower() in ['y', 'yes']:
             clean_setup = 1
         else:
             clean_setup = 2
@@ -229,9 +235,9 @@ and apporbitserver.crt. Rename your files accordingly and retry.'''
             command = " && ".join(cmd_list)
             return_code, out, err = self.utility_obj.cmdExecute(
                 command, "", bexit=True, show=True)
-            self.chef_upgrade = 1
+            self.config_obj.upgrade = False
         else:
-            self.chef_upgrade = 2
+            self.config_obj.upgrade = True
         containers = ['controller', 'services',
                       'rmq', 'consul', 'locator', 'svcd', 'captain']
         datas = ['mysql', 'sshKey_root', 'sslkeystore', 'consul', 'locator',
@@ -340,8 +346,6 @@ api_version = v2
 
         config_obj = config.Config()
         config_obj.loadConfig("install.tmp")
-        if self.chef_upgrade == 2:
-            config_obj.upgrade = True
         config_obj.offline_mode = "true"
         os.remove("install.tmp")
         config_obj.createComposeFile(self.utility_obj)
@@ -358,6 +362,16 @@ api_version = v2
         print "Login: " + self.emailid
         print "and default password 'admin1234'"
         logging.info("END OF DEPLOYMENT")
+
+    def check_offline_repo(self):
+        t = 12
+        while not self.check_repo_status():
+            if t <= 0:
+                print "Offline repo not reachable"
+                sys.exit(1)
+            time.sleep(15)
+            t -= 1
+        print "Offline repo reachable"
 
     def deploy_apporbit(self):
         print "Checking Platform Compatibility"
@@ -400,11 +414,15 @@ api_version = v2
         print "Generate SSL certificates"
         self.generate_ssl_certs()
 
-        print "Setting docker daemon for insecure registry"
-        self.docker_obj.setup_docker_daemon_insecure_reg(
-            self.utility_obj, self.internal_docker_reg)
+        if self.repohost != self.host:
+            print "Setting docker daemon for insecure registry"
+            self.docker_obj.setup_docker_daemon_insecure_reg(
+                self.utility_obj, self.internal_docker_reg)
 
-        print "loading images"
+        print "Waiting for offline repo to come up"
+        self.check_offline_repo()
+
+        print "Loading images"
         self.load_containers()
 
         print "Starting services"
