@@ -367,8 +367,9 @@ api_version = v2
         t = 12
         while not self.check_repo_status():
             if t <= 0:
-                print "Offline repo not reachable"
-                sys.exit(1)
+                print "WARNING : Offline repo not reachable, please restart"\
+                    " the offline and apporbit-controller containers"\
+                    " after installation completes"
             time.sleep(15)
             t -= 1
         print "Offline repo reachable"
