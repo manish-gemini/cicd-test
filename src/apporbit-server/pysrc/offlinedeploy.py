@@ -222,6 +222,7 @@ and apporbitserver.crt. Rename your files accordingly and retry.'''
                     src + "/apporbitserver.crt", dest + "/apporbitserver.crt")
 
     def clean_setup_maybe(self):
+        self.action_obj.removeCompose(self.config_obj, True)
         opt = raw_input("Do you want to clean up the setup y/[n] ?") or 'n'
         if str(opt).lower() in ['y', 'yes']:
             clean_setup = 1
@@ -344,19 +345,17 @@ api_version = v2
                 file_obj.write(content)
                 file_obj.close()
 
-        config_obj = config.Config()
-        config_obj.loadConfig("install.tmp")
-        config_obj.offline_mode = "true"
+        self.config_obj.loadConfig("install.tmp")
+        self.config_obj.offline_mode = "true"
         os.remove("install.tmp")
-        config_obj.createComposeFile(self.utility_obj)
+        self.config_obj.createComposeFile(self.utility_obj)
         shutil.copyfile(
             self.CWD + 'docker-compose',
-            config_obj.APPORBIT_BIN + '/docker-compose')
+            self.config_obj.APPORBIT_BIN + '/docker-compose')
         self.utility_obj.cmdExecute(
-            "chmod a+x " + config_obj.APPORBIT_BIN + '/docker-compose',
+            "chmod a+x " + self.config_obj.APPORBIT_BIN + '/docker-compose',
             "", bexit=True, show=False)
-        self.action_obj.removeCompose(config_obj, True)
-        self.action_obj.deployCompose(config_obj, True)
+        self.action_obj.deployCompose(self.config_obj, True)
         print "Apporbit server is deployed"
         print "Now login to the appOrbit server using"
         print "Login: " + self.emailid
