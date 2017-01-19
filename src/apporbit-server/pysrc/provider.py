@@ -216,8 +216,7 @@ PROVIDER IP: ${host}
 
         self.get_host_ip()
 
-        if not self.action_obj.set_selinux(self.utility_obj):
-            sys.exit(1)
+        self.action_obj.set_selinux(self.utility_obj):
 
         print "Uncompressing resources"
         self.uncompress_resources()

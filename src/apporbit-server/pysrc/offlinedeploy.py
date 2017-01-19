@@ -386,8 +386,7 @@ api_version = v2
         self.setup_internal_apporbit_repo()
 
         print "Set enforce Selinux"
-        if not self.action_obj.set_selinux(self.utility_obj):
-            sys.exit(1)
+        self.action_obj.set_selinux(self.utility_obj):
 
         print "Install docker"
         self.install_docker()
