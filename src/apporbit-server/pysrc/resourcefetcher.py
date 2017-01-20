@@ -408,7 +408,7 @@ include=rhel-pkglist.conf
         self.verifyOS()
         print "[OK]"
 
-        self.action_obj.set_selinux(self.utility_obj):
+        self.action_obj.set_selinux(self.utility_obj)
 
         self.get_internal_registry()
 
