@@ -41,6 +41,11 @@ cd /opt/apporbit/bin
 #/opt/apporbit/bin/apporbit-deploy.sh
 cmdstr="/opt/apporbit/bin/apporbit-server"
 
+   if [ $# -eq 0 ]
+   then
+      cmdstr+=" --upgrade"
+   fi
+
    for arg in "$@"; do
    case $arg in
      "--deploychef")
