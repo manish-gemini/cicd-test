@@ -216,8 +216,7 @@ PROVIDER IP: ${host}
 
         self.get_host_ip()
 
-        if not self.action_obj.set_selinux(self.utility_obj):
-            sys.exit(1)
+        self.action_obj.set_selinux(self.utility_obj)
 
         print "Uncompressing resources"
         self.uncompress_resources()
@@ -231,12 +230,12 @@ PROVIDER IP: ${host}
         print "Loading offline and registry containers"
         self.load_containers()
 
-        print "Run offline and registry container"
-        self.run_offline_containers()
-
         print "Set docker daemon for insecure registry"
         self.docker_obj.setup_docker_daemon_insecure_reg(
             self.utility_obj, self.docker_registry_url)
+
+        print "Run offline and registry container"
+        self.run_offline_containers()
 
         print "Load Infra containers"
         self.load_infra_containers()

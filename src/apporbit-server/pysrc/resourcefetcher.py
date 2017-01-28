@@ -48,7 +48,8 @@ class ResourceFetcher:
             'moneyball-api': 'moneyball-api',
             'moneyball-router': 'moneyball-router',
             'grafana-app': 'apporbit-grafana-app',
-            'prometheus-app': 'apporbit-prometheus-app'
+            'prometheus-app': 'apporbit-prometheus-app',
+            'swagger-ui': 'apporbit-swagger-ui'
         }
 
         self.support_packages = {
@@ -407,8 +408,7 @@ include=rhel-pkglist.conf
         self.verifyOS()
         print "[OK]"
 
-        if not self.action_obj.set_selinux(self.utility_obj):
-            sys.exit(1)
+        self.action_obj.set_selinux(self.utility_obj)
 
         self.get_internal_registry()
 
