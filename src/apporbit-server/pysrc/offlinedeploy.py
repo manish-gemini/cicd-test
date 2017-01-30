@@ -360,7 +360,7 @@ api_version = v2
             "", bexit=True, show=False)
         self.action_obj.deployCompose(self.config_obj, True)
         print "Waiting for appOrbit server to be active"
-        self.utility_obj.wait_net_service(config_obj.apporbit_host, 443, 300)
+        self.utility_obj.wait_net_service(self.config_obj.apporbit_host, 443, 300)
         print "Apporbit server is deployed"
         print "Now login to the appOrbit server using"
         print "Login: " + self.emailid
