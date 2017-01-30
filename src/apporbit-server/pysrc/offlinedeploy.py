@@ -349,9 +349,12 @@ api_version = v2
         self.config_obj.offline_mode = "true"
         os.remove("install.tmp")
         self.config_obj.createComposeFile(self.utility_obj)
-        shutil.copyfile(
-            self.CWD + 'docker-compose',
-            self.config_obj.APPORBIT_BIN + '/docker-compose')
+        try:
+            shutil.copyfile(
+                self.CWD + 'docker-compose',
+                self.config_obj.APPORBIT_BIN + '/docker-compose')
+        except shutil.Error as err:
+            pass
         self.utility_obj.cmdExecute(
             "chmod a+x " + self.config_obj.APPORBIT_BIN + '/docker-compose',
             "", bexit=True, show=False)
