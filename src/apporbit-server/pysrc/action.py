@@ -220,6 +220,12 @@ class Action:
         return  True
 
     def removeCompose(self, config_obj, show = False, tries = 2):
+        if not os.path.isfile(config_obj.APPORBIT_BIN + "/docker-compose") or \
+	       not os.path.isfile(config_obj.composeFile):
+            print "Nothing to remove. Check logs for details."
+            logging.info("Nothing to remove as docker-compose and\
+                apporbit compose yaml are not present.")
+            return True
         cmd_deploy_db = config_obj.APPORBIT_COMPOSE + " -f " + config_obj.composeFile + " down"
         cmd_desc = "Undeploying AppOrbit containers using docker compose"
         return_code = False
