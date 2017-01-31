@@ -222,7 +222,13 @@ and apporbitserver.crt. Rename your files accordingly and retry.'''
                     src + "/apporbitserver.crt", dest + "/apporbitserver.crt")
 
     def clean_setup_maybe(self):
-        self.action_obj.removeCompose(self.config_obj, True)
+        if (not os.path.isfile(self.config_obj.APPORBIT_BIN + "/docker-compose")
+            or not os.path.isfile(self.config_obj.composeFile)):
+            print "Nothing to remove. Check logs for details."
+            logging.info("Nothing to remove as docker-compose and\
+                apporbit compose yaml are not present.")
+        else: 
+            self.action_obj.removeCompose(self.config_obj, True)
         opt = raw_input("Do you want to clean up the setup y/[n] ?") or 'n'
         if str(opt).lower() in ['y', 'yes']:
             clean_setup = 1
@@ -349,15 +355,18 @@ api_version = v2
         self.config_obj.offline_mode = "true"
         os.remove("install.tmp")
         self.config_obj.createComposeFile(self.utility_obj)
-        shutil.copyfile(
-            self.CWD + 'docker-compose',
-            self.config_obj.APPORBIT_BIN + '/docker-compose')
+        try:
+            shutil.copyfile(
+                self.CWD + 'docker-compose',
+                self.config_obj.APPORBIT_BIN + '/docker-compose')
+        except shutil.Error as err:
+            pass
         self.utility_obj.cmdExecute(
             "chmod a+x " + self.config_obj.APPORBIT_BIN + '/docker-compose',
             "", bexit=True, show=False)
         self.action_obj.deployCompose(self.config_obj, True)
         print "Waiting for appOrbit server to be active"
-        self.utility_obj.wait_net_service(config_obj.apporbit_host, 443, 300)
+        self.utility_obj.wait_net_service(self.config_obj.apporbit_host, 443, 300)
         print "Apporbit server is deployed"
         print "Now login to the appOrbit server using"
         print "Login: " + self.emailid
