@@ -222,7 +222,13 @@ and apporbitserver.crt. Rename your files accordingly and retry.'''
                     src + "/apporbitserver.crt", dest + "/apporbitserver.crt")
 
     def clean_setup_maybe(self):
-        self.action_obj.removeCompose(self.config_obj, True)
+        if (not os.path.isfile(self.config_obj.APPORBIT_BIN + "/docker-compose")
+            or not os.path.isfile(self.config_obj.composeFile)):
+            print "Nothing to remove. Check logs for details."
+            logging.info("Nothing to remove as docker-compose and\
+                apporbit compose yaml are not present.")
+        else: 
+            self.action_obj.removeCompose(self.config_obj, True)
         opt = raw_input("Do you want to clean up the setup y/[n] ?") or 'n'
         if str(opt).lower() in ['y', 'yes']:
             clean_setup = 1
