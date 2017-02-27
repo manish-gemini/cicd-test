@@ -110,6 +110,12 @@ class ResourceFetcher:
                 sys.exit(1)
 
     def make_dirs(self):
+        if hasattr(sys, '_MEIPASS'):
+            os.chdir(sys._MEIPASS)
+            files = sys._MEIPASS + "/conf/* "
+            copyCmd = "cp -rf " + files + self.CWD
+            self.utility_obj.cmdExecute(copyCmd, "", False)
+
         dir_list = [self.INFRADIR,
                     self.NOARCH507DIR,
                     self.MISTMASTER,
@@ -396,10 +402,10 @@ include=rhel-pkglist.conf
         print
         print "Transfer " + self.AO_RESOURCE_TAR + "to a system that will "
         print " act as resource provider for appOrbit Application and run"
-        print " installer with --setup-provider."
+        print " installer with --setupprovider."
         print
         print "Transfer " + self.AO_PACKAGES_TAR + " to apporbit host"
-        print " and run installer with --deploy-offline option."
+        print " and run installer with --deployoffline option."
         print
         print "###############################################################"
 

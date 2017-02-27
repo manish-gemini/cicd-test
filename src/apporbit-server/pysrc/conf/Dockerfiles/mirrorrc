@@ -1,0 +1,7 @@
+---
+- from: http://gems.gsintlab.com/gems
+  to: /opt/rubygems
+  parallelism: 10
+  retries: 3
+  delete: false
+  skiperror: true
