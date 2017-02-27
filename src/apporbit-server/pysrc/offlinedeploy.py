@@ -28,7 +28,7 @@ class OfflineDeploy(object):
         self.internal_docker_reg = ""
         self.internal_gems_repo = ""
         self.CWD = os.getcwd() + "/"
-        self.TMPDIR = "/tmp/"
+        self.TMPDIR = "/var/apporbit-offline/"
         self.AO_PACKAGES_PATH = ""
         self.EXTRACTED_PACKAGES = self.TMPDIR + "appOrbitPackages/"
 
@@ -120,6 +120,7 @@ gpgcheck=0
         if not os.path.isfile(self.AO_PACKAGES_PATH):
             print "Path does not exist. Exiting.."
             sys.exit(1)
+        self.makedirs(self.TMPDIR)
         command = "tar -xvf " + self.AO_PACKAGES_PATH + " -C " + self.TMPDIR
         return_code, out, err = self.utility_obj.cmdExecute(
             command, "Extract " + self.AO_PACKAGES_PATH, bexit=True, show=True)
