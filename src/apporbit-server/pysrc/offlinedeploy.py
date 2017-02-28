@@ -131,7 +131,7 @@ gpgcheck=0
             command = "firewall-cmd --permanent --add-port=" +\
                 str(self.chef_port) + "/tcp"
             return_code, out, err = self.utility_obj.cmdExecute(
-                command, "Adding Chef port to firewall", bexit=True, show=True)
+                command, "Adding Chef port to firewall", bexit=False, show=True)
 
         print "Saving Iptables"
         return_code, out, err = self.utility_obj.cmdExecute(
@@ -262,14 +262,14 @@ and apporbitserver.crt. Rename your files accordingly and retry.'''
         for dirs in directories:
             self.makedirs(dirs)
             command = "chcon -Rt svirt_sandbox_file_t " + dirs
-            self.utility_obj.cmdExecute(command, "", bexit=True, show=True)
+            self.utility_obj.cmdExecute(command, "", bexit=False, show=True)
 
         apporbit_ini = self.config_obj.APPORBIT_CONF + '/apporbit.ini'
         command = ('''\
 touch -a "{apporbit_ini}" && \
 chcon -Rt svirt_sandbox_file_t {apporbit_ini}''')
         command = command.format(apporbit_ini=apporbit_ini)
-        self.utility_obj.cmdExecute(command, "", bexit=True, show=True)
+        self.utility_obj.cmdExecute(command, "", bexit=False, show=True)
 
     def load_containers(self):
         rf = resourcefetcher.ResourceFetcher()
