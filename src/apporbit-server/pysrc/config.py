@@ -499,6 +499,7 @@ services:
     network_mode: "bridge"
     ports:
       - "8080"
+      - "8091:8091"
     environment:
       - CONTROLLER_ALIAS_NAME=${APPORBIT_HOST}
       - AO_REGISTRY=${DATASVC_REGISTRY}

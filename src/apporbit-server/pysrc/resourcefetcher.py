@@ -37,6 +37,8 @@ class ResourceFetcher:
         self.NOARCH507DIR = self.NOARCHDIR + "5.0.7/"
         self.MIST = self.RPMSDIR + "mist/"
         self.MISTMASTER = self.MIST + "master/"
+        self.vmImportUrl = "http://repos.gsintlab.com/release/images/AO-PROXY.ova"
+        self.VMIMPORT = self.RPMSDIR + "vmsvc/"
 
         self.AO_RESOURCE_TAR = 'appOrbitResources.tar'
         self.AO_PACKAGES_TAR = 'appOrbitPackages.tar.gz'
@@ -49,7 +51,8 @@ class ResourceFetcher:
             'moneyball-router': 'moneyball-router',
             'grafana-app': 'apporbit-grafana-app',
             'prometheus-app': 'apporbit-prometheus-app',
-            'swagger-ui': 'apporbit-swagger-ui'
+            'swagger-ui': 'apporbit-swagger-ui',
+            'hypervisor': 'hypervisor'
         }
 
         self.support_packages = {
@@ -60,7 +63,8 @@ class ResourceFetcher:
             self.ao_noarch + "5.0.7/nginx-1.6.3-x86_64-linux.tar.gz":
                 self.NOARCH507DIR,
             self.chef_url: self.RPMSDIR,
-            self.mist_url: self.MISTMASTER
+            self.mist_url: self.MISTMASTER,
+            self.vmImportUrl: self.VMIMPORT
         }
 
         self.apps_insecure_reg = "apporbit-apps.apporbit.io:5000"
@@ -107,12 +111,19 @@ class ResourceFetcher:
                 sys.exit(1)
 
     def make_dirs(self):
+        if hasattr(sys, '_MEIPASS'):
+            os.chdir(sys._MEIPASS)
+            files = sys._MEIPASS + "/conf/* "
+            copyCmd = "cp -rf " + files + self.CWD
+            self.utility_obj.cmdExecute(copyCmd, "", False)
+
         dir_list = [self.INFRADIR,
                     self.NOARCH507DIR,
                     self.MISTMASTER,
                     self.RPMSDIR,
                     self.GEMDIR,
-                    self.PACKAGESDIR]
+                    self.PACKAGESDIR,
+                    self.VMIMPORT]
 
         for dirs in dir_list:
             self.makedirs(dirs)
@@ -267,7 +278,7 @@ class ResourceFetcher:
             parser.remove_option('base', 'mirrorlist')
             parser.remove_option('updates', 'mirrorlist')
 
-            mirror_url = 'http://mirror.centos.org/centos'
+            mirror_url = 'http://vault.centos.org'
             base_url = mirror_url + '/{rel}/os/$basearch/'.format(rel=release)
             parser.set('base', 'baseurl', base_url)
             update_url = mirror_url + '/{rel}/updates/$basearch/'.format(
@@ -392,10 +403,10 @@ include=rhel-pkglist.conf
         print
         print "Transfer " + self.AO_RESOURCE_TAR + "to a system that will "
         print " act as resource provider for appOrbit Application and run"
-        print " installer with --setup-provider."
+        print " installer with --setupprovider."
         print
         print "Transfer " + self.AO_PACKAGES_TAR + " to apporbit host"
-        print " and run installer with --deploy-offline option."
+        print " and run installer with --deployoffline option."
         print
         print "###############################################################"
 

@@ -19,6 +19,7 @@ class Provider:
         self.docker_obj = docker_ao.DockerAO()
         self.CWD = os.getcwd() + "/"
         self.APPORBIT_COMPOSE = self.CWD + "docker-compose"
+        self.DEFAULT_EXTRACT_PATH = "/var/apporbit-offline/"
         self.AO_DOWNLOADS_PATH = ""
         self.AO_RESOURCE_PATH = ""
         self.resource_fetcher = resourcefetcher.ResourceFetcher()
@@ -40,9 +41,11 @@ class Provider:
         self.AO_DOWNLOADS_PATH = raw_input(
             "Enter the path of the downloaded archive[Default: " + path + "]: "
         ) or path
+        self.makedirs(self.DEFAULT_EXTRACT_PATH)
         self.AO_RESOURCE_PATH = raw_input(
-            "Enter the path for extracting resources [Default: /tmp]: "
-        ) or "/tmp/"
+            "Enter the path for extracting resources [Default: " +
+                self.DEFAULT_EXTRACT_PATH + "]: "
+        ) or self.DEFAULT_EXTRACT_PATH
         if not os.path.isdir(self.AO_RESOURCE_PATH):
             print "Invalid path : " + self.AO_RESOURCE_PATH
             sys.exit(1)
@@ -56,6 +59,7 @@ class Provider:
 
     def uncompress_resources(self):
         self.makedirs(self.AO_RESOURCE_PATH)
+        cwd = os.getcwd()
         os.chdir(self.AO_RESOURCE_PATH)
         command =\
             "tar -xvf " + self.AO_DOWNLOADS_PATH + " -C " +\
@@ -65,6 +69,7 @@ class Provider:
 
         return_code, out, err = self.utility_obj.cmdExecute(
             command, " Uncompressing resources", bexit=True, show=False)
+        os.chdir(cwd)
 
     def setup_local_apporbit_repo(self):
         if not os.path.isfile("/etc/yum.repos.d/apporbit-local.repo"):
@@ -141,6 +146,7 @@ services:
         command = 'COMPOSE_HTTP_TIMEOUT=300 ' + self.APPORBIT_COMPOSE +\
             ' -f ' + self.compose_file + ' down'
         self.utility_obj.cmdExecute(command, "", bexit=True, show=True)
+        time.sleep(5)
         command = 'COMPOSE_HTTP_TIMEOUT=300 ' + self.APPORBIT_COMPOSE +\
             ' -f ' + self.compose_file + ' up -d'
         self.utility_obj.cmdExecute(command, "", bexit=True, show=True)

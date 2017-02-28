@@ -28,7 +28,7 @@ class OfflineDeploy(object):
         self.internal_docker_reg = ""
         self.internal_gems_repo = ""
         self.CWD = os.getcwd() + "/"
-        self.TMPDIR = "/tmp/"
+        self.TMPDIR = "/var/apporbit-offline/"
         self.AO_PACKAGES_PATH = ""
         self.EXTRACTED_PACKAGES = self.TMPDIR + "appOrbitPackages/"
 
@@ -120,6 +120,7 @@ gpgcheck=0
         if not os.path.isfile(self.AO_PACKAGES_PATH):
             print "Path does not exist. Exiting.."
             sys.exit(1)
+        self.makedirs(self.TMPDIR)
         command = "tar -xvf " + self.AO_PACKAGES_PATH + " -C " + self.TMPDIR
         return_code, out, err = self.utility_obj.cmdExecute(
             command, "Extract " + self.AO_PACKAGES_PATH, bexit=True, show=True)
@@ -130,7 +131,7 @@ gpgcheck=0
             command = "firewall-cmd --permanent --add-port=" +\
                 str(self.chef_port) + "/tcp"
             return_code, out, err = self.utility_obj.cmdExecute(
-                command, "Adding Chef port to firewall", bexit=True, show=True)
+                command, "Adding Chef port to firewall", bexit=False, show=True)
 
         print "Saving Iptables"
         return_code, out, err = self.utility_obj.cmdExecute(
@@ -227,7 +228,7 @@ and apporbitserver.crt. Rename your files accordingly and retry.'''
             print "Nothing to remove. Check logs for details."
             logging.info("Nothing to remove as docker-compose and\
                 apporbit compose yaml are not present.")
-        else: 
+        else:
             self.action_obj.removeCompose(self.config_obj, True)
         opt = raw_input("Do you want to clean up the setup y/[n] ?") or 'n'
         if str(opt).lower() in ['y', 'yes']:
@@ -261,14 +262,14 @@ and apporbitserver.crt. Rename your files accordingly and retry.'''
         for dirs in directories:
             self.makedirs(dirs)
             command = "chcon -Rt svirt_sandbox_file_t " + dirs
-            self.utility_obj.cmdExecute(command, "", bexit=True, show=True)
+            self.utility_obj.cmdExecute(command, "", bexit=False, show=True)
 
         apporbit_ini = self.config_obj.APPORBIT_CONF + '/apporbit.ini'
         command = ('''\
 touch -a "{apporbit_ini}" && \
 chcon -Rt svirt_sandbox_file_t {apporbit_ini}''')
         command = command.format(apporbit_ini=apporbit_ini)
-        self.utility_obj.cmdExecute(command, "", bexit=True, show=True)
+        self.utility_obj.cmdExecute(command, "", bexit=False, show=True)
 
     def load_containers(self):
         rf = resourcefetcher.ResourceFetcher()
