@@ -51,7 +51,8 @@ class ResourceFetcher:
             'moneyball-router': 'moneyball-router',
             'grafana-app': 'apporbit-grafana-app',
             'prometheus-app': 'apporbit-prometheus-app',
-            'swagger-ui': 'apporbit-swagger-ui'
+            'swagger-ui': 'apporbit-swagger-ui',
+            'hypervisor': 'hypervisor'
         }
 
         self.support_packages = {
@@ -277,7 +278,7 @@ class ResourceFetcher:
             parser.remove_option('base', 'mirrorlist')
             parser.remove_option('updates', 'mirrorlist')
 
-            mirror_url = 'http://mirror.centos.org/centos'
+            mirror_url = 'http://vault.centos.org'
             base_url = mirror_url + '/{rel}/os/$basearch/'.format(rel=release)
             parser.set('base', 'baseurl', base_url)
             update_url = mirror_url + '/{rel}/updates/$basearch/'.format(
