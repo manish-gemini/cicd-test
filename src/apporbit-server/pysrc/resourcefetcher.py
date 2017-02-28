@@ -51,7 +51,8 @@ class ResourceFetcher:
             'moneyball-router': 'moneyball-router',
             'grafana-app': 'apporbit-grafana-app',
             'prometheus-app': 'apporbit-prometheus-app',
-            'swagger-ui': 'apporbit-swagger-ui'
+            'swagger-ui': 'apporbit-swagger-ui',
+            'hypervisor': 'hypervisor'
         }
 
         self.support_packages = {
