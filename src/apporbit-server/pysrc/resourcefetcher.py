@@ -52,7 +52,9 @@ class ResourceFetcher:
             'grafana-app': 'apporbit-grafana-app',
             'prometheus-app': 'apporbit-prometheus-app',
             'swagger-ui': 'apporbit-swagger-ui',
-            'hypervisor': 'hypervisor'
+            'hypervisor': 'hypervisor',
+            'vmsvc/vdiskimport': 'vmsvc/vdiskimport',
+            'vmsvc/vdiskproxy': 'vmsvc/vdiskproxy'
         }
 
         self.support_packages = {
