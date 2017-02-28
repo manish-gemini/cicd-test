@@ -228,7 +228,7 @@ and apporbitserver.crt. Rename your files accordingly and retry.'''
             print "Nothing to remove. Check logs for details."
             logging.info("Nothing to remove as docker-compose and\
                 apporbit compose yaml are not present.")
-        else: 
+        else:
             self.action_obj.removeCompose(self.config_obj, True)
         opt = raw_input("Do you want to clean up the setup y/[n] ?") or 'n'
         if str(opt).lower() in ['y', 'yes']:

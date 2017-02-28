@@ -59,6 +59,7 @@ class Provider:
 
     def uncompress_resources(self):
         self.makedirs(self.AO_RESOURCE_PATH)
+        cwd = os.getcwd()
         os.chdir(self.AO_RESOURCE_PATH)
         command =\
             "tar -xvf " + self.AO_DOWNLOADS_PATH + " -C " +\
@@ -68,6 +69,7 @@ class Provider:
 
         return_code, out, err = self.utility_obj.cmdExecute(
             command, " Uncompressing resources", bexit=True, show=False)
+        os.chdir(cwd)
 
     def setup_local_apporbit_repo(self):
         if not os.path.isfile("/etc/yum.repos.d/apporbit-local.repo"):
