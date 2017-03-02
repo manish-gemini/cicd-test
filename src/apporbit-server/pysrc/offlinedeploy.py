@@ -120,6 +120,9 @@ gpgcheck=0
         if not os.path.isfile(self.AO_PACKAGES_PATH):
             print "Path does not exist. Exiting.."
             sys.exit(1)
+        print "Enter path to extract packages"
+        self.TMPDIR = raw_input(
+            "Default(" + self.TMPDIR + "): ") or self.TMPDIR
         self.makedirs(self.TMPDIR)
         command = "tar -xvf " + self.AO_PACKAGES_PATH + " -C " + self.TMPDIR
         return_code, out, err = self.utility_obj.cmdExecute(
