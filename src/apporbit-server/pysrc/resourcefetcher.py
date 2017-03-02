@@ -53,8 +53,8 @@ class ResourceFetcher:
             'prometheus-app': 'apporbit-prometheus-app',
             'swagger-ui': 'apporbit-swagger-ui',
             'hypervisor': 'hypervisor',
-            'vmsvc/vdiskimport': 'vmsvc/vdiskimport',
-            'vmsvc/vdiskproxy': 'vmsvc/vdiskproxy'
+            'apporbit/vmsvc/vdiskimport': 'apporbit/vmsvc/vdiskimport',
+            'apporbit/vmsvc/vdiskproxy': 'apporbit/vmsvc/vdiskproxy'
         }
 
         self.support_packages = {
