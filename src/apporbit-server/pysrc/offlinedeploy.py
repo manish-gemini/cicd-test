@@ -23,6 +23,7 @@ class OfflineDeploy(object):
         self.docker_obj = docker_ao.DockerAO()
         self.emailid = "admin@apporbit.com"
         self.host = ""
+        self.apporbit_domain = ""
         self.repohost = ""
         self.internal_repo = ""
         self.internal_docker_reg = ""
@@ -180,6 +181,9 @@ gpgcheck=0
         if self.host == "":
             print "Host IP is Mandatory.. Exiting.."
             sys.exit(1)
+        print "Enter the apporbit domain"
+        self.apporbit_domain = raw_input(
+            "(Press Enter if you don't want to use dns) : ")
 
     def generate_ssl_certs(self):
         AO_KEYPATH = self.config_obj.APPORBIT_KEY
@@ -313,7 +317,7 @@ datasvc_registry =${repohost}:5000
 
 [System Setup]
 apporbit_host = ${hostip}
-apporbit_domain =
+apporbit_domain = ${apporbit_domain}
 consul_host = ${hostip}
 chef_host = ${hostip}
 
@@ -348,6 +352,7 @@ api_version = v2
         else:
             with os.fdopen(install_tmp, 'w') as file_obj:
                 content = content.safe_substitute(
+                    apporbit_domain=self.apporbit_domain,
                     hostip=self.host,
                     repohost=self.repohost,
                     email=self.emailid,
