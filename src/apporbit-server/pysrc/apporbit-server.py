@@ -109,7 +109,7 @@ def main():
             with utility.DotProgress("Verify"):
                 utility_obj.progressBar(0)
                 utility_obj.preSysRequirements(config_obj)
-                utility_obj.verifySystemInfo()
+                utility_obj.verifySystemInfo(config_obj)
                 logging.info("System info verification is completed!")
 
                 # Will Fix all the Fixable Software Requriements

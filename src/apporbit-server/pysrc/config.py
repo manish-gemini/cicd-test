@@ -360,7 +360,7 @@ services:
 
   apporbit-db:
     container_name: apporbit-db
-    image: mysql:5.6.24
+    image: ${APPORBIT_REGISTRY}mysql:5.6.24
     network_mode: "bridge"
     hostname: db
     dns:  
@@ -633,6 +633,7 @@ volumes:
                     domain = 'consul.'
 
 
+#push mysql to aoreg
                  content = content.safe_substitute(
                             APPORBIT_CHEFHOST = self.chef_host,
                             APPORBIT_CONF = self.APPORBIT_CONF,

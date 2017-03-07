@@ -13,6 +13,10 @@ class DockerAO:
         self.utility_obj = utility.Utility()
         self.do_dockerinstall = 0
         self.remove_olddocker = 0
+        docker_cmd = "docker -v"
+        return_code, out, err = self.utility_obj.cmdExecute(
+            docker_cmd, "Docker version", show=False)
+        self.installed_docker = out.split()[2].split(',')[0]
         self.docker_version = "1.11.2"
         self.do_sesettings = 0
 
@@ -83,6 +87,7 @@ class DockerAO:
             else:
                 cmd_dockerInstall = 'yum install -y docker-engine-' +\
                      self.docker_version
+            self.installed_docker = self.docker_version
             return_code, out, err = self.utility_obj.cmdExecute(
                 cmd_dockerInstall, "Docker Install", bexit=True, show=True)
 
@@ -200,7 +205,7 @@ class DockerAO:
         regex_find = r'^INSECURE_REGISTRY.*'
         regex_replace = "INSECURE_REGISTRY='--insecure-registry " +\
             docker_reg + "'"
-        if self.docker_version == "1.11.2":
+        if self.installed_docker == "1.11.2":
             docker_config_path = "/usr/lib/systemd/system/docker.service"
             regex_find = "ExecStart=.*docker daemon -H fd://.*"
             regex_append = ' --insecure-registry ' + docker_reg
@@ -220,7 +225,7 @@ class DockerAO:
             with open(docker_config_path, "a") as myfile:
                 myfile.write(regex_replace)
         elif not flag:
-            print "Docker not configured, check file " + docker_config_path
+            logging.debug("Docker not configured, check file " + docker_config_path)
             sys.exit(1)
         utility_obj.cmdExecute(
             "systemctl daemon-reload && systemctl restart docker.service",

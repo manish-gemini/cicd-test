@@ -2,6 +2,7 @@
 
 import multiprocessing
 import exceptions
+import docker_ao
 import re
 import subprocess
 import httplib
@@ -201,6 +202,11 @@ class Utility:
 
     #Docker Login
     def loginDockerRegistry(self, uname, passwd, repo_str = "registry.apporbit.com" ):
+        if uname == "":
+            docker_obj = docker_ao.DockerAO()
+            docker_obj.setup_docker_daemon_insecure_reg(self, repo_str)
+            return True
+
         # print "Login to Docker Registry " + repo_str
         if passwd:
             cmd_str = 'docker login -u=' + uname + ' -p=' + passwd +' '+ repo_str
@@ -214,7 +220,7 @@ class Utility:
 
     # Check for System Information if it satisfy all Pre Deploy Requirements
     # If not fixable errors found exit the process and log the errors.
-    def verifySystemInfo(self):
+    def verifySystemInfo(self, config_obj):
         logging.info("Hardware Requirement Check   -STARTED")
         self.progressBar(1)
         if not self.verifyHardwareRequirement():
@@ -232,7 +238,7 @@ class Utility:
         self.progressBar(5)
 
         logging.info("Repo Connectivity Requirement Check   -STARTED")
-        if not self.verifyRepoConnection():
+        if not self.verifyRepoConnection(config_obj):
             logging.error("Network requirement not satisfied !")
             sys.exit(1)
         logging.info("Repo Connectivity Requirement Check   -COMPLETED")
@@ -403,13 +409,11 @@ class Utility:
 
 
     # Verify RepoConnection
-    def verifyRepoConnection(self):
-        host = "repos.apporbit.com"
-        path = "/"
+    def verifyRepoConnection(self, config_obj):
+        #host = "repos.apporbit.com"
+        host = config_obj.apporbit_repo
         try:
-            conn = httplib.HTTPConnection(host)
-            conn.request("GET", path)
-            if conn.getresponse().status == 200 :
+            if urllib2.urlopen(host).getcode() == 200 :
                 logging.info("Verified connection with the repos... OK")
                 return True
             else:
@@ -530,6 +534,8 @@ class Utility:
             logging.error('HTTPError = %s', e.strerror)
         except urllib2.URLError, e:
             logging.error ('URLError = %s', e.strerror)
+            logging.info('Public Ip not available. Looking for private ip')
+            external_host_ip = socket.gethostbyname(socket.getfqdn())
         except httplib.HTTPException, e:
             logging.error ('HTTPException %s', e.strerror)
         except:
