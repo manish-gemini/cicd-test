@@ -181,7 +181,9 @@ gpgcheck=0
         if self.host == "":
             print "Host IP is Mandatory.. Exiting.."
             sys.exit(1)
-        self.apporbit_domain = raw_input("Enter the apporbit domain : ")
+        print "Enter the apporbit domain"
+        self.apporbit_domain = raw_input(
+            "(Press Enter if you don't want to use dns) : ")
 
     def generate_ssl_certs(self):
         AO_KEYPATH = self.config_obj.APPORBIT_KEY
