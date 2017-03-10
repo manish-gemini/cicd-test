@@ -314,7 +314,7 @@ def main():
         ps = provider.Provider()
         ps.setup_provider()
         finalMessage = ("Copy apporbit-server and appOrbitPackages.tar.gz to "
-              "appOrbit host\nand execute ./apporbit-server --deploy-offline")
+              "appOrbit host\nand execute ./apporbit-server --deployoffline")
         print finalMessage
     elif args.deployoffline:
         import offlinedeploy
