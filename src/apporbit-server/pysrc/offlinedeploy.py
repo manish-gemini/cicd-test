@@ -23,6 +23,7 @@ class OfflineDeploy(object):
         self.docker_obj = docker_ao.DockerAO()
         self.emailid = "admin@apporbit.com"
         self.host = ""
+        self.IsSameHost = "n"
         self.apporbit_domain = ""
         self.repohost = ""
         self.internal_repo = ""
@@ -434,9 +435,11 @@ api_version = v2
         self.generate_ssl_certs()
 
         if self.repohost != self.host:
-            print "Setting docker daemon for insecure registry"
-            self.docker_obj.setup_docker_daemon_insecure_reg(
-                self.utility_obj, self.internal_docker_reg)
+           self.IsSameHost = raw_input("Is provider running on same setup y/[n] ?") or 'n'
+           if str(self.IsSameHost).lower() in ['n', 'no']:
+              print "Setting docker daemon for insecure registry"
+              self.docker_obj.setup_docker_daemon_insecure_reg( self.utility_obj,
+                      self.internal_docker_reg)
 
         print "Waiting for offline repo to come up"
         self.check_offline_repo()
